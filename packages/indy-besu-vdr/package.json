@@ -1,0 +1,15 @@
+{
+  "name": "@aries-framework/indy-besu-vdr",
+  "version": "0.0.1",
+  "main": "index.js",
+  "repository": "https://github.com/hyperledger/aries-framework-javascript",
+  "license": "Apache-2.0",
+  "private": false,
+  "dependencies": {
+    "@aries-framework/anoncreds": "0.4.2",
+    "@aries-framework/core": "0.4.2"
+  },
+  "devDependencies": {
+    "typescript": "~4.9.5"
+  }
+}
