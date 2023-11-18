@@ -1,0 +1,135 @@
+{
+  "_format": "hh-sol-artifact-1",
+  "contractName": "SchemaRegistryInterface",
+  "sourceName": "contracts/cl/SchemaRegistryInterface.sol",
+  "abi": [
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "string",
+          "name": "schemaId",
+          "type": "string"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "sender",
+          "type": "address"
+        }
+      ],
+      "name": "SchemaCreated",
+      "type": "event"
+    },
+    {
+      "inputs": [
+        {
+          "components": [
+            {
+              "internalType": "string",
+              "name": "id",
+              "type": "string"
+            },
+            {
+              "internalType": "string",
+              "name": "issuerId",
+              "type": "string"
+            },
+            {
+              "internalType": "string",
+              "name": "name",
+              "type": "string"
+            },
+            {
+              "internalType": "string",
+              "name": "version",
+              "type": "string"
+            },
+            {
+              "internalType": "string[]",
+              "name": "attrNames",
+              "type": "string[]"
+            }
+          ],
+          "internalType": "struct Schema",
+          "name": "schema",
+          "type": "tuple"
+        }
+      ],
+      "name": "createSchema",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "string",
+          "name": "id",
+          "type": "string"
+        }
+      ],
+      "name": "resolveSchema",
+      "outputs": [
+        {
+          "components": [
+            {
+              "components": [
+                {
+                  "internalType": "string",
+                  "name": "id",
+                  "type": "string"
+                },
+                {
+                  "internalType": "string",
+                  "name": "issuerId",
+                  "type": "string"
+                },
+                {
+                  "internalType": "string",
+                  "name": "name",
+                  "type": "string"
+                },
+                {
+                  "internalType": "string",
+                  "name": "version",
+                  "type": "string"
+                },
+                {
+                  "internalType": "string[]",
+                  "name": "attrNames",
+                  "type": "string[]"
+                }
+              ],
+              "internalType": "struct Schema",
+              "name": "schema",
+              "type": "tuple"
+            },
+            {
+              "components": [
+                {
+                  "internalType": "uint256",
+                  "name": "created",
+                  "type": "uint256"
+                }
+              ],
+              "internalType": "struct SchemaMetadata",
+              "name": "metadata",
+              "type": "tuple"
+            }
+          ],
+          "internalType": "struct SchemaWithMetadata",
+          "name": "schemaWithMetadata",
+          "type": "tuple"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    }
+  ],
+  "bytecode": "0x",
+  "deployedBytecode": "0x",
+  "linkReferences": {},
+  "deployedLinkReferences": {}
+}

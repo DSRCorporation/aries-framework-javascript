@@ -7,7 +7,8 @@
   "private": false,
   "dependencies": {
     "@aries-framework/anoncreds": "0.4.2",
-    "@aries-framework/core": "0.4.2"
+    "@aries-framework/core": "0.4.2",
+    "ethers": "^6.8.1"
   },
   "devDependencies": {
     "typescript": "~4.9.5"

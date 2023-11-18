@@ -1,21 +1,18 @@
 import { AgentContext, DidResolutionResult, DidResolver } from '@aries-framework/core'
-import { ParsedDID, DIDResolutionOptions } from 'did-resolver'
-import { DidRegistry } from '../fake-vdr-wrapper/DidRegistry'
-import { LedgerClient } from '../fake-vdr-wrapper/LedgerClient'
-import { fromBesuDidDocument } from './BesuDidUtils'
+import { IndyBesuLedgerService } from '../ledger/IndyBesuLedgerService'
+import { failedResult, fromIndyBesuDidDocument } from './DidUtils'
 
-export class BesuDidResolver implements DidResolver {
+export class IndyBesuDidResolver implements DidResolver {
   public readonly supportedMethods = ['indy', 'sov', 'indy2']
 
   public async resolve(agentContext: AgentContext, did: string): Promise<DidResolutionResult> {
-    const client = agentContext.dependencyManager.resolve(LedgerClient)
-    const didRegistry = agentContext.dependencyManager.resolve(DidRegistry)
+    const ledgerService = agentContext.dependencyManager.resolve(IndyBesuLedgerService)
 
     try {
-      const { document, metadata } = await didRegistry.resolveDid(client, did)
+      const { document, metadata } = await ledgerService.didRegistry.resolveDid(did)
 
       return {
-        didDocument: fromBesuDidDocument(document),
+        didDocument: fromIndyBesuDidDocument(document),
         didDocumentMetadata: {
           created: metadata.created.toString(),
           updated: metadata.updated.toString(),
