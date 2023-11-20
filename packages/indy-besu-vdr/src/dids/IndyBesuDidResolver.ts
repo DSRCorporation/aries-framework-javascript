@@ -1,6 +1,6 @@
 import { AgentContext, DidResolutionResult, DidResolver } from '@aries-framework/core'
 import { IndyBesuLedgerService } from '../ledger/IndyBesuLedgerService'
-import { failedResult, fromIndyBesuDidDocument } from './DidUtils'
+import { fromIndyBesuDidDocument } from './DidTypesMapping'
 
 export class IndyBesuDidResolver implements DidResolver {
   public readonly supportedMethods = ['indy', 'sov', 'indy2']

@@ -1,11 +1,11 @@
 export interface IndyBesuModuleConfigOptions {
-    rpcUrl: string
-  }
+  rpcUrl: string
+}
 
 export class IndyBesuModuleConfig {
-    public readonly rpcUrl!: string
+  public readonly rpcUrl!: string
 
-    constructor(options: IndyBesuModuleConfigOptions) {
-        this.rpcUrl = options.rpcUrl
-    }
+  constructor(options: IndyBesuModuleConfigOptions) {
+    this.rpcUrl = options.rpcUrl
+  }
 }

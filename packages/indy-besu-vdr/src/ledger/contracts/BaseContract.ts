@@ -1,15 +1,14 @@
-import { Contract, Signer } from "ethers";
-import { readFileSync } from "fs";
+import { Signer } from 'ethers'
 
 export class BaseContract {
-    protected instance: any
+  protected ethersContract: any
 
-    constructor(instance: any) {
-        this.instance = instance
-    }
+  constructor(etherContract: any) {
+    this.ethersContract = etherContract
+  }
 
-    public connect(signer: Signer): this {
-        const instance = this.instance.connect(signer)
-        return this.constructor(instance)
-    }
+  public connect(signer: Signer): this {
+    const instance = this.ethersContract.connect(signer)
+    return this.constructor(instance)
+  }
 }

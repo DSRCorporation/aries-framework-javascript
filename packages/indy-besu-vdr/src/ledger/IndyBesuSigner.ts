@@ -1,100 +1,113 @@
-import { Buffer, Key, TypedArrayEncoder, Wallet } from "@aries-framework/core";
+import { Buffer, Key, TypedArrayEncoder, Wallet } from '@aries-framework/core'
 import {
-    AbstractSigner,
-    assert,
-    assertArgument,
-    computeAddress,
-    getAddress,
-    hashMessage,
-    Provider,
-    resolveAddress,
-    resolveProperties,
-    Transaction,
-    TransactionLike,
-    TransactionRequest,
-    TypedDataEncoder,
-    TypedDataField,
-    TypedDataDomain,
-} from "ethers";
+  AbstractSigner,
+  assert,
+  assertArgument,
+  computeAddress,
+  getAddress,
+  hashMessage,
+  Provider,
+  resolveAddress,
+  resolveProperties,
+  Transaction,
+  TransactionLike,
+  TransactionRequest,
+  TypedDataEncoder,
+  TypedDataField,
+  TypedDataDomain,
+} from 'ethers'
 
 export class IndyBesuSigner extends AbstractSigner {
-    
-    private readonly key!: Key;
-    private readonly address!: string
-    private readonly wallet!: Wallet
+  private readonly key!: Key
+  private readonly address!: string
+  private readonly wallet!: Wallet
 
-    constructor(key: Key, wallet: Wallet, provider: null | Provider) {
-        super(provider);
-        this.key = key
-        this.address = computeAddress(TypedArrayEncoder.toHex(key.publicKey))
-        this.wallet = wallet
+  constructor(key: Key, wallet: Wallet, provider: null | Provider) {
+    super(provider)
+    this.key = key
+    this.address = computeAddress(TypedArrayEncoder.toHex(key.publicKey))
+    this.wallet = wallet
+  }
+
+  public async getAddress(): Promise<string> {
+    return this.address
+  }
+
+  public connect(provider: null | Provider): IndyBesuSigner {
+    return new IndyBesuSigner(this.key, this.wallet, provider)
+  }
+
+  public async signTransaction(tx: TransactionRequest): Promise<string> {
+    // Replace any Addressable or ENS name with an address
+    const { to, from } = await resolveProperties({
+      to: tx.to ? resolveAddress(tx.to, this.provider) : undefined,
+      from: tx.from ? resolveAddress(tx.from, this.provider) : undefined,
+    })
+
+    if (to != null) {
+      tx.to = to
+    }
+    if (from != null) {
+      tx.from = from
     }
 
-    public async getAddress(): Promise<string> { return this.address }
-
-    public connect(provider: null | Provider): IndyBesuSigner {
-        return new IndyBesuSigner(this.key, this.wallet, provider);
+    if (tx.from != null) {
+      assertArgument(
+        getAddress(<string>tx.from) === this.address,
+        'transaction from address mismatch',
+        'tx.from',
+        tx.from
+      )
+      delete tx.from
     }
 
-    public async signTransaction(tx: TransactionRequest): Promise<string> {
-        // Replace any Addressable or ENS name with an address
-        const { to, from } = await resolveProperties({
-            to: (tx.to ? resolveAddress(tx.to, this.provider): undefined),
-            from: (tx.from ? resolveAddress(tx.from, this.provider): undefined)
-        });
+    // Build the transaction
+    const btx = Transaction.from(<TransactionLike<string>>tx)
 
-        if (to != null) { tx.to = to; }
-        if (from != null) { tx.from = from; }
+    const signature = await this.wallet.sign({ data: Buffer.from(btx.unsignedHash), key: this.key })
 
-        if (tx.from != null) {
-            assertArgument(getAddress(<string>(tx.from)) === this.address,
-                "transaction from address mismatch", "tx.from", tx.from);
-            delete tx.from;
-        }
+    btx.signature = await this.sign(btx.unsignedHash)
 
-        // Build the transaction
-        const btx = Transaction.from(<TransactionLike<string>>tx)
+    return btx.serialized
+  }
 
-        const signature = await this.wallet.sign({ data: Buffer.from(btx.unsignedHash), key: this.key })
+  public async signMessage(message: string | Uint8Array): Promise<string> {
+    const hash = hashMessage(message)
 
-        btx.signature = await this.sign(btx.unsignedHash)
+    return this.sign(hash)
+  }
 
-        return btx.serialized;
-    }
+  public async signTypedData(
+    domain: TypedDataDomain,
+    types: Record<string, Array<TypedDataField>>,
+    value: Record<string, any>
+  ): Promise<string> {
+    // Populate any ENS names
+    const populated = await TypedDataEncoder.resolveNames(domain, types, value, async (name: string) => {
+      // @TODO: this should use resolveName; addresses don't
+      //        need a provider
 
-    public async signMessage(message: string | Uint8Array): Promise<string> {
-        const hash = hashMessage(message)
+      assert(this.provider != null, 'cannot resolve ENS names without a provider', 'UNSUPPORTED_OPERATION', {
+        operation: 'resolveName',
+        info: { name },
+      })
 
-        return this.sign(hash)
-    }
+      const address = await this.provider?.resolveName(name)
+      assert(address != null, 'unconfigured ENS name', 'UNCONFIGURED_NAME', {
+        value: name,
+      })
 
-    public async signTypedData(domain: TypedDataDomain, types: Record<string, Array<TypedDataField>>, value: Record<string, any>): Promise<string> {
-        // Populate any ENS names
-        const populated = await TypedDataEncoder.resolveNames(domain, types, value, async (name: string) => {
-            // @TODO: this should use resolveName; addresses don't
-            //        need a provider
+      return address
+    })
 
-            assert(this.provider != null, "cannot resolve ENS names without a provider", "UNSUPPORTED_OPERATION", {
-                operation: "resolveName",
-                info: { name }
-            });
+    const hash = TypedDataEncoder.hash(populated.domain, types, populated.value)
 
-            const address = await this.provider?.resolveName(name)
-            assert(address != null, "unconfigured ENS name", "UNCONFIGURED_NAME", {
-                value: name
-            });
+    return this.sign(hash)
+  }
 
-            return address;
-        });
+  private async sign(data: string): Promise<string> {
+    const signature = await this.wallet.sign({ data: Buffer.from(data), key: this.key })
 
-        const hash = TypedDataEncoder.hash(populated.domain, types, populated.value)
-        
-        return this.sign(hash)
-    }
-
-    private async sign(data: string): Promise<string> {
-        const signature = await this.wallet.sign({ data: Buffer.from(data), key: this.key })
-
-        return TypedArrayEncoder.toHex(signature)
-    }
+    return TypedArrayEncoder.toHex(signature)
+  }
 }

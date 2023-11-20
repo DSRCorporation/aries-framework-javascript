@@ -11,21 +11,17 @@ import {
   Buffer,
   DidDocumentService,
   Key,
+  getEcdsaSecp256k1VerificationKey2019,
 } from '@aries-framework/core'
-import {
-  DidDocumentBuilder,
-  KeyType,
-} from '@aries-framework/core'
+import { DidDocumentBuilder, KeyType } from '@aries-framework/core'
 import {
   buildDid,
   failedResult,
-  fromIndyBesuDidDocument,
-  toIndyBesuDidDocument,
   validateSpecCompliantPayload,
 } from './DidUtils'
 import { IndyBesuLedgerService } from '../ledger/IndyBesuLedgerService'
-import { getEcdsaSecp256k1VerificationKey2019 } from './EcdsaSecp256k1VerificationKey2019'
 import { DidDocument as IndyBesuDidDocument } from '../ledger/contracts/DidRegistry'
+import { fromIndyBesuDidDocument, toIndyBesuDidDocument } from './DidTypesMapping'
 
 export class IndyBesuDidRegistrar implements DidRegistrar {
   public readonly supportedMethods = ['indy', 'sov', 'indy2']
@@ -177,7 +173,7 @@ export interface BesuDidCreateOptions extends DidCreateOptions {
   method: 'indy2'
   did: never
   options: {
-    network: string,
+    network: string
     services?: DidDocumentService[]
   }
   secret: {
