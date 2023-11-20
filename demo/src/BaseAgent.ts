@@ -31,6 +31,8 @@ import {
   CredentialsModule,
   Agent,
   HttpOutboundTransport,
+  ConsoleLogger,
+  LogLevel,
 } from '@aries-framework/core'
 import { IndySdkAnonCredsRegistry, IndySdkModule, IndySdkSovDidResolver } from '@aries-framework/indy-sdk'
 import { IndyVdrIndyDidResolver, IndyVdrAnonCredsRegistry, IndyVdrModule } from '@aries-framework/indy-vdr'
@@ -84,6 +86,7 @@ export class BaseAgent {
         id: name,
         key: name,
       },
+      logger: new ConsoleLogger(LogLevel.trace),
       endpoints: [`http://localhost:${this.port}`],
     } satisfies InitConfig
 

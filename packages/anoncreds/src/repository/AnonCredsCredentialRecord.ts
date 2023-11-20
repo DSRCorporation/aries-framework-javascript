@@ -1,12 +1,12 @@
-import type { AnonCredsCredential } from '../models'
 import type { Tags } from '@aries-framework/core'
 
 import { BaseRecord, utils } from '@aries-framework/core'
+import { JsonObject, W3CCredential } from '@hyperledger/anoncreds-shared'
 
 export interface AnonCredsCredentialRecordProps {
   id?: string
   createdAt?: Date
-  credential: AnonCredsCredential
+  credential: JsonObject
   credentialId: string
   credentialRevocationId?: string
   linkSecretId: string
@@ -48,7 +48,7 @@ export class AnonCredsCredentialRecord extends BaseRecord<
   public readonly credentialId!: string
   public readonly credentialRevocationId?: string
   public readonly linkSecretId!: string
-  public readonly credential!: AnonCredsCredential
+  public readonly credential!: JsonObject
 
   /**
    * AnonCreds method name. We don't use names explicitly from the registry (there's no identifier for a registry)
@@ -77,18 +77,22 @@ export class AnonCredsCredentialRecord extends BaseRecord<
   }
 
   public getTags() {
+    const w3cCred = W3CCredential.fromJson(this.credential)
     const tags: Tags<DefaultAnonCredsCredentialTags, CustomAnonCredsCredentialTags> = {
       ...this._tags,
-      credentialDefinitionId: this.credential.cred_def_id,
-      schemaId: this.credential.schema_id,
+      credentialDefinitionId: w3cCred.credentialDefinitionId,
+      schemaId: w3cCred.schemaId,
       credentialId: this.credentialId,
       credentialRevocationId: this.credentialRevocationId,
-      revocationRegistryId: this.credential.rev_reg_id,
+      revocationRegistryId: w3cCred.revocationRegistryId,
       linkSecretId: this.linkSecretId,
       methodName: this.methodName,
     }
+    const cred = w3cCred.toLegacy().toJson()
 
-    for (const [key, value] of Object.entries(this.credential.values)) {
+    // @ts-ignore
+    for (const [key, value] of Object.entries(cred.values)) {
+      // @ts-ignore
       tags[`attr::${key}::value`] = value.raw
       tags[`attr::${key}::marker`] = true
     }

@@ -24,7 +24,7 @@ import {
   AnonCredsCredentialDefinitionRepository,
 } from '@aries-framework/anoncreds'
 import { injectable, AriesFrameworkError } from '@aries-framework/core'
-import { Credential, CredentialDefinition, CredentialOffer, Schema } from '@hyperledger/anoncreds-shared'
+import { W3CCredential, CredentialDefinition, W3CCredentialOffer, Schema } from '@hyperledger/anoncreds-shared'
 
 import { AnonCredsRsError } from '../errors/AnonCredsRsError'
 
@@ -89,7 +89,7 @@ export class AnonCredsRsIssuerService implements AnonCredsIssuerService {
   ): Promise<AnonCredsCredentialOffer> {
     const { credentialDefinitionId } = options
 
-    let credentialOffer: CredentialOffer | undefined
+    let credentialOffer: W3CCredentialOffer | undefined
     try {
       // The getByCredentialDefinitionId supports both qualified and unqualified identifiers, even though the
       // record is always stored using the qualified identifier.
@@ -116,7 +116,7 @@ export class AnonCredsRsIssuerService implements AnonCredsIssuerService {
         schemaId = getUnqualifiedSchemaId(namespaceIdentifier, schemaName, schemaVersion)
       }
 
-      credentialOffer = CredentialOffer.create({
+      credentialOffer = W3CCredentialOffer.create({
         credentialDefinitionId,
         keyCorrectnessProof: keyCorrectnessProofRecord?.value,
         schemaId,
@@ -134,7 +134,7 @@ export class AnonCredsRsIssuerService implements AnonCredsIssuerService {
   ): Promise<CreateCredentialReturn> {
     const { tailsFilePath, credentialOffer, credentialRequest, credentialValues, revocationRegistryId } = options
 
-    let credential: Credential | undefined
+    let credential: W3CCredential | undefined
     try {
       if (revocationRegistryId || tailsFilePath) {
         throw new AriesFrameworkError('Revocation not supported yet')
@@ -172,12 +172,12 @@ export class AnonCredsRsIssuerService implements AnonCredsIssuerService {
         }
       }
 
-      credential = Credential.create({
+      credential = W3CCredential.create({
         credentialDefinition: credentialDefinitionRecord.credentialDefinition as unknown as JsonObject,
         credentialOffer: credentialOffer as unknown as JsonObject,
         credentialRequest: credentialRequest as unknown as JsonObject,
         revocationRegistryId,
-        attributeEncodedValues,
+        // attributeEncodedValues,
         attributeRawValues,
         credentialDefinitionPrivate: credentialDefinitionPrivateRecord.value,
       })

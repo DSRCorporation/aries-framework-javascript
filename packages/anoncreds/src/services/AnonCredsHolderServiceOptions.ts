@@ -17,6 +17,8 @@ import type {
   AnonCredsSchema,
 } from '../models/registry'
 
+import { W3CCredential } from '@hyperledger/anoncreds-shared'
+
 export interface AnonCredsAttributeInfo {
   name?: string
   names?: string[]
@@ -45,7 +47,7 @@ export interface CreateProofOptions {
 
 export interface StoreCredentialOptions {
   credentialRequestMetadata: AnonCredsCredentialRequestMetadata
-  credential: AnonCredsCredential
+  credential: W3CCredential
   credentialDefinition: AnonCredsCredentialDefinition
   schema: AnonCredsSchema
   credentialDefinitionId: string

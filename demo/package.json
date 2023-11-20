@@ -10,23 +10,19 @@
   "license": "Apache-2.0",
   "scripts": {
     "alice": "ts-node src/AliceInquirer.ts",
-    "faber": "ts-node src/FaberInquirer.ts",
+    "faber": "ts-node --logError src/FaberInquirer.ts",
     "refresh": "rm -rf ./node_modules ./yarn.lock && yarn"
   },
   "dependencies": {
     "@hyperledger/indy-vdr-nodejs": "^0.2.0-dev.5",
-    "@hyperledger/anoncreds-nodejs": "^0.2.0-dev.4",
+    "@hyperledger/anoncreds-nodejs": "file:/Users/abdulbois/Documents/anoncreds-rs/wrappers/javascript/packages/anoncreds-nodejs/build",
     "@hyperledger/aries-askar-nodejs": "^0.2.0-dev.1",
     "inquirer": "^8.2.5"
   },
   "devDependencies": {
     "@aries-framework/anoncreds": "*",
     "@aries-framework/anoncreds-rs": "*",
-    "@aries-framework/askar": "*",
-    "@aries-framework/core": "*",
-    "@aries-framework/indy-sdk": "*",
-    "@aries-framework/indy-vdr": "*",
-    "@aries-framework/cheqd": "*",
+
     "@aries-framework/node": "*",
     "@types/figlet": "^1.5.4",
     "@types/indy-sdk": "^1.16.26",
