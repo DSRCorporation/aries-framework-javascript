@@ -12,6 +12,7 @@ import { keyDidBls12381g2 } from './bls12381g2'
 import { keyDidEd25519 } from './ed25519'
 import { keyDidJsonWebKey } from './keyDidJsonWebKey'
 import { keyDidX25519 } from './x25519'
+import { keyDidSecp256k1 } from './secp256k1'
 
 export interface KeyDidMapping {
   getVerificationMethods: (did: string, key: Key) => VerificationMethod[]
@@ -29,6 +30,7 @@ const keyDidMapping: Record<KeyType, KeyDidMapping> = {
   [KeyType.P256]: keyDidJsonWebKey,
   [KeyType.P384]: keyDidJsonWebKey,
   [KeyType.P521]: keyDidJsonWebKey,
+  [KeyType.K256]: keyDidSecp256k1,
 }
 
 /**

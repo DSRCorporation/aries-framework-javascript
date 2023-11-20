@@ -60,6 +60,7 @@ describeRunInNodeVersion([18], 'AskarWallet basic operations', () => {
       KeyType.Bls12381g2,
       KeyType.Bls12381g1g2,
       KeyType.P256,
+      KeyType.K256,
     ])
   })
 

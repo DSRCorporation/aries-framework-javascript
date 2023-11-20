@@ -27,6 +27,7 @@ const didDocumentKeyTypeMapping: Record<KeyType, (did: string, key: Key) => DidD
   [KeyType.P256]: getJsonWebKey2020DidDocument,
   [KeyType.P384]: getJsonWebKey2020DidDocument,
   [KeyType.P521]: getJsonWebKey2020DidDocument,
+  [KeyType.K256]: getSecp256k1DidDoc,
 }
 
 export function getDidDocumentForKey(did: string, key: Key) {
@@ -150,4 +151,8 @@ function getSignatureKeyBase({
     .addAssertionMethod(keyId)
     .addCapabilityDelegation(keyId)
     .addCapabilityInvocation(keyId)
+}
+
+function getSecp256k1DidDoc(id: string, key: Key): DidDocument {
+  throw new Error('Method not implemented.')
 }
