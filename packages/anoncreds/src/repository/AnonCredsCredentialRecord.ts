@@ -1,6 +1,5 @@
 import type { Tags } from '@aries-framework/core'
 
-import { isString } from 'class-validator'
 import { BaseRecord, utils } from '@aries-framework/core'
 import { AnonCredsW3CCredential } from '@aries-framework/anoncreds'
 
@@ -89,8 +88,8 @@ export class AnonCredsCredentialRecord extends BaseRecord<
       methodName: this.methodName,
     }
 
-    for (const [key, value] of Object.entries(this.credential.credentialSubject.attributes)) {
-      tags[`attr::${key}::value`] = isString(value) ? value : `${value.predicate} ${value.value}`
+    for (const [key, value] of Object.entries(this.credential.credentialSubject)) {
+      tags[`attr::${key}::value`] = value
       tags[`attr::${key}::marker`] = true
     }
 

@@ -48,8 +48,6 @@ import {
   anoncreds,
 } from '@hyperledger/anoncreds-shared'
 
-import { isString } from 'class-validator'
-
 import { AnonCredsRsModuleConfig } from '../AnonCredsRsModuleConfig'
 import { AnonCredsRsError } from '../errors/AnonCredsRsError'
 
@@ -265,7 +263,7 @@ export class AnonCredsRsHolderService implements AnonCredsHolderService {
     let credentialObj: W3CCredential | undefined
     let processedCredential: W3CCredential | undefined
     try {
-      credentialObj = credential
+      credentialObj = W3CCredential.fromJson(credential as unknown as JsonObject)
       processedCredential = credentialObj.process({
         credentialDefinition: credentialDefinition as unknown as JsonObject,
         credentialRequestMetadata: credentialRequestMetadata as unknown as JsonObject,
@@ -277,7 +275,7 @@ export class AnonCredsRsHolderService implements AnonCredsHolderService {
 
       const methodName = agentContext.dependencyManager
         .resolve(AnonCredsRegistryService)
-        .getRegistryForIdentifier(agentContext, credential.credentialDefinitionId).methodName
+        .getRegistryForIdentifier(agentContext, credential.credentialSchema.definition).methodName
 
       await credentialRepository.save(
         agentContext,
@@ -311,8 +309,8 @@ export class AnonCredsRsHolderService implements AnonCredsHolderService {
 
     const attributes: { [key: string]: string } = {}
     const cred = credentialRecord.credential
-    for (const [key, value] of Object.entries(cred.credentialSubject.attributes)) {
-      attributes[key] = isString(value) ? value : `${value.predicate} ${value.value}`
+    for (const [key, value] of Object.entries(cred.credentialSubject)) {
+      attributes[key] = value
     }
     return {
       attributes,
@@ -344,12 +342,7 @@ export class AnonCredsRsHolderService implements AnonCredsHolderService {
     return credentialRecords.map((credentialRecord) => {
       const cred = credentialRecord.credential
       return {
-        attributes: Object.fromEntries(
-          Object.entries(cred.credentialSubject.attributes).map(([key, value]) => [
-            key,
-            isString(value) ? value : `${value.predicate} ${value.value}`,
-          ])
-        ),
+        attributes: Object.fromEntries(Object.entries(cred.credentialSubject).map(([key, value]) => [key, value])),
         credentialDefinitionId: cred.credentialSchema.definition,
         credentialId: credentialRecord.credentialId,
         schemaId: cred.credentialSchema.schema,
@@ -413,8 +406,8 @@ export class AnonCredsRsHolderService implements AnonCredsHolderService {
       const attributes: { [key: string]: string } = {}
       const cred = credentialRecord.credential
 
-      for (const [key, value] of Object.entries(cred.credentialSubject.attributes)) {
-        attributes[key] = isString(value) ? value : `${value.predicate} ${value.value}`
+      for (const [key, value] of Object.entries(cred.credentialSubject)) {
+        attributes[key] = value
       }
       return {
         credentialInfo: {

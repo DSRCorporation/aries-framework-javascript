@@ -59,6 +59,7 @@ import {
   getRevocationRegistriesForProof,
 } from '../utils'
 import { isUnqualifiedCredentialDefinitionId, isUnqualifiedSchemaId } from '../utils/indyIdentifiers'
+import {AnonCredsW3CPresentation} from "../models";
 
 const V2_INDY_PRESENTATION_PROPOSAL = 'hlindy/proof-req@v2.0'
 const V2_INDY_PRESENTATION_REQUEST = 'hlindy/proof-req@v2.0'
@@ -240,11 +241,12 @@ export class LegacyIndyProofFormatService implements ProofFormatService<LegacyIn
       new Set(proofJson.identifiers.map((i) => i.cred_def_id))
     )
 
-    const revocationRegistries = await getRevocationRegistriesForProof(agentContext, proofJson)
+    const w3cPresentation = proofJson as unknown as AnonCredsW3CPresentation
+    const revocationRegistries = await getRevocationRegistriesForProof(agentContext, w3cPresentation)
 
     return await verifierService.verifyProof(agentContext, {
       proofRequest: proofRequestJson,
-      proof: proofJson,
+      proof: w3cPresentation,
       schemas,
       credentialDefinitions,
       revocationRegistries,

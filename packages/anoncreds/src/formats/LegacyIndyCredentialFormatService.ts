@@ -3,7 +3,7 @@ import type {
   AnonCredsCredential,
   AnonCredsCredentialOffer,
   AnonCredsCredentialRequest,
-  AnonCredsCredentialRequestMetadata,
+  AnonCredsCredentialRequestMetadata, AnonCredsW3CCredential,
 } from '../models'
 import type { AnonCredsIssuerService, AnonCredsHolderService, GetRevocationRegistryDefinitionReturn } from '../services'
 import type { AnonCredsCredentialMetadata } from '../utils/metadata'
@@ -419,7 +419,7 @@ export class LegacyIndyCredentialFormatService implements CredentialFormatServic
     const credentialId = await anonCredsHolderService.storeCredential(agentContext, {
       credentialId: utils.uuid(),
       credentialRequestMetadata,
-      credential: W3CCredential.fromJson(anonCredsCredential as unknown as JsonObject),
+      credential: anonCredsCredential as unknown as AnonCredsW3CCredential,
       credentialDefinitionId: credentialDefinitionResult.credentialDefinitionId,
       credentialDefinition: credentialDefinitionResult.credentialDefinition,
       schema: schemaResult.schema,

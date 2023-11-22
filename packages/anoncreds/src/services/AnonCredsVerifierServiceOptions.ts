@@ -1,4 +1,4 @@
-import type { AnonCredsProof, AnonCredsProofRequest } from '../models/exchange'
+import type { AnonCredsProofRequest } from '../models/exchange'
 import type {
   AnonCredsCredentialDefinition,
   AnonCredsRevocationStatusList,
@@ -6,9 +6,11 @@ import type {
   AnonCredsSchema,
 } from '../models/registry'
 
+import { AnonCredsW3CPresentation } from '../models/exchange'
+
 export interface VerifyProofOptions {
   proofRequest: AnonCredsProofRequest
-  proof: AnonCredsProof
+  proof: AnonCredsW3CPresentation
   schemas: {
     [schemaId: string]: AnonCredsSchema
   }

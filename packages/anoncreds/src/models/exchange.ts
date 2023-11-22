@@ -65,7 +65,7 @@ export interface AnonCredsW3CCredential {
   issuanceDate?: string
   credentialSchema: AnonCredsW3CCredentialSchema
   credentialStatus?: AnonCredsW3CCredentialStatus
-  credentialSubject: AnonCredsW3CCredentialSubject
+  credentialSubject: Record<string, string>
   proof: SingleOrArray<AnonCredsW3CCredentialProof>
 }
 
@@ -80,19 +80,22 @@ export interface AnonCredsW3CCredentialStatus {
   type: string
   id: string
 }
-export interface AnonCredsW3CCredentialSubject {
-  id: string
-  attributes: Record<string, string | AnonCredsW3CCredentialPredicate>
-}
-
-export interface AnonCredsW3CCredentialPredicate {
-  type: string
-  predicate: string
-  value: number
-}
 export interface AnonCredsW3CCredentialProof {
   type: string
   signature: string
+}
+
+export interface AnonCredsW3CPresentation {
+  context: Array<string>
+  type: Array<string>
+  verifiableCredential: Array<AnonCredsW3CCredential>
+  proof: AnonCredsW3CPresentationProof
+}
+
+export interface AnonCredsW3CPresentationProof {
+  type: string
+  challenge: string
+  proofValue: string
 }
 export interface AnonCredsProof {
   requested_proof: {

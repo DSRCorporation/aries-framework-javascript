@@ -2,9 +2,9 @@ import type {
   AnonCredsCredentialInfo,
   AnonCredsCredentialRequestMetadata,
   AnonCredsSelectedCredentials,
+  AnonCredsW3CCredential,
 } from '../models'
 import type {
-  AnonCredsCredential,
   AnonCredsCredentialOffer,
   AnonCredsCredentialRequest,
   AnonCredsProofRequest,
@@ -47,7 +47,7 @@ export interface CreateProofOptions {
 
 export interface StoreCredentialOptions {
   credentialRequestMetadata: AnonCredsCredentialRequestMetadata
-  credential: W3CCredential
+  credential: AnonCredsW3CCredential
   credentialDefinition: AnonCredsCredentialDefinition
   schema: AnonCredsSchema
   credentialDefinitionId: string

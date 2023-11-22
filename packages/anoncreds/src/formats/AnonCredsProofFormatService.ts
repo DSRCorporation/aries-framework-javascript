@@ -14,6 +14,7 @@ import type {
   AnonCredsSchema,
   AnonCredsSelectedCredentials,
   AnonCredsProofRequest,
+  AnonCredsW3CPresentation,
 } from '../models'
 import type { AnonCredsHolderService, AnonCredsVerifierService, GetCredentialsForProofRequestReturn } from '../services'
 import type {
@@ -205,34 +206,37 @@ export class AnonCredsProofFormatService implements ProofFormatService<AnonCreds
     // this can lead to confusing error messages. We should consider doing validation here as well.
     // Defining a class-transformer/class-validator class seems a bit overkill, and the usage of interfaces
     // for the anoncreds package keeps things simple. Maybe we can try to use something like zod to validate
-    const proofJson = attachment.getDataAsJson<AnonCredsProof>()
+    const proofJson = attachment.getDataAsJson<AnonCredsW3CPresentation>()
 
-    for (const [referent, attribute] of Object.entries(proofJson.requested_proof.revealed_attrs)) {
-      if (!checkValidCredentialValueEncoding(attribute.raw, attribute.encoded)) {
-        throw new AriesFrameworkError(
-          `The encoded value for '${referent}' is invalid. ` +
-            `Expected '${encodeCredentialValue(attribute.raw)}'. ` +
-            `Actual '${attribute.encoded}'`
-        )
-      }
-    }
+    // for (const [referent, attribute] of Object.entries(proof.requested_proof.revealed_attrs)) {
+    //   if (!checkValidCredentialValueEncoding(attribute.raw, attribute.encoded)) {
+    //     throw new AriesFrameworkError(
+    //       `The encoded value for '${referent}' is invalid. ` +
+    //         `Expected '${encodeCredentialValue(attribute.raw)}'. ` +
+    //         `Actual '${attribute.encoded}'`
+    //     )
+    //   }
+    // }
+    // for (const [, attributeGroup] of Object.entries(proof.requested_proof.revealed_attr_groups ?? {})) {
+    //
+    //   for (const [attributeName, attribute] of Object.entries(attributeGroup.values)) {
+    //     if (!checkValidCredentialValueEncoding(attribute.raw, attribute.encoded)) {
+    //       throw new AriesFrameworkError(
+    //         `The encoded value for '${attributeName}' is invalid. ` +
+    //           `Expected '${encodeCredentialValue(attribute.raw)}'. ` +
+    //           `Actual '${attribute.encoded}'`
+    //       )
+    //     }
+    //   }
+    // }
 
-    for (const [, attributeGroup] of Object.entries(proofJson.requested_proof.revealed_attr_groups ?? {})) {
-      for (const [attributeName, attribute] of Object.entries(attributeGroup.values)) {
-        if (!checkValidCredentialValueEncoding(attribute.raw, attribute.encoded)) {
-          throw new AriesFrameworkError(
-            `The encoded value for '${attributeName}' is invalid. ` +
-              `Expected '${encodeCredentialValue(attribute.raw)}'. ` +
-              `Actual '${attribute.encoded}'`
-          )
-        }
-      }
-    }
-
-    const schemas = await this.getSchemas(agentContext, new Set(proofJson.identifiers.map((i) => i.schema_id)))
+    const schemas = await this.getSchemas(
+      agentContext,
+      new Set(proofJson.verifiableCredential.map((i) => i.credentialSchema.schema))
+    )
     const credentialDefinitions = await this.getCredentialDefinitions(
       agentContext,
-      new Set(proofJson.identifiers.map((i) => i.cred_def_id))
+      new Set(proofJson.verifiableCredential.map((i) => i.credentialSchema.definition))
     )
 
     const revocationRegistries = await getRevocationRegistriesForProof(agentContext, proofJson)

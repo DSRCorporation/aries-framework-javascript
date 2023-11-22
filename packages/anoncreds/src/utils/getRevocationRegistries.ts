@@ -8,6 +8,7 @@ import { AnonCredsRegistryService } from '../services'
 
 import { assertBestPracticeRevocationInterval } from './revocationInterval'
 import { downloadTailsFile } from './tails'
+import { AnonCredsW3CPresentation } from "../models";
 
 export async function getRevocationRegistriesForRequest(
   agentContext: AgentContext,
@@ -156,13 +157,13 @@ export async function getRevocationRegistriesForRequest(
   }
 }
 
-export async function getRevocationRegistriesForProof(agentContext: AgentContext, proof: AnonCredsProof) {
+export async function getRevocationRegistriesForProof(agentContext: AgentContext, proof: AnonCredsW3CPresentation) {
   const revocationRegistries: VerifyProofOptions['revocationRegistries'] = {}
 
   const revocationRegistryPromises = []
-  for (const identifier of proof.identifiers) {
-    const revocationRegistryId = identifier.rev_reg_id
-    const timestamp = identifier.timestamp
+  for (const identifier of proof.verifiableCredential) {
+    const revocationRegistryId = identifier.credentialStatus?.id
+    const timestamp = 0
 
     // Skip if no revocation registry id is present
     if (!revocationRegistryId || !timestamp) continue
