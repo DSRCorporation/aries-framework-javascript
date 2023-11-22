@@ -1,4 +1,5 @@
-import { AriesFrameworkError } from 'packages/core/src/error'
+import { AriesFrameworkError } from '../../../../error'
+import { KeyType } from '../../../../crypto/KeyType'
 import {
   VERIFICATION_METHOD_TYPE_ECDSA_SECP256K1_VERIFICATION_KEY_2019,
   VerificationMethod,
@@ -9,7 +10,6 @@ import {
   isJsonWebKey2020,
 } from '../verificationMethod'
 import { KeyDidMapping } from './keyDidMapping'
-import { KeyType } from 'packages/core/src/crypto'
 
 export const keyDidSecp256k1: KeyDidMapping = {
   supportedVerificationMethodTypes: [VERIFICATION_METHOD_TYPE_ECDSA_SECP256K1_VERIFICATION_KEY_2019],

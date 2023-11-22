@@ -4,7 +4,7 @@ import {
   Service,
   VerificationMethod as IndyBesuVerificationMethod,
   VerificationRelationship,
-} from '../ledger/contracts/DidRegistry'
+} from '../ledger'
 
 export function toIndyBesuDidDocument(didDocument: DidDocument): IndyBesuDidDocument {
   return {

@@ -1,23 +1,20 @@
-import { Key, Wallet } from '@aries-framework/core'
-import { Contract, JsonRpcProvider, Signer, Provider } from 'ethers'
-import { IndyBesuSigner } from './IndyBesuSigner'
+import { Key, Wallet, injectable } from '@aries-framework/core'
+import { Contract, JsonRpcProvider, Signer, Provider, ethers } from 'ethers'
 import { promises as fs } from 'fs'
-import { DidRegistry } from './contracts/DidRegistry'
 import { IndyBesuModuleConfig } from '../IndyBesuModuleConfig'
-import { SchemaRegistry } from './contracts/SchemaRegistry'
-import { CredentialDefinitionRegistry } from './contracts/CredentialDefinitionRegistry'
+import { CredentialDefinitionRegistry, DidRegistry, SchemaRegistry } from './contracts'
+import { IndyBesuSigner } from './IndyBesuSigner'
 
+@injectable()
 export class IndyBesuLedgerService {
   private readonly provider: Provider
-  private readonly wallet: Wallet
 
   public didRegistry!: DidRegistry
   public schemaRegistry!: SchemaRegistry
   public credentialDefinitionRegistry!: CredentialDefinitionRegistry
 
-  constructor(config: IndyBesuModuleConfig, wallet: Wallet) {
+  constructor(config: IndyBesuModuleConfig) {
     this.provider = new JsonRpcProvider(config.rpcUrl)
-    this.wallet = wallet
   }
 
   public async initContracts() {
@@ -34,8 +31,12 @@ export class IndyBesuLedgerService {
     this.credentialDefinitionRegistry = new CredentialDefinitionRegistry(ethersCredentialDefinitionRegistry)
   }
 
-  public createSigner(signerKey: Key): Signer {
-    return new IndyBesuSigner(signerKey, this.wallet, this.provider)
+  public createSigner(signerKey: Key, wallet: Wallet): Signer {
+    return new IndyBesuSigner(signerKey, wallet, this.provider)
+  }
+
+  public destroyProvider() {
+    this.provider.destroy()
   }
 
   private async createEthersContract(specPath: string, address: string) {

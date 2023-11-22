@@ -1,4 +1,4 @@
-import { Buffer, Key, TypedArrayEncoder, Wallet } from '@aries-framework/core'
+import { Key, TypedArrayEncoder, Wallet } from '@aries-framework/core'
 import {
   AbstractSigner,
   assert,
@@ -25,7 +25,7 @@ export class IndyBesuSigner extends AbstractSigner {
   constructor(key: Key, wallet: Wallet, provider: null | Provider) {
     super(provider)
     this.key = key
-    this.address = computeAddress(TypedArrayEncoder.toHex(key.publicKey))
+    this.address = computeAddress(`0x${TypedArrayEncoder.toHex(key.publicKey)}`)
     this.wallet = wallet
   }
 
@@ -64,9 +64,8 @@ export class IndyBesuSigner extends AbstractSigner {
     // Build the transaction
     const btx = Transaction.from(<TransactionLike<string>>tx)
 
-    const signature = await this.wallet.sign({ data: Buffer.from(btx.unsignedHash), key: this.key })
-
-    btx.signature = await this.sign(btx.unsignedHash)
+    const signature = await this.sign(btx.unsignedHash)
+    btx.signature = signature
 
     return btx.serialized
   }
@@ -74,7 +73,7 @@ export class IndyBesuSigner extends AbstractSigner {
   public async signMessage(message: string | Uint8Array): Promise<string> {
     const hash = hashMessage(message)
 
-    return this.sign(hash)
+    return await this.sign(hash)
   }
 
   public async signTypedData(
@@ -102,12 +101,14 @@ export class IndyBesuSigner extends AbstractSigner {
 
     const hash = TypedDataEncoder.hash(populated.domain, types, populated.value)
 
-    return this.sign(hash)
+    return await this.sign(hash)
   }
 
   private async sign(data: string): Promise<string> {
-    const signature = await this.wallet.sign({ data: Buffer.from(data), key: this.key })
+    const dataBuffer = TypedArrayEncoder.fromHex(data.substring(2))
 
-    return TypedArrayEncoder.toHex(signature)
+    const signature = await this.wallet.sign({ data: dataBuffer, key: this.key })
+
+    return `0x${TypedArrayEncoder.toHex(signature)}`
   }
 }

@@ -1,5 +1,6 @@
 import { AddressLike, BigNumberish } from 'ethers'
 import { BaseContract } from './BaseContract'
+import path from 'path'
 
 export type VerificationMethod = {
   id: string
@@ -50,64 +51,80 @@ export type DidDocumentStorage = {
 
 export class DidRegistry extends BaseContract {
   public static readonly address = '0x0000000000000000000000000000000000003333'
-  public static readonly specPath = './artifacts/DidRegistryInterface.json'
+  public static readonly specPath = path.resolve(__dirname, './abi/DidRegistryInterface.json')
 
   constructor(ethersContract: any) {
     super(ethersContract)
   }
 
   public async createDid(didDocument: DidDocument) {
-    const tx = await this.ethersContract.createDid(didDocument)
-    return tx.wait()
+    try {
+      const tx = await this.ethersContract.createDid(didDocument)
+      return tx.wait()
+    } catch (error) {
+      throw this.decodeError(error)
+    }
   }
 
   public async updateDid(didDocument: DidDocument) {
-    const tx = await this.ethersContract.updateDid(didDocument)
-    return tx.wait()
+    try {
+      const tx = await this.ethersContract.updateDid(didDocument)
+      return tx.wait()
+    } catch (error) {
+      throw this.decodeError(error)
+    }
   }
 
   public async deactivateDid(id: string) {
-    const tx = await this.ethersContract.deactivateDid(id)
-    return tx.wait()
+    try {
+      const tx = await this.ethersContract.deactivateDid(id)
+      return tx.wait()
+    } catch (error) {
+      throw this.decodeError(error)
+    }
   }
 
   public async resolveDid(id: string): Promise<DidDocumentStorage> {
-    const didDocumentStorage = await this.ethersContract.resolveDid(id)
-    return {
-      document: {
-        context: didDocumentStorage.document.context.map((context: string) => context),
-        id: didDocumentStorage.document.id,
-        controller: didDocumentStorage.document.controller,
-        verificationMethod: didDocumentStorage.document.verificationMethod.map(
-          (verificationMethod: VerificationMethod) => DidRegistry.mapVerificationMethod(verificationMethod)
-        ),
-        authentication: didDocumentStorage.document.authentication.map((relationship: VerificationRelationship) =>
-          DidRegistry.mapVerificationRelationship(relationship)
-        ),
-        assertionMethod: didDocumentStorage.document.assertionMethod.map((relationship: VerificationRelationship) =>
-          DidRegistry.mapVerificationRelationship(relationship)
-        ),
-        capabilityInvocation: didDocumentStorage.document.capabilityInvocation.map(
-          (relationship: VerificationRelationship) => DidRegistry.mapVerificationRelationship(relationship)
-        ),
-        capabilityDelegation: didDocumentStorage.document.capabilityDelegation.map(
-          (relationship: VerificationRelationship) => DidRegistry.mapVerificationRelationship(relationship)
-        ),
-        keyAgreement: didDocumentStorage.document.keyAgreement.map((relationship: VerificationRelationship) =>
-          DidRegistry.mapVerificationRelationship(relationship)
-        ),
-        service: didDocumentStorage.document.service.map((relationship: Service) =>
-          DidRegistry.mapService(relationship)
-        ),
-        alsoKnownAs: didDocumentStorage.document.alsoKnownAs.map((alsoKnownAs: string) => alsoKnownAs),
-      },
-      metadata: {
-        creator: didDocumentStorage.metadata.creator,
-        created: didDocumentStorage.metadata.created,
-        updated: didDocumentStorage.metadata.updated,
-        deactivated: didDocumentStorage.metadata.deactivated,
-      },
-    } as DidDocumentStorage
+    try {
+      const didDocumentStorage = await this.ethersContract.resolveDid(id)
+      return {
+        document: {
+          context: didDocumentStorage.document.context.map((context: string) => context),
+          id: didDocumentStorage.document.id,
+          controller: didDocumentStorage.document.controller,
+          verificationMethod: didDocumentStorage.document.verificationMethod.map(
+            (verificationMethod: VerificationMethod) => DidRegistry.mapVerificationMethod(verificationMethod)
+          ),
+          authentication: didDocumentStorage.document.authentication.map((relationship: VerificationRelationship) =>
+            DidRegistry.mapVerificationRelationship(relationship)
+          ),
+          assertionMethod: didDocumentStorage.document.assertionMethod.map((relationship: VerificationRelationship) =>
+            DidRegistry.mapVerificationRelationship(relationship)
+          ),
+          capabilityInvocation: didDocumentStorage.document.capabilityInvocation.map(
+            (relationship: VerificationRelationship) => DidRegistry.mapVerificationRelationship(relationship)
+          ),
+          capabilityDelegation: didDocumentStorage.document.capabilityDelegation.map(
+            (relationship: VerificationRelationship) => DidRegistry.mapVerificationRelationship(relationship)
+          ),
+          keyAgreement: didDocumentStorage.document.keyAgreement.map((relationship: VerificationRelationship) =>
+            DidRegistry.mapVerificationRelationship(relationship)
+          ),
+          service: didDocumentStorage.document.service.map((relationship: Service) =>
+            DidRegistry.mapService(relationship)
+          ),
+          alsoKnownAs: didDocumentStorage.document.alsoKnownAs.map((alsoKnownAs: string) => alsoKnownAs),
+        },
+        metadata: {
+          creator: didDocumentStorage.metadata.creator,
+          created: didDocumentStorage.metadata.created,
+          updated: didDocumentStorage.metadata.updated,
+          deactivated: didDocumentStorage.metadata.deactivated,
+        },
+      } as DidDocumentStorage
+    } catch (error) {
+      throw this.decodeError(error)
+    }
   }
 
   private static mapVerificationMethod(verificationMethod: VerificationMethod): VerificationMethod {

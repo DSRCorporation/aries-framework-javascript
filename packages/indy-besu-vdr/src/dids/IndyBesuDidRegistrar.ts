@@ -14,22 +14,17 @@ import {
   getEcdsaSecp256k1VerificationKey2019,
 } from '@aries-framework/core'
 import { DidDocumentBuilder, KeyType } from '@aries-framework/core'
-import {
-  buildDid,
-  failedResult,
-  validateSpecCompliantPayload,
-} from './DidUtils'
-import { IndyBesuLedgerService } from '../ledger/IndyBesuLedgerService'
-import { DidDocument as IndyBesuDidDocument } from '../ledger/contracts/DidRegistry'
+import { DidDocument as IndyBesuDidDocument, IndyBesuLedgerService } from '../ledger'
+import { buildDid, failedResult, validateSpecCompliantPayload } from './DidUtils'
 import { fromIndyBesuDidDocument, toIndyBesuDidDocument } from './DidTypesMapping'
 
 export class IndyBesuDidRegistrar implements DidRegistrar {
   public readonly supportedMethods = ['indy', 'sov', 'indy2']
 
-  public async create(agentContext: AgentContext, options: BesuDidCreateOptions): Promise<DidCreateResult> {
+  public async create(agentContext: AgentContext, options: IndyBesuDidCreateOptions): Promise<DidCreateResult> {
     const ledgerService = agentContext.dependencyManager.resolve(IndyBesuLedgerService)
 
-    const key = await agentContext.wallet.createKey({ keyType: KeyType.K256, privateKey: options.secret.privateKey })
+    const key = await agentContext.wallet.createKey({ keyType: KeyType.K256, privateKey: options.secret?.privateKey })
     const did = buildDid(options.method, options.options.network, key.publicKey)
 
     let didDocument: DidDocument
@@ -52,7 +47,7 @@ export class IndyBesuDidRegistrar implements DidRegistrar {
       didDocument = didDocumentBuilder.build()
     }
 
-    const signer = ledgerService.createSigner(key)
+    const signer = ledgerService.createSigner(key, agentContext.wallet)
     const didRegistry = ledgerService.didRegistry.connect(signer)
 
     try {
@@ -69,15 +64,17 @@ export class IndyBesuDidRegistrar implements DidRegistrar {
         },
       }
     } catch (error) {
+      console.log(error)
+
       return failedResult(`unknownError: ${error.message}`)
     }
   }
 
-  public async update(agentContext: AgentContext, options: BesuDidUpdateOptions): Promise<DidUpdateResult> {
+  public async update(agentContext: AgentContext, options: IndyBesuDidUpdateOptions): Promise<DidUpdateResult> {
     const ledgerService = agentContext.dependencyManager.resolve(IndyBesuLedgerService)
 
     const key = Key.fromPublicKey(options.secret.publicKey, KeyType.K256)
-    const signer = ledgerService.createSigner(key)
+    const signer = ledgerService.createSigner(key, agentContext.wallet)
     const didRegistry = ledgerService.didRegistry.connect(signer)
 
     try {
@@ -124,11 +121,14 @@ export class IndyBesuDidRegistrar implements DidRegistrar {
     }
   }
 
-  public async deactivate(agentContext: AgentContext, options: BesuDidDeactivateOptions): Promise<DidDeactivateResult> {
+  public async deactivate(
+    agentContext: AgentContext,
+    options: IndyBesuDidDeactivateOptions
+  ): Promise<DidDeactivateResult> {
     const ledgerService = agentContext.dependencyManager.resolve(IndyBesuLedgerService)
 
     const key = Key.fromPublicKey(options.secret.publicKey, KeyType.K256)
-    const signer = ledgerService.createSigner(key)
+    const signer = ledgerService.createSigner(key, agentContext.wallet)
     const didRegistry = ledgerService.didRegistry.connect(signer)
 
     try {
@@ -169,19 +169,19 @@ export class IndyBesuDidRegistrar implements DidRegistrar {
   }
 }
 
-export interface BesuDidCreateOptions extends DidCreateOptions {
+export interface IndyBesuDidCreateOptions extends DidCreateOptions {
   method: 'indy2'
-  did: never
+  did?: never
   options: {
     network: string
     services?: DidDocumentService[]
   }
-  secret: {
+  secret?: {
     privateKey: Buffer
   }
 }
 
-export interface BesuDidUpdateOptions extends DidUpdateOptions {
+export interface IndyBesuDidUpdateOptions extends DidUpdateOptions {
   options: {
     network: string
   }
@@ -190,7 +190,7 @@ export interface BesuDidUpdateOptions extends DidUpdateOptions {
   }
 }
 
-export interface BesuDidDeactivateOptions extends DidDeactivateOptions {
+export interface IndyBesuDidDeactivateOptions extends DidDeactivateOptions {
   options: {
     network: string
   }

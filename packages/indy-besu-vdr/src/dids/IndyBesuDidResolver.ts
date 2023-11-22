@@ -1,5 +1,5 @@
 import { AgentContext, DidResolutionResult, DidResolver } from '@aries-framework/core'
-import { IndyBesuLedgerService } from '../ledger/IndyBesuLedgerService'
+import { IndyBesuLedgerService } from '../ledger'
 import { fromIndyBesuDidDocument } from './DidTypesMapping'
 
 export class IndyBesuDidResolver implements DidResolver {

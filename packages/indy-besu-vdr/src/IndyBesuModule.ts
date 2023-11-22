@@ -1,6 +1,6 @@
 import { AgentContext, DependencyManager, Module } from '@aries-framework/core'
 import { IndyBesuModuleConfig, IndyBesuModuleConfigOptions } from './IndyBesuModuleConfig'
-import { IndyBesuLedgerService } from './ledger/IndyBesuLedgerService'
+import { IndyBesuLedgerService } from './ledger'
 
 export class IndyBesuModule implements Module {
   public readonly config: IndyBesuModuleConfig
