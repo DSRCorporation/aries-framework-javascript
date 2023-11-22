@@ -1,5 +1,4 @@
 import type {
-  AnonCredsCredential,
   AnonCredsCredentialInfo,
   AnonCredsCredentialRequest,
   AnonCredsCredentialRequestMetadata,
@@ -8,6 +7,7 @@ import type {
   AnonCredsProofRequestRestriction,
   AnonCredsRequestedAttributeMatch,
   AnonCredsRequestedPredicateMatch,
+  AnonCredsW3CCredential,
   CreateCredentialRequestOptions,
   CreateCredentialRequestReturn,
   CreateLinkSecretOptions,
@@ -47,6 +47,8 @@ import {
   RevocationStatusList,
   anoncreds,
 } from '@hyperledger/anoncreds-shared'
+
+import { isString } from 'class-validator'
 
 import { AnonCredsRsModuleConfig } from '../AnonCredsRsModuleConfig'
 import { AnonCredsRsError } from '../errors/AnonCredsRsError'
@@ -91,10 +93,7 @@ export class AnonCredsRsHolderService implements AnonCredsHolderService {
           credentialRecord = await credentialRepository.getByCredentialId(agentContext, attribute.credentialId)
           retrievedCredentials.set(attribute.credentialId, credentialRecord)
         }
-
-        const w3cCred = W3CCredential.fromJson(credentialRecord.credential)
-
-        const revocationRegistryDefinitionId = w3cCred.revocationRegistryId
+        const revocationRegistryDefinitionId = credentialRecord.credential.credentialStatus?.id
         const revocationRegistryIndex = credentialRecord.credentialRevocationId
 
         // TODO: Check if credential has a revocation registry id (check response from anoncreds-rs API, as it is
@@ -283,7 +282,7 @@ export class AnonCredsRsHolderService implements AnonCredsHolderService {
       await credentialRepository.save(
         agentContext,
         new AnonCredsCredentialRecord({
-          credential: processedCredential.toJson(),
+          credential: processedCredential.toJson() as unknown as AnonCredsW3CCredential,
           credentialId,
           linkSecretId: linkSecretRecord.linkSecretId,
           issuerId: options.credentialDefinition.issuerId,
@@ -311,20 +310,17 @@ export class AnonCredsRsHolderService implements AnonCredsHolderService {
       .getByCredentialId(agentContext, options.credentialId)
 
     const attributes: { [key: string]: string } = {}
-    const w3cCred = W3CCredential.fromJson(credentialRecord.credential)
-
-    const cred = w3cCred.toLegacy().toJson() as unknown as AnonCredsCredential
-
-    for (const attribute in cred.values) {
-      attributes[attribute] = cred.values[attribute].raw
+    const cred = credentialRecord.credential
+    for (const [key, value] of Object.entries(cred.credentialSubject.attributes)) {
+      attributes[key] = isString(value) ? value : `${value.predicate} ${value.value}`
     }
     return {
       attributes,
-      credentialDefinitionId: w3cCred.credentialDefinitionId,
+      credentialDefinitionId: cred.credentialSchema.definition,
       credentialId: credentialRecord.credentialId,
-      schemaId: w3cCred.schemaId,
+      schemaId: cred.credentialSchema.schema,
       credentialRevocationId: credentialRecord.credentialRevocationId,
-      revocationRegistryId: w3cCred.revocationRegistryId,
+      revocationRegistryId: cred.credentialStatus?.id,
       methodName: credentialRecord.methodName,
     }
   }
@@ -346,16 +342,19 @@ export class AnonCredsRsHolderService implements AnonCredsHolderService {
       })
 
     return credentialRecords.map((credentialRecord) => {
-      const w3cCred = W3CCredential.fromJson(credentialRecord.credential)
-
-      const cred = w3cCred.toLegacy().toJson() as unknown as AnonCredsCredential
+      const cred = credentialRecord.credential
       return {
-        attributes: Object.fromEntries(Object.entries(cred.values).map(([key, value]) => [key, value.raw])),
-        credentialDefinitionId: w3cCred.credentialDefinitionId,
+        attributes: Object.fromEntries(
+          Object.entries(cred.credentialSubject.attributes).map(([key, value]) => [
+            key,
+            isString(value) ? value : `${value.predicate} ${value.value}`,
+          ])
+        ),
+        credentialDefinitionId: cred.credentialSchema.definition,
         credentialId: credentialRecord.credentialId,
-        schemaId: w3cCred.schemaId,
+        schemaId: cred.credentialSchema.schema,
         credentialRevocationId: credentialRecord.credentialRevocationId,
-        revocationRegistryId: w3cCred.revocationRegistryId,
+        revocationRegistryId: cred.credentialStatus?.id,
         methodName: credentialRecord.methodName,
       }
     })
@@ -411,22 +410,20 @@ export class AnonCredsRsHolderService implements AnonCredsHolderService {
       })
 
     return credentials.map((credentialRecord) => {
-      const w3cCred = W3CCredential.fromJson(credentialRecord.credential)
-
       const attributes: { [key: string]: string } = {}
-      const cred = w3cCred.toLegacy().toJson() as unknown as AnonCredsCredential
+      const cred = credentialRecord.credential
 
-      for (const attribute in cred.values) {
-        attributes[attribute] = cred.values[attribute].raw
+      for (const [key, value] of Object.entries(cred.credentialSubject.attributes)) {
+        attributes[key] = isString(value) ? value : `${value.predicate} ${value.value}`
       }
       return {
         credentialInfo: {
           attributes,
-          credentialDefinitionId: w3cCred.credentialDefinitionId,
+          credentialDefinitionId: cred.credentialSchema.definition,
           credentialId: credentialRecord.credentialId,
-          schemaId: w3cCred.schemaId,
+          schemaId: cred.credentialSchema.schema,
           credentialRevocationId: credentialRecord.credentialRevocationId,
-          revocationRegistryId: w3cCred.revocationRegistryId,
+          revocationRegistryId: cred.credentialStatus?.id,
           methodName: credentialRecord.methodName,
         },
         interval: proofRequest.non_revoked,

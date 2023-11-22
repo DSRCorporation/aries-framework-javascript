@@ -1,12 +1,13 @@
 import type { Tags } from '@aries-framework/core'
 
+import { isString } from 'class-validator'
 import { BaseRecord, utils } from '@aries-framework/core'
-import { JsonObject, W3CCredential } from '@hyperledger/anoncreds-shared'
+import { AnonCredsW3CCredential } from '@aries-framework/anoncreds'
 
 export interface AnonCredsCredentialRecordProps {
   id?: string
   createdAt?: Date
-  credential: JsonObject
+  credential: AnonCredsW3CCredential
   credentialId: string
   credentialRevocationId?: string
   linkSecretId: string
@@ -48,7 +49,7 @@ export class AnonCredsCredentialRecord extends BaseRecord<
   public readonly credentialId!: string
   public readonly credentialRevocationId?: string
   public readonly linkSecretId!: string
-  public readonly credential!: JsonObject
+  public readonly credential!: AnonCredsW3CCredential
 
   /**
    * AnonCreds method name. We don't use names explicitly from the registry (there's no identifier for a registry)
@@ -77,23 +78,19 @@ export class AnonCredsCredentialRecord extends BaseRecord<
   }
 
   public getTags() {
-    const w3cCred = W3CCredential.fromJson(this.credential)
     const tags: Tags<DefaultAnonCredsCredentialTags, CustomAnonCredsCredentialTags> = {
       ...this._tags,
-      credentialDefinitionId: w3cCred.credentialDefinitionId,
-      schemaId: w3cCred.schemaId,
+      credentialDefinitionId: this.credential.credentialSchema.definition,
+      schemaId: this.credential.credentialSchema.schema,
       credentialId: this.credentialId,
       credentialRevocationId: this.credentialRevocationId,
-      revocationRegistryId: w3cCred.revocationRegistryId,
+      revocationRegistryId: this.credential.credentialStatus?.id,
       linkSecretId: this.linkSecretId,
       methodName: this.methodName,
     }
-    const cred = w3cCred.toLegacy().toJson()
 
-    // @ts-ignore
-    for (const [key, value] of Object.entries(cred.values)) {
-      // @ts-ignore
-      tags[`attr::${key}::value`] = value.raw
+    for (const [key, value] of Object.entries(this.credential.credentialSubject.attributes)) {
+      tags[`attr::${key}::value`] = isString(value) ? value : `${value.predicate} ${value.value}`
       tags[`attr::${key}::marker`] = true
     }
 

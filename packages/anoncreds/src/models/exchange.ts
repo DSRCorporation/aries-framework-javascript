@@ -1,3 +1,5 @@
+import { SingleOrArray } from '@aries-framework/core/src/utils'
+
 export const anonCredsPredicateType = ['>=', '>', '<=', '<'] as const
 export type AnonCredsPredicateType = (typeof anonCredsPredicateType)[number]
 
@@ -56,6 +58,42 @@ export interface AnonCredsCredential {
   signature_correctness_proof: unknown
 }
 
+export interface AnonCredsW3CCredential {
+  context: Array<string>
+  type: Array<string>
+  issuer: string
+  issuanceDate?: string
+  credentialSchema: AnonCredsW3CCredentialSchema
+  credentialStatus?: AnonCredsW3CCredentialStatus
+  credentialSubject: AnonCredsW3CCredentialSubject
+  proof: SingleOrArray<AnonCredsW3CCredentialProof>
+}
+
+export interface AnonCredsW3CCredentialSchema {
+  type: string
+  definition: string
+  schema: string
+  encoding: string
+}
+
+export interface AnonCredsW3CCredentialStatus {
+  type: string
+  id: string
+}
+export interface AnonCredsW3CCredentialSubject {
+  id: string
+  attributes: Record<string, string | AnonCredsW3CCredentialPredicate>
+}
+
+export interface AnonCredsW3CCredentialPredicate {
+  type: string
+  predicate: string
+  value: number
+}
+export interface AnonCredsW3CCredentialProof {
+  type: string
+  signature: string
+}
 export interface AnonCredsProof {
   requested_proof: {
     revealed_attrs: Record<
