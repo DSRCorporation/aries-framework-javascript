@@ -12,7 +12,7 @@ export type Schema = {
 
 export type SchemaMetadata = { created: BigNumberish }
 
-export type SchemaWithMetadataStruct = {
+export type SchemaWithMetadata = {
   schema: Schema
   metadata: SchemaMetadata
 }
@@ -34,7 +34,7 @@ export class SchemaRegistry extends BaseContract {
     }
   }
 
-  public async resolveSchema(id: string): Promise<SchemaWithMetadataStruct> {
+  public async resolveSchema(id: string): Promise<SchemaWithMetadata> {
     try {
       const result = await this.ethersContract.resolveSchema(id)
       return {

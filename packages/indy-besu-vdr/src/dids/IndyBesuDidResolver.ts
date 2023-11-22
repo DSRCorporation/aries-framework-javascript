@@ -25,7 +25,7 @@ export class IndyBesuDidResolver implements DidResolver {
         didDocument: null,
         didDocumentMetadata: {},
         didResolutionMetadata: {
-          error: 'notFound',
+          error: 'unknownError',
           message: `resolver_error: Unable to resolve did '${did}': ${error}`,
         },
       }

@@ -4,7 +4,7 @@ import { getBesuIndyModules } from './indy-bese-test-utils'
 import { IndyBesuDidCreateOptions } from '../src/dids'
 import { IndyBesuLedgerService } from '../src/ledger'
 
-const agentOptions = getAgentOptions('Faber 1 Dids Registrar', {}, getBesuIndyModules())
+const agentOptions = getAgentOptions('Faber Dids Registrar', {}, getBesuIndyModules())
 
 describe('Indy-Besu DID registrar', () => {
   let agent: Agent<ReturnType<typeof getBesuIndyModules>>

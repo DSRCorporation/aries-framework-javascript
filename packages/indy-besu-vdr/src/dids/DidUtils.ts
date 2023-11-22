@@ -8,7 +8,11 @@ import {
   VERIFICATION_METHOD_TYPE_ECDSA_SECP256K1_VERIFICATION_KEY_2019,
   Hasher,
   TypedArrayEncoder,
+  AgentContext,
+  AriesFrameworkError,
+  getKeyFromVerificationMethod,
 } from '@aries-framework/core'
+import { IndyBesuDidResolver } from './IndyBesuDidResolver'
 
 export function buildDid(method: string, network: string, key: Buffer): string {
   const buffer = Hasher.hash(key, 'sha2-256')
@@ -67,4 +71,21 @@ export function validateSpecCompliantPayload(didDocument: DidDocument): string |
   if (!isValidService) return 'Service is Invalid'
 
   return null
+}
+
+export async function verificationKeyForDid(agentContext: AgentContext, did: string) {
+  const reolver = agentContext.dependencyManager.resolve(IndyBesuDidResolver)
+
+  const { didDocument, didDocumentMetadata, didResolutionMetadata } = await reolver.resolve(agentContext, did)
+
+  if (didResolutionMetadata.error)
+    throw new AriesFrameworkError(`${didResolutionMetadata.error}: ${didResolutionMetadata.message}`)
+  if (didDocumentMetadata.deactivated) throw new AriesFrameworkError('DID has been deactivated')
+  if (!didDocument) throw new AriesFrameworkError('DID not found')
+
+  // did:indy dids MUST have a verificationMethod with #verkey
+  const verificationMethod = didDocument.dereferenceKey(`${did}#verkey`)
+  const key = getKeyFromVerificationMethod(verificationMethod)
+
+  return key
 }
