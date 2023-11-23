@@ -2,7 +2,7 @@ import type { AnonCredsCredentialValue } from '@aries-framework/anoncreds'
 import type { Agent, FileSystem, WalletConfig } from '@aries-framework/core'
 import type { EntryObject } from '@hyperledger/aries-askar-shared'
 
-import { AnonCredsCredentialRecord, AnonCredsLinkSecretRecord } from '@aries-framework/anoncreds'
+import { AnonCredsW3CCredentialRecord, AnonCredsLinkSecretRecord } from '@aries-framework/anoncreds'
 import { AskarWallet } from '@aries-framework/askar'
 import { InjectionSymbols, KeyDerivationMethod, JsonTransformer, TypedArrayEncoder } from '@aries-framework/core'
 import { Migration, Key, KeyAlgs, Store } from '@hyperledger/aries-askar-shared'
@@ -394,7 +394,7 @@ export class IndySdkToAskarMigrationUpdater {
         const [issuerId] = data.cred_def_id.split(':')
         const [schemaIssuerId, , schemaName, schemaVersion] = data.schema_id.split(':')
 
-        const record = new AnonCredsCredentialRecord({
+        const record = new AnonCredsW3CCredentialRecord({
           credential: data,
           issuerId,
           schemaName,

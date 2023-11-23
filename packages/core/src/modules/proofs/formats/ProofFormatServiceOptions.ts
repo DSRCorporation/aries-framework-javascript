@@ -72,6 +72,7 @@ export interface FormatCreateRequestOptions<PF extends ProofFormat> {
   proofRecord: ProofExchangeRecord
   proofFormats: ProofFormatPayload<[PF], 'createRequest'>
   attachmentId?: string
+  isW3C?: boolean
 }
 
 export interface ProofFormatAcceptRequestOptions<PF extends ProofFormat> {

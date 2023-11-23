@@ -3,17 +3,20 @@ import type { AgentContext } from '@aries-framework/core'
 import type { JsonObject } from '@hyperledger/anoncreds-shared'
 
 import { injectable } from '@aries-framework/core'
-import { W3CPresentation } from '@hyperledger/anoncreds-shared'
+import { Presentation, W3CPresentation } from '@hyperledger/anoncreds-shared'
 
 @injectable()
 export class AnonCredsRsVerifierService implements AnonCredsVerifierService {
   public async verifyProof(agentContext: AgentContext, options: VerifyProofOptions): Promise<boolean> {
     const { credentialDefinitions, proof, proofRequest, revocationRegistries, schemas } = options
 
-    let presentation: W3CPresentation | undefined
+    let presentation: W3CPresentation | Presentation | undefined
     try {
-      presentation = W3CPresentation.fromJson(proof as unknown as JsonObject)
-
+      if (proofRequest.isW3C) {
+        presentation = W3CPresentation.fromJson(proof as unknown as JsonObject)
+      } else {
+        presentation = Presentation.fromJson(proof as unknown as JsonObject)
+      }
       const rsCredentialDefinitions: Record<string, JsonObject> = {}
       for (const credDefId in credentialDefinitions) {
         rsCredentialDefinitions[credDefId] = credentialDefinitions[credDefId] as unknown as JsonObject

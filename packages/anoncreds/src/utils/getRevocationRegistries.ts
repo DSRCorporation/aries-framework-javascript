@@ -8,7 +8,7 @@ import { AnonCredsRegistryService } from '../services'
 
 import { assertBestPracticeRevocationInterval } from './revocationInterval'
 import { downloadTailsFile } from './tails'
-import { AnonCredsW3CPresentation } from "../models";
+import { AnonCredsW3CPresentation } from '../models'
 
 export async function getRevocationRegistriesForRequest(
   agentContext: AgentContext,
@@ -157,13 +157,67 @@ export async function getRevocationRegistriesForRequest(
   }
 }
 
-export async function getRevocationRegistriesForProof(agentContext: AgentContext, proof: AnonCredsW3CPresentation) {
+export async function getRevocationRegistriesForProofW3C(agentContext: AgentContext, proof: AnonCredsW3CPresentation) {
   const revocationRegistries: VerifyProofOptions['revocationRegistries'] = {}
 
   const revocationRegistryPromises = []
   for (const identifier of proof.verifiableCredential) {
     const revocationRegistryId = identifier.credentialStatus?.id
     const timestamp = 0
+
+    // Skip if no revocation registry id is present
+    if (!revocationRegistryId || !timestamp) continue
+
+    const registry = agentContext.dependencyManager
+      .resolve(AnonCredsRegistryService)
+      .getRegistryForIdentifier(agentContext, revocationRegistryId)
+
+    const getRevocationRegistry = async () => {
+      // Fetch revocation registry definition if not already fetched
+      if (!revocationRegistries[revocationRegistryId]) {
+        const { revocationRegistryDefinition, resolutionMetadata } = await registry.getRevocationRegistryDefinition(
+          agentContext,
+          revocationRegistryId
+        )
+        if (!revocationRegistryDefinition) {
+          throw new AriesFrameworkError(
+            `Could not retrieve revocation registry definition for revocation registry ${revocationRegistryId}: ${resolutionMetadata.message}`
+          )
+        }
+
+        revocationRegistries[revocationRegistryId] = {
+          definition: revocationRegistryDefinition,
+          revocationStatusLists: {},
+        }
+      }
+
+      // Fetch revocation status list by timestamp if not already fetched
+      if (!revocationRegistries[revocationRegistryId].revocationStatusLists[timestamp]) {
+        const { revocationStatusList, resolutionMetadata: statusListResolutionMetadata } =
+          await registry.getRevocationStatusList(agentContext, revocationRegistryId, timestamp)
+
+        if (!revocationStatusList) {
+          throw new AriesFrameworkError(
+            `Could not retrieve revocation status list for revocation registry ${revocationRegistryId}: ${statusListResolutionMetadata.message}`
+          )
+        }
+
+        revocationRegistries[revocationRegistryId].revocationStatusLists[timestamp] = revocationStatusList
+      }
+    }
+    revocationRegistryPromises.push(getRevocationRegistry())
+  }
+  await Promise.all(revocationRegistryPromises)
+  return revocationRegistries
+}
+
+export async function getRevocationRegistriesForProof(agentContext: AgentContext, proof: AnonCredsProof) {
+  const revocationRegistries: VerifyProofOptions['revocationRegistries'] = {}
+
+  const revocationRegistryPromises = []
+  for (const identifier of proof.identifiers) {
+    const revocationRegistryId = identifier.rev_reg_id
+    const timestamp = identifier.timestamp
 
     // Skip if no revocation registry id is present
     if (!revocationRegistryId || !timestamp) continue

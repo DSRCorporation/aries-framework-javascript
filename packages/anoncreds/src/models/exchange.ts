@@ -163,4 +163,5 @@ export interface AnonCredsProofRequest {
   requested_predicates: Record<string, AnonCredsRequestedPredicate>
   non_revoked?: AnonCredsNonRevokedInterval
   ver?: '1.0' | '2.0'
+  isW3C?: boolean
 }

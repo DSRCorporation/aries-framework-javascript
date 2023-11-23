@@ -29,7 +29,7 @@ export class Faber extends BaseAgent {
   }
 
   public static async build(): Promise<Faber> {
-    const faber = new Faber(9001, 'faber')
+    const faber = new Faber(9001, 'faber11')
     await faber.initializeAgent()
     return faber
   }
@@ -266,6 +266,7 @@ export class Faber extends BaseAgent {
           requested_attributes: proofAttribute,
         },
       },
+      isW3C: true,
     })
     this.ui.updateBottomBar(
       `\nProof request sent!\n\nGo to the Alice agent to accept the proof request\n\n${Color.Reset}`

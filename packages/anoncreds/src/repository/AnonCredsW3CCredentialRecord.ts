@@ -1,12 +1,12 @@
-import type { AnonCredsCredential } from '../models'
 import type { Tags } from '@aries-framework/core'
 
 import { BaseRecord, utils } from '@aries-framework/core'
+import { AnonCredsW3CCredential } from '@aries-framework/anoncreds'
 
-export interface AnonCredsCredentialRecordProps {
+export interface AnonCredsW3CCredentialRecordProps {
   id?: string
   createdAt?: Date
-  credential: AnonCredsCredential
+  credential: AnonCredsW3CCredential
   credentialId: string
   credentialRevocationId?: string
   linkSecretId: string
@@ -17,7 +17,7 @@ export interface AnonCredsCredentialRecordProps {
   methodName: string
 }
 
-export type DefaultAnonCredsCredentialTags = {
+export type DefaultAnonCredsW3CCredentialTags = {
   credentialId: string
   linkSecretId: string
   credentialDefinitionId: string
@@ -31,24 +31,24 @@ export type DefaultAnonCredsCredentialTags = {
   [key: `attr::${string}::value`]: string | undefined
 }
 
-export type CustomAnonCredsCredentialTags = {
+export type CustomAnonCredsW3CCredentialTags = {
   schemaName: string
   schemaVersion: string
   schemaIssuerId: string
   issuerId: string
 }
 
-export class AnonCredsCredentialRecord extends BaseRecord<
-  DefaultAnonCredsCredentialTags,
-  CustomAnonCredsCredentialTags
+export class AnonCredsW3CCredentialRecord extends BaseRecord<
+  DefaultAnonCredsW3CCredentialTags,
+  CustomAnonCredsW3CCredentialTags
 > {
-  public static readonly type = 'AnonCredsCredentialRecord'
-  public readonly type = AnonCredsCredentialRecord.type
+  public static readonly type = 'AnonCredsW3CCredentialRecord'
+  public readonly type = AnonCredsW3CCredentialRecord.type
 
   public readonly credentialId!: string
   public readonly credentialRevocationId?: string
   public readonly linkSecretId!: string
-  public readonly credential!: AnonCredsCredential
+  public readonly credential!: AnonCredsW3CCredential
 
   /**
    * AnonCreds method name. We don't use names explicitly from the registry (there's no identifier for a registry)
@@ -56,7 +56,7 @@ export class AnonCredsCredentialRecord extends BaseRecord<
    */
   public readonly methodName!: string
 
-  public constructor(props: AnonCredsCredentialRecordProps) {
+  public constructor(props: AnonCredsW3CCredentialRecordProps) {
     super()
 
     if (props) {
@@ -77,19 +77,19 @@ export class AnonCredsCredentialRecord extends BaseRecord<
   }
 
   public getTags() {
-    const tags: Tags<DefaultAnonCredsCredentialTags, CustomAnonCredsCredentialTags> = {
+    const tags: Tags<DefaultAnonCredsW3CCredentialTags, CustomAnonCredsW3CCredentialTags> = {
       ...this._tags,
-      credentialDefinitionId: this.credential.cred_def_id,
-      schemaId: this.credential.schema_id,
+      credentialDefinitionId: this.credential.credentialSchema.definition,
+      schemaId: this.credential.credentialSchema.schema,
       credentialId: this.credentialId,
       credentialRevocationId: this.credentialRevocationId,
-      revocationRegistryId: this.credential.rev_reg_id,
+      revocationRegistryId: this.credential.credentialStatus?.id,
       linkSecretId: this.linkSecretId,
       methodName: this.methodName,
     }
 
-    for (const [key, value] of Object.entries(this.credential.values)) {
-      tags[`attr::${key}::value`] = value.raw
+    for (const [key, value] of Object.entries(this.credential.credentialSubject)) {
+      tags[`attr::${key}::value`] = value
       tags[`attr::${key}::marker`] = true
     }
 

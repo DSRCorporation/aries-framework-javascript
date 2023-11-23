@@ -59,6 +59,7 @@ import {
   getRevocationRegistriesForRequest,
   getRevocationRegistriesForProof,
 } from '../utils'
+import { getRevocationRegistriesForProofW3C } from '../utils/getRevocationRegistries'
 
 const ANONCREDS_PRESENTATION_PROPOSAL = 'anoncreds/proof-request@v1.0'
 const ANONCREDS_PRESENTATION_REQUEST = 'anoncreds/proof-request@v1.0'
@@ -127,7 +128,7 @@ export class AnonCredsProofFormatService implements ProofFormatService<AnonCreds
 
   public async createRequest(
     agentContext: AgentContext,
-    { attachmentId, proofFormats }: FormatCreateRequestOptions<AnonCredsProofFormat>
+    { attachmentId, proofFormats, isW3C }: FormatCreateRequestOptions<AnonCredsProofFormat>
   ): Promise<ProofFormatCreateReturn> {
     const format = new ProofFormatSpec({
       format: ANONCREDS_PRESENTATION_REQUEST,
@@ -146,6 +147,7 @@ export class AnonCredsProofFormatService implements ProofFormatService<AnonCreds
       requested_attributes: anoncredsFormat.requested_attributes ?? {},
       requested_predicates: anoncredsFormat.requested_predicates ?? {},
       non_revoked: anoncredsFormat.non_revoked,
+      isW3C: isW3C,
     } satisfies AnonCredsProofRequest
 
     // Assert attribute and predicate (group) names do not match
@@ -175,7 +177,6 @@ export class AnonCredsProofFormatService implements ProofFormatService<AnonCreds
       attachmentId,
     })
     const requestJson = requestAttachment.getDataAsJson<AnonCredsProofRequest>()
-
     const anoncredsFormat = proofFormats?.anoncreds
 
     const selectedCredentials =
@@ -201,53 +202,68 @@ export class AnonCredsProofFormatService implements ProofFormatService<AnonCreds
       agentContext.dependencyManager.resolve<AnonCredsVerifierService>(AnonCredsVerifierServiceSymbol)
 
     const proofRequestJson = requestAttachment.getDataAsJson<AnonCredsProofRequest>()
+    if (proofRequestJson.isW3C) {
+      const proofJson = attachment.getDataAsJson<AnonCredsW3CPresentation>()
 
-    // NOTE: we don't do validation here, as this is handled by the AnonCreds implementation, however
-    // this can lead to confusing error messages. We should consider doing validation here as well.
-    // Defining a class-transformer/class-validator class seems a bit overkill, and the usage of interfaces
-    // for the anoncreds package keeps things simple. Maybe we can try to use something like zod to validate
-    const proofJson = attachment.getDataAsJson<AnonCredsW3CPresentation>()
+      const schemas = await this.getSchemas(
+        agentContext,
+        new Set(proofJson.verifiableCredential.map((i) => i.credentialSchema.schema))
+      )
+      const credentialDefinitions = await this.getCredentialDefinitions(
+        agentContext,
+        new Set(proofJson.verifiableCredential.map((i) => i.credentialSchema.definition))
+      )
 
-    // for (const [referent, attribute] of Object.entries(proof.requested_proof.revealed_attrs)) {
-    //   if (!checkValidCredentialValueEncoding(attribute.raw, attribute.encoded)) {
-    //     throw new AriesFrameworkError(
-    //       `The encoded value for '${referent}' is invalid. ` +
-    //         `Expected '${encodeCredentialValue(attribute.raw)}'. ` +
-    //         `Actual '${attribute.encoded}'`
-    //     )
-    //   }
-    // }
-    // for (const [, attributeGroup] of Object.entries(proof.requested_proof.revealed_attr_groups ?? {})) {
-    //
-    //   for (const [attributeName, attribute] of Object.entries(attributeGroup.values)) {
-    //     if (!checkValidCredentialValueEncoding(attribute.raw, attribute.encoded)) {
-    //       throw new AriesFrameworkError(
-    //         `The encoded value for '${attributeName}' is invalid. ` +
-    //           `Expected '${encodeCredentialValue(attribute.raw)}'. ` +
-    //           `Actual '${attribute.encoded}'`
-    //       )
-    //     }
-    //   }
-    // }
+      const revocationRegistries = await getRevocationRegistriesForProofW3C(agentContext, proofJson)
 
-    const schemas = await this.getSchemas(
-      agentContext,
-      new Set(proofJson.verifiableCredential.map((i) => i.credentialSchema.schema))
-    )
-    const credentialDefinitions = await this.getCredentialDefinitions(
-      agentContext,
-      new Set(proofJson.verifiableCredential.map((i) => i.credentialSchema.definition))
-    )
+      return await verifierService.verifyProof(agentContext, {
+        proofRequest: proofRequestJson,
+        proof: proofJson,
+        schemas,
+        credentialDefinitions,
+        revocationRegistries,
+      })
+    } else {
+      const proofJson = attachment.getDataAsJson<AnonCredsProof>()
 
-    const revocationRegistries = await getRevocationRegistriesForProof(agentContext, proofJson)
+      // for (const [referent, attribute] of Object.entries(proofJson.requested_proof.revealed_attrs)) {
+      //   if (!checkValidCredentialValueEncoding(attribute.raw, attribute.encoded)) {
+      //     throw new AriesFrameworkError(
+      //       `The encoded value for '${referent}' is invalid. ` +
+      //         `Expected '${encodeCredentialValue(attribute.raw)}'. ` +
+      //         `Actual '${attribute.encoded}'`
+      //     )
+      //   }
+      // }
+      //
+      // for (const [, attributeGroup] of Object.entries(proofJson.requested_proof.revealed_attr_groups ?? {})) {
+      //   for (const [attributeName, attribute] of Object.entries(attributeGroup.values)) {
+      //     if (!checkValidCredentialValueEncoding(attribute.raw, attribute.encoded)) {
+      //       throw new AriesFrameworkError(
+      //         `The encoded value for '${attributeName}' is invalid. ` +
+      //           `Expected '${encodeCredentialValue(attribute.raw)}'. ` +
+      //           `Actual '${attribute.encoded}'`
+      //       )
+      //     }
+      //   }
+      // }
 
-    return await verifierService.verifyProof(agentContext, {
-      proofRequest: proofRequestJson,
-      proof: proofJson,
-      schemas,
-      credentialDefinitions,
-      revocationRegistries,
-    })
+      const schemas = await this.getSchemas(agentContext, new Set(proofJson.identifiers.map((i) => i.schema_id)))
+      const credentialDefinitions = await this.getCredentialDefinitions(
+        agentContext,
+        new Set(proofJson.identifiers.map((i) => i.cred_def_id))
+      )
+
+      const revocationRegistries = await getRevocationRegistriesForProof(agentContext, proofJson)
+
+      return await verifierService.verifyProof(agentContext, {
+        proofRequest: proofRequestJson,
+        proof: proofJson,
+        schemas,
+        credentialDefinitions,
+        revocationRegistries,
+      })
+    }
   }
 
   public async getCredentialsForRequest(
@@ -585,7 +601,9 @@ export class AnonCredsProofFormatService implements ProofFormatService<AnonCreds
 
     const credentialObjects = await Promise.all(
       [...Object.values(selectedCredentials.attributes), ...Object.values(selectedCredentials.predicates)].map(
-        async (c) => c.credentialInfo ?? holderService.getCredential(agentContext, { credentialId: c.credentialId })
+        async (c) =>
+          c.credentialInfo ??
+          holderService.getCredential(agentContext, { credentialId: c.credentialId, isLegacy: !proofRequest.isW3C })
       )
     )
 

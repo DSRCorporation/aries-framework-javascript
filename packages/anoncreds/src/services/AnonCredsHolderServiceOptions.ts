@@ -60,6 +60,7 @@ export interface StoreCredentialOptions {
 
 export interface GetCredentialOptions {
   credentialId: string
+  isLegacy?: boolean
 }
 
 export interface GetCredentialsOptions {
@@ -84,6 +85,7 @@ export interface GetCredentialsForProofRequestOptions {
   start?: number
   limit?: number
   extraQuery?: ReferentWalletQuery
+  isLegacy?: boolean
 }
 
 export type GetCredentialsForProofRequestReturn = Array<{
