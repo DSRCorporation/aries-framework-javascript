@@ -251,7 +251,7 @@ export class Faber extends BaseAgent {
     return proofAttribute
   }
 
-  public async sendProofRequest() {
+  public async sendProofRequest(isW3C?: boolean) {
     const connectionRecord = await this.getConnectionRecord()
     const proofAttribute = await this.newProofAttribute()
     await this.printProofFlow(greenText('\nRequesting proof...\n', false))
@@ -266,7 +266,7 @@ export class Faber extends BaseAgent {
           requested_attributes: proofAttribute,
         },
       },
-      isW3C: true,
+      isW3C: isW3C,
     })
     this.ui.updateBottomBar(
       `\nProof request sent!\n\nGo to the Alice agent to accept the proof request\n\n${Color.Reset}`

@@ -226,27 +226,27 @@ export class AnonCredsProofFormatService implements ProofFormatService<AnonCreds
     } else {
       const proofJson = attachment.getDataAsJson<AnonCredsProof>()
 
-      // for (const [referent, attribute] of Object.entries(proofJson.requested_proof.revealed_attrs)) {
-      //   if (!checkValidCredentialValueEncoding(attribute.raw, attribute.encoded)) {
-      //     throw new AriesFrameworkError(
-      //       `The encoded value for '${referent}' is invalid. ` +
-      //         `Expected '${encodeCredentialValue(attribute.raw)}'. ` +
-      //         `Actual '${attribute.encoded}'`
-      //     )
-      //   }
-      // }
-      //
-      // for (const [, attributeGroup] of Object.entries(proofJson.requested_proof.revealed_attr_groups ?? {})) {
-      //   for (const [attributeName, attribute] of Object.entries(attributeGroup.values)) {
-      //     if (!checkValidCredentialValueEncoding(attribute.raw, attribute.encoded)) {
-      //       throw new AriesFrameworkError(
-      //         `The encoded value for '${attributeName}' is invalid. ` +
-      //           `Expected '${encodeCredentialValue(attribute.raw)}'. ` +
-      //           `Actual '${attribute.encoded}'`
-      //       )
-      //     }
-      //   }
-      // }
+      for (const [referent, attribute] of Object.entries(proofJson.requested_proof.revealed_attrs)) {
+        if (!checkValidCredentialValueEncoding(attribute.raw, attribute.encoded)) {
+          throw new AriesFrameworkError(
+            `The encoded value for '${referent}' is invalid. ` +
+              `Expected '${encodeCredentialValue(attribute.raw)}'. ` +
+              `Actual '${attribute.encoded}'`
+          )
+        }
+      }
+
+      for (const [, attributeGroup] of Object.entries(proofJson.requested_proof.revealed_attr_groups ?? {})) {
+        for (const [attributeName, attribute] of Object.entries(attributeGroup.values)) {
+          if (!checkValidCredentialValueEncoding(attribute.raw, attribute.encoded)) {
+            throw new AriesFrameworkError(
+              `The encoded value for '${attributeName}' is invalid. ` +
+                `Expected '${encodeCredentialValue(attribute.raw)}'. ` +
+                `Actual '${attribute.encoded}'`
+            )
+          }
+        }
+      }
 
       const schemas = await this.getSchemas(agentContext, new Set(proofJson.identifiers.map((i) => i.schema_id)))
       const credentialDefinitions = await this.getCredentialDefinitions(

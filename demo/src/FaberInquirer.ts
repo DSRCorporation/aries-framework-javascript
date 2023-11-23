@@ -97,7 +97,12 @@ export class FaberInquirer extends BaseInquirer {
   }
 
   public async proof() {
-    await this.faber.sendProofRequest()
+    let isW3C = true
+    const confirm = await prompt([this.inquireConfirmation('Should be the proof in W3C format?')])
+    if (confirm.options === ConfirmOptions.No) {
+      isW3C = false
+    }
+    await this.faber.sendProofRequest(isW3C)
     const title = 'Is the proof request accepted?'
     await this.listener.newAcceptedPrompt(title, this)
   }
