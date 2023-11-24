@@ -1,4 +1,5 @@
-import { Key, TypedArrayEncoder, Wallet } from '@aries-framework/core'
+import { AskarWallet } from '@aries-framework/askar'
+import { AriesFrameworkError, Key, KeyType, TypedArrayEncoder, Wallet, WalletError } from '@aries-framework/core'
 import {
   AbstractSigner,
   assert,
@@ -15,6 +16,8 @@ import {
   TypedDataEncoder,
   TypedDataField,
   TypedDataDomain,
+  Signature,
+  SigningKey,
 } from 'ethers'
 
 export class IndyBesuSigner extends AbstractSigner {
@@ -72,8 +75,9 @@ export class IndyBesuSigner extends AbstractSigner {
 
   public async signMessage(message: string | Uint8Array): Promise<string> {
     const hash = hashMessage(message)
+    const signature = await this.sign(hash)
 
-    return await this.sign(hash)
+    return signature.compactSerialized
   }
 
   public async signTypedData(
@@ -100,15 +104,31 @@ export class IndyBesuSigner extends AbstractSigner {
     })
 
     const hash = TypedDataEncoder.hash(populated.domain, types, populated.value)
+    const signature = await this.sign(hash)
 
-    return await this.sign(hash)
+    return signature.compactSerialized
   }
 
-  private async sign(data: string): Promise<string> {
-    const dataBuffer = TypedArrayEncoder.fromHex(data.substring(2))
+  private async sign(data: string): Promise<Signature> {
+    if (!(this.wallet instanceof AskarWallet)) {
+      throw new AriesFrameworkError('Incorrect wallete type: Indy-Besu VDR currently only support the Askar wallet')
+    }
 
-    const signature = await this.wallet.sign({ data: dataBuffer, key: this.key })
+    const keyEntry = await this.wallet.session.fetchKey({ name: this.key.publicKeyBase58 })
 
-    return `0x${TypedArrayEncoder.toHex(signature)}`
+    if (!keyEntry) {
+      throw new WalletError('Key entry not found')
+    }
+
+    /**
+     * For unforeseen reasons, we are unable to recovery the key from signatures that Askar makes. These are required for Ethereum transactions. 
+     * Because if this, for our demo, we have decided to sign with k256 using the ethers library.
+     */
+    const key = new SigningKey(keyEntry.key.secretBytes)
+    const signature = key.sign(data)
+
+    keyEntry.key.handle.free()
+
+    return signature
   }
 }

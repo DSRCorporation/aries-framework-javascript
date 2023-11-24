@@ -6,7 +6,7 @@ import { IndyBesuDidResolver } from '../src/dids/IndyBesuDidResolver'
 import { IndyBesuModule } from '../src/IndyBesuModule'
 
 export const getBesuIndyModules = (rpcUrl?: string) => ({
-  indyBesuVdr: new IndyBesuModule({ rpcUrl: 'http://host.docker.internal:8545' }),
+  indyBesuVdr: new IndyBesuModule({ rpcUrl: 'http://localhost:8545' }),
   dids: new DidsModule({
     registrars: [new IndyBesuDidRegistrar()],
     resolvers: [new IndyBesuDidResolver()],

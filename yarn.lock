@@ -2,6 +2,28 @@
 # yarn lockfile v1
 
 
+"@2060.io/ffi-napi@4.0.8":
+  version "4.0.8"
+  resolved "https://registry.yarnpkg.com/@2060.io/ffi-napi/-/ffi-napi-4.0.8.tgz#ec3424d9ec979491b41b8d82514ae82a647da8b0"
+  integrity sha512-sONRKLtxFKN5PXuZaa41b/kTN+R5qAh6PAL15/fnafnvAKQ5WBoxRIy8xRh8jo9mydywtt4IrWtatB93w0+3cA==
+  dependencies:
+    "@2060.io/ref-napi" "^3.0.6"
+    debug "^4.1.1"
+    get-uv-event-loop-napi-h "^1.0.5"
+    node-addon-api "^3.0.0"
+    node-gyp-build "^4.2.1"
+    ref-struct-di "^1.1.0"
+
+"@2060.io/ref-napi@3.0.6", "@2060.io/ref-napi@^3.0.6":
+  version "3.0.6"
+  resolved "https://registry.yarnpkg.com/@2060.io/ref-napi/-/ref-napi-3.0.6.tgz#32b1a257cada096f95345fd7abae746385ecc5dd"
+  integrity sha512-8VAIXLdKL85E85jRYpPcZqATBL6fGnC/XjBGNeSgRSMJtrAMSmfRksqIq5AmuZkA2eeJXMWCiN6UQOUdozcymg==
+  dependencies:
+    debug "^4.1.1"
+    get-symbol-from-current-process-h "^1.0.2"
+    node-addon-api "^3.0.0"
+    node-gyp-build "^4.2.1"
+
 "@adraffy/ens-normalize@1.10.0":
   version "1.10.0"
   resolved "https://registry.yarnpkg.com/@adraffy/ens-normalize/-/ens-normalize-1.10.0.tgz#d2a39395c587e092d77cbbc80acf956a54f38bf7"
@@ -1126,25 +1148,25 @@
   resolved "https://registry.yarnpkg.com/@hyperledger/anoncreds-shared/-/anoncreds-shared-0.1.0.tgz#947c602c385bfa79b63849c9e48b51cc9d41d820"
   integrity sha512-DisZFY4YbrugRCCv7AtYFUTsrGigHF1dVaiA36WrhRUgetwDzKgMiYGkxFQmCe0IJ0mDw4M7sbTJBXxfxij/+A==
 
-"@hyperledger/aries-askar-nodejs@0.1.0", "@hyperledger/aries-askar-nodejs@^0.1.0":
-  version "0.1.0"
-  resolved "https://registry.yarnpkg.com/@hyperledger/aries-askar-nodejs/-/aries-askar-nodejs-0.1.0.tgz#2bb8f19d3f44b67e8aa92e4d45da9ab47ddb0539"
-  integrity sha512-5jc8lNZg9Qxd4BoUWCknJ2YH7iqgO5/kl6KMfry5z9MTXQ5u30ysqPQCtWwryAKt+q55jnlw+pgISsis+zDfgA==
+"@hyperledger/aries-askar-nodejs@^0.2.0-dev.3":
+  version "0.2.0-dev.3"
+  resolved "https://registry.yarnpkg.com/@hyperledger/aries-askar-nodejs/-/aries-askar-nodejs-0.2.0-dev.3.tgz#6cfa98bfe088f7ae5689fdc9ea951b0d5463d6b8"
+  integrity sha512-ksMDXY/NNhrPFtpzSGgvbiug2hSux9HFwlCkp7KsjiLNf7YgVl8jPAt6L91Se8oQzzAGEsoB4MKqGcqVlxMPEg==
   dependencies:
-    "@hyperledger/aries-askar-shared" "0.1.0"
+    "@2060.io/ffi-napi" "4.0.8"
+    "@2060.io/ref-napi" "3.0.6"
+    "@hyperledger/aries-askar-shared" "0.2.0-dev.3"
     "@mapbox/node-pre-gyp" "^1.0.10"
-    ffi-napi "^4.0.3"
     node-cache "^5.1.2"
     ref-array-di "^1.2.2"
-    ref-napi "^3.0.3"
     ref-struct-di "^1.1.1"
 
-"@hyperledger/aries-askar-shared@0.1.0", "@hyperledger/aries-askar-shared@^0.1.0":
-  version "0.1.0"
-  resolved "https://registry.yarnpkg.com/@hyperledger/aries-askar-shared/-/aries-askar-shared-0.1.0.tgz#a2517efb0829cdf6dc08ca6809dbd6daa497e116"
-  integrity sha512-eTq3pQ7qNoEqS3KJOB5OcsKmYJ01aPF4GSOMmNKc44xyifwNi53lBod5fDVyjo401hk/FpVHZ3nRik1BXw1PWA==
+"@hyperledger/aries-askar-shared@0.2.0-dev.3", "@hyperledger/aries-askar-shared@^0.2.0-dev.3":
+  version "0.2.0-dev.3"
+  resolved "https://registry.yarnpkg.com/@hyperledger/aries-askar-shared/-/aries-askar-shared-0.2.0-dev.3.tgz#293dec582d9a1c889bbfc5853270b0b29b4775c4"
+  integrity sha512-dlT5WOclhvfSA0KZrzEqxytIHPldlv39O5O2MTJSM3dvS4tSUaZK6S583Yi7aJWtHyK9zZl7g2x/DhvW+8/r0Q==
   dependencies:
-    fast-text-encoding "^1.0.3"
+    buffer "^6.0.3"
 
 "@hyperledger/indy-vdr-nodejs@^0.1.0":
   version "0.1.0"
@@ -1654,6 +1676,11 @@
   version "1.3.0"
   resolved "https://registry.yarnpkg.com/@noble/hashes/-/hashes-1.3.0.tgz#085fd70f6d7d9d109671090ccae1d3bec62554a1"
   integrity sha512-ilHEACi9DwqJB0pw7kv+Apvh50jiiSyR/cQ3y4W7lOR5mhvn/50FLUfsnfJz0BDZtl/RR16kXvptiv6q1msYZg==
+
+"@noble/secp256k1@^2.0.0":
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/@noble/secp256k1/-/secp256k1-2.0.0.tgz#c214269d45e0233ad6a8ae5104655453636e253d"
+  integrity sha512-rUGBd95e2a45rlmFTqQJYEFA4/gdIARFfuTuTqLglz0PZ6AKyzyXsEZZq7UZn8hZsvaBgpCzKKBJizT2cJERXw==
 
 "@nodelib/fs.scandir@2.1.5":
   version "2.1.5"
