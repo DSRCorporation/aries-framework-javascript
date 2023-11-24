@@ -1,4 +1,13 @@
-import { AgentContext, AriesFrameworkError, DidResolutionOptions, DidResolutionResult, DidResolver, Key, KeyType, ParsedDid } from '@aries-framework/core'
+import {
+  AgentContext,
+  AriesFrameworkError,
+  DidResolutionOptions,
+  DidResolutionResult,
+  DidResolver,
+  Key,
+  KeyType,
+  ParsedDid,
+} from '@aries-framework/core'
 import { IndyBesuLedgerService } from '../ledger'
 import { fromIndyBesuDidDocument } from './DidTypesMapping'
 import { throws } from 'assert'
@@ -6,17 +15,11 @@ import { throws } from 'assert'
 export class IndyBesuDidResolver implements DidResolver {
   public readonly supportedMethods = ['indy', 'sov', 'indy2']
 
-  public async resolve(agentContext: AgentContext, did: string, _: ParsedDid, didResolutionOptions: IndyBesuDidResolutionOptions): Promise<DidResolutionResult> {
-    if (!didResolutionOptions.publicKey) throw new AriesFrameworkError('IndyBesuDidResolutionOptions.publicKey is required for resolving DID')
-
+  public async resolve(agentContext: AgentContext, did: string): Promise<DidResolutionResult> {
     const ledgerService = agentContext.dependencyManager.resolve(IndyBesuLedgerService)
-    
-    const key = Key.fromPublicKey(didResolutionOptions.publicKey, KeyType.K256)
-    const signer = ledgerService.createSigner(key, agentContext.wallet)
-    const didRegistry = ledgerService.didRegistry.connect(signer)
 
     try {
-      const { document, metadata } = await didRegistry.resolveDid(did)
+      const { document, metadata } = await ledgerService.didRegistry.resolveDid(did)
 
       return {
         didDocument: fromIndyBesuDidDocument(document),
@@ -38,8 +41,4 @@ export class IndyBesuDidResolver implements DidResolver {
       }
     }
   }
-}
-
-export interface IndyBesuDidResolutionOptions extends DidResolutionOptions {
-  publicKey: Buffer
 }

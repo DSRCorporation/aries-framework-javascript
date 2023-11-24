@@ -87,7 +87,7 @@ export class DidRegistry extends BaseContract {
   public async resolveDid(id: string): Promise<DidDocumentStorage> {
     try {
       const didDocumentStorage = await this.ethersContract.resolveDid(id)
-      
+
       return {
         document: {
           context: didDocumentStorage.document.context.map((context: string) => context),

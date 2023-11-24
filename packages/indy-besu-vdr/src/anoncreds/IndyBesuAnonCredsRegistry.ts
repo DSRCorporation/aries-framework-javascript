@@ -13,9 +13,9 @@ import { JsonTransformer, type AgentContext, AriesFrameworkError } from '@aries-
 import { IndyBesuLedgerService } from '../ledger'
 import { buildCredentialDefinitionId, buildSchemaId } from './AnonCredsUtils'
 import { verificationKeyForDid } from '../dids/DidUtils'
-import { CredentialDefinition } from './Trasformers'
+import { CredentialDefinitionValue } from './Trasformers'
 
-export class CheqdAnonCredsRegistry implements AnonCredsRegistry {
+export class IndyBesuAnonCredsRegistry implements AnonCredsRegistry {
   public methodName = 'indy2'
 
   public readonly supportedIdentifier = new RegExp('')
@@ -96,11 +96,21 @@ export class CheqdAnonCredsRegistry implements AnonCredsRegistry {
       const { credDef, metadata } = await ledgerService.credentialDefinitionRegistry.resolveCredentialDefinition(
         credentialDefinitionId
       )
+      
+      console.log(JSON.stringify(credDef))
 
-      const anonCredsCredentialDefinition = JsonTransformer.fromJSON(credDef, CredentialDefinition)
+      const value = JsonTransformer.fromJSON(credDef.value, CredentialDefinitionValue)
+
+      console.log(JSON.stringify(value))
 
       return {
-        credentialDefinition: anonCredsCredentialDefinition,
+        credentialDefinition: {
+          issuerId: credDef.issuerId,
+          schemaId: credDef.schemaId,
+          type: 'CL',
+          tag: credDef.tag,
+          value: value,
+        },
         credentialDefinitionId,
         resolutionMetadata: {},
         credentialDefinitionMetadata: metadata,

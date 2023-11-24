@@ -121,7 +121,7 @@ export class IndyBesuSigner extends AbstractSigner {
     }
 
     /**
-     * For unforeseen reasons, we are unable to recovery the key from signatures that Askar makes. These are required for Ethereum transactions. 
+     * For unforeseen reasons, we are unable to recovery the key from signatures that Askar makes. These are required for Ethereum transactions.
      * Because if this, for our demo, we have decided to sign with k256 using the ethers library.
      */
     const key = new SigningKey(keyEntry.key.secretBytes)

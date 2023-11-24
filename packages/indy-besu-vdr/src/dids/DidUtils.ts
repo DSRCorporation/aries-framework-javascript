@@ -84,7 +84,7 @@ export async function verificationKeyForDid(agentContext: AgentContext, did: str
   if (!didDocument) throw new AriesFrameworkError('DID not found')
 
   // did:indy dids MUST have a verificationMethod with #verkey
-  const verificationMethod = didDocument.dereferenceKey(`${did}#verkey`)
+  const verificationMethod = didDocument.dereferenceKey(`${did}#KEY-1`)
   const key = getKeyFromVerificationMethod(verificationMethod)
 
   return key

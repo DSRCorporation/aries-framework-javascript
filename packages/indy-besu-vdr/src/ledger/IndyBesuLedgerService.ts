@@ -1,5 +1,5 @@
 import { Key, Wallet, injectable } from '@aries-framework/core'
-import { Contract, JsonRpcProvider, Signer, Provider, ethers } from 'ethers'
+import { Contract, JsonRpcProvider, Provider, Signer } from 'ethers'
 import { promises as fs } from 'fs'
 import { IndyBesuModuleConfig } from '../IndyBesuModuleConfig'
 import { CredentialDefinitionRegistry, DidRegistry, SchemaRegistry } from './contracts'
@@ -43,6 +43,6 @@ export class IndyBesuLedgerService {
     const data = await fs.readFile(`${specPath}`, 'utf8')
     const spec = JSON.parse(data)
 
-    return new Contract(address, spec.abi)
+    return new Contract(address, spec.abi, this.provider)
   }
 }

@@ -42,11 +42,11 @@ export class IndyBesuDidRegistrar implements DidRegistrar {
         .addVerificationMethod(verificationMethod)
         .addAuthentication(verificationMethod.id)
 
-      options.options.endpoints?.forEach(endpoint => {
+      options.options.endpoints?.forEach((endpoint) => {
         const service = new DidDocumentService({
           id: `${did}#${endpoint.type}`,
           serviceEndpoint: endpoint.endpoint,
-          type: endpoint.type
+          type: endpoint.type,
         })
 
         didDocumentBuilder.addService(service)
@@ -177,7 +177,7 @@ export class IndyBesuDidRegistrar implements DidRegistrar {
   }
 }
 
-export interface IndyBesuEndpoint{
+export interface IndyBesuEndpoint {
   type: string
   endpoint: string
 }

@@ -1,4 +1,8 @@
-import { Agent, JsonTransformer, Key, TypedArrayEncoder, isEcdsaSecp256k1VerificationKey2019 } from '@aries-framework/core'
+import {
+  Agent,
+  JsonTransformer,
+  TypedArrayEncoder,
+} from '@aries-framework/core'
 import { getAgentOptions } from '../../core/tests/helpers'
 import { getBesuIndyModules } from './indy-bese-test-utils'
 import { IndyBesuDidCreateOptions } from '../src/dids'
@@ -20,7 +24,7 @@ describe('Indy-Besu DID', () => {
     await agent.wallet.delete()
   })
 
-  it('should create and resolve a did:indy2 did', async () => {
+  it('create and resolve a did:indy2 did', async () => {
     const createdDid = await agent.dids.create<IndyBesuDidCreateOptions>({
       method: 'indy2',
       options: {
@@ -28,9 +32,9 @@ describe('Indy-Besu DID', () => {
         endpoints: [
           {
             type: 'endpoint',
-            endpoint: 'https://example.com/endpoint'
-          }
-        ]
+            endpoint: 'https://example.com/endpoint',
+          },
+        ],
       },
       secret: {
         privateKey: TypedArrayEncoder.fromHex('8f2a55949038a9610f50fb23b5883af3b4ecb3c3bb792cbcefbd1542c692be63'),
@@ -39,17 +43,12 @@ describe('Indy-Besu DID', () => {
 
     expect(createdDid.didState).toMatchObject({ state: 'finished' })
 
-    const key = Key.fromFingerprint('zQ3shN4cFC5oaCVKL37yh5Jn6mvpXMEb6wyjd29C25SuZkiL9')
-
-    const resolvedDid = await agent.dids.resolve(createdDid.didState.did!, { publicKey:  key.publicKey })
+    const resolvedDid = await agent.dids.resolve(createdDid.didState.did!)
 
     console.log(JSON.stringify(resolvedDid))
 
     expect(JsonTransformer.toJSON(resolvedDid.didDocument)).toMatchObject({
-      '@context': [
-        'https://w3id.org/did/v1',
-        'https://www.w3.org/ns/did/v1',
-      ],
+      '@context': ['https://w3id.org/did/v1', 'https://www.w3.org/ns/did/v1'],
       verificationMethod: [
         {
           id: 'did:indy2:testnet:4JG9HccaMGUS4E5k2gYVne#KEY-1',

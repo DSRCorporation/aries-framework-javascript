@@ -1,9 +1,9 @@
 import { AnonCredsCredentialDefinition, AnonCredsSchema } from '@aries-framework/anoncreds'
 
 export function buildSchemaId(schema: AnonCredsSchema): string {
-  throw new Error('Method not implemented.')
+  return `${schema.issuerId}/anoncreds/v0/SCHEMA/${schema.name}/${schema.version}`
 }
 
 export function buildCredentialDefinitionId(credentialDefinition: AnonCredsCredentialDefinition): string {
-  throw new Error('Method not implemented.')
+  return `${credentialDefinition.issuerId}/anoncreds/v0/CLAIM_DEF/${credentialDefinition.schemaId}/${credentialDefinition.tag}`
 }
