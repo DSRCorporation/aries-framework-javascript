@@ -106,7 +106,7 @@ function toVerificationRelationship(verificationMethod: string | VerificationMet
 }
 
 function fromVerificationRelationship(verificationRelationship: VerificationRelationship): string | VerificationMethod {
-  return verificationRelationship.verificationMethod
+  return verificationRelationship.verificationMethod.id !== ''
     ? fromIndyBesuVerificationMethod(verificationRelationship.verificationMethod)
     : verificationRelationship.id
 }

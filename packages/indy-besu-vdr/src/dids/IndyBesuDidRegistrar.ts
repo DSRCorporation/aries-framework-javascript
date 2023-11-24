@@ -42,7 +42,15 @@ export class IndyBesuDidRegistrar implements DidRegistrar {
         .addVerificationMethod(verificationMethod)
         .addAuthentication(verificationMethod.id)
 
-      options.options.services?.forEach(didDocumentBuilder.addService)
+      options.options.endpoints?.forEach(endpoint => {
+        const service = new DidDocumentService({
+          id: `${did}#${endpoint.type}`,
+          serviceEndpoint: endpoint.endpoint,
+          type: endpoint.type
+        })
+
+        didDocumentBuilder.addService(service)
+      })
 
       didDocument = didDocumentBuilder.build()
     }
@@ -169,12 +177,17 @@ export class IndyBesuDidRegistrar implements DidRegistrar {
   }
 }
 
+export interface IndyBesuEndpoint{
+  type: string
+  endpoint: string
+}
+
 export interface IndyBesuDidCreateOptions extends DidCreateOptions {
   method: 'indy2'
   did?: never
   options: {
     network: string
-    services?: DidDocumentService[]
+    endpoints?: IndyBesuEndpoint[]
   }
   secret?: {
     privateKey: Buffer
