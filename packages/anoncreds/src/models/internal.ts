@@ -40,4 +40,5 @@ export interface AnonCredsCredentialRequestMetadata {
   link_secret_blinding_data: AnonCredsLinkSecretBlindingData
   link_secret_name: string
   nonce: string
+  isW3C?: boolean
 }

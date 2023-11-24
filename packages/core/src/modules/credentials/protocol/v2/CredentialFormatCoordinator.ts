@@ -302,11 +302,13 @@ export class CredentialFormatCoordinator<CFs extends CredentialFormatService[]> 
       credentialFormats,
       formatServices,
       comment,
+      isW3C,
     }: {
       credentialRecord: CredentialExchangeRecord
       credentialFormats?: CredentialFormatPayload<ExtractCredentialFormats<CFs>, 'acceptOffer'>
       formatServices: CredentialFormatService[]
       comment?: string
+      isW3C?: boolean
     }
   ) {
     const didCommMessageRepository = agentContext.dependencyManager.resolve(DidCommMessageRepository)
@@ -331,6 +333,7 @@ export class CredentialFormatCoordinator<CFs extends CredentialFormatService[]> 
         offerAttachment,
         credentialRecord,
         credentialFormats,
+        isW3C,
       })
 
       requestAttachments.push(attachment)

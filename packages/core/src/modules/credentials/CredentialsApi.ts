@@ -307,6 +307,7 @@ export class CredentialsApi<CPs extends CredentialProtocol[]> implements Credent
       credentialFormats: options.credentialFormats,
       comment: options.comment,
       autoAcceptCredential: options.autoAcceptCredential,
+      isW3C: options.isW3C,
     })
 
     const outboundMessageContext = await getOutboundMessageContext(this.agentContext, {

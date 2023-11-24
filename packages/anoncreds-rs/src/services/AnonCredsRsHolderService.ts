@@ -42,6 +42,7 @@ import {
 import { AnonCredsCredentialRecord } from '@aries-framework/anoncreds/src/repository/AnonCredsCredentialRecord'
 import { AnonCredsCredentialRepository } from '@aries-framework/anoncreds/src/repository/AnonCredsCredentialRepository'
 import { AriesFrameworkError, injectable, JsonTransformer, TypedArrayEncoder, utils } from '@aries-framework/core'
+import { CredentialRequest } from '@hyperledger/anoncreds-nodejs'
 import {
   anoncreds,
   CredentialRevocationState,
@@ -338,7 +339,10 @@ export class AnonCredsRsHolderService implements AnonCredsHolderService {
   ): Promise<CreateCredentialRequestReturn> {
     const { useLegacyProverDid, credentialDefinition, credentialOffer } = options
     let createReturnObj:
-      | { credentialRequest: W3CCredentialRequest; credentialRequestMetadata: CredentialRequestMetadata }
+      | {
+          credentialRequest: W3CCredentialRequest | CredentialRequest
+          credentialRequestMetadata: CredentialRequestMetadata
+        }
       | undefined
     try {
       const linkSecretRepository = agentContext.dependencyManager.resolve(AnonCredsLinkSecretRepository)
@@ -368,19 +372,35 @@ export class AnonCredsRsHolderService implements AnonCredsHolderService {
       if (!isLegacyIdentifier && useLegacyProverDid) {
         throw new AriesFrameworkError('Cannot use legacy prover_did with non-legacy identifiers')
       }
-      createReturnObj = W3CCredentialRequest.create({
-        entropy: !useLegacyProverDid || !isLegacyIdentifier ? anoncreds.generateNonce() : undefined,
-        proverDid: useLegacyProverDid
-          ? TypedArrayEncoder.toBase58(TypedArrayEncoder.fromString(anoncreds.generateNonce().slice(0, 16)))
-          : undefined,
-        credentialDefinition: credentialDefinition as unknown as JsonObject,
-        credentialOffer: credentialOffer as unknown as JsonObject,
-        linkSecret: linkSecretRecord.value,
-        linkSecretId: linkSecretRecord.linkSecretId,
-      })
+
+      if (options.isW3C) {
+        createReturnObj = W3CCredentialRequest.create({
+          entropy: !useLegacyProverDid || !isLegacyIdentifier ? anoncreds.generateNonce() : undefined,
+          proverDid: useLegacyProverDid
+            ? TypedArrayEncoder.toBase58(TypedArrayEncoder.fromString(anoncreds.generateNonce().slice(0, 16)))
+            : undefined,
+          credentialDefinition: credentialDefinition as unknown as JsonObject,
+          credentialOffer: credentialOffer as unknown as JsonObject,
+          linkSecret: linkSecretRecord.value,
+          linkSecretId: linkSecretRecord.linkSecretId,
+        })
+      } else {
+        createReturnObj = CredentialRequest.create({
+          entropy: !useLegacyProverDid || !isLegacyIdentifier ? anoncreds.generateNonce() : undefined,
+          proverDid: useLegacyProverDid
+            ? TypedArrayEncoder.toBase58(TypedArrayEncoder.fromString(anoncreds.generateNonce().slice(0, 16)))
+            : undefined,
+          credentialDefinition: credentialDefinition as unknown as JsonObject,
+          credentialOffer: credentialOffer as unknown as JsonObject,
+          linkSecret: linkSecretRecord.value,
+          linkSecretId: linkSecretRecord.linkSecretId,
+        })
+      }
+      const credRequest = createReturnObj.credentialRequest.toJson() as unknown as AnonCredsCredentialRequest
+      credRequest.isW3C = options.isW3C
 
       return {
-        credentialRequest: createReturnObj.credentialRequest.toJson() as unknown as AnonCredsCredentialRequest,
+        credentialRequest: credRequest,
         credentialRequestMetadata:
           createReturnObj.credentialRequestMetadata.toJson() as unknown as AnonCredsCredentialRequestMetadata,
       }
@@ -405,8 +425,8 @@ export class AnonCredsRsHolderService implements AnonCredsHolderService {
 
     const credentialId = options.credentialId ?? utils.uuid()
 
-    let credentialObj: W3CCredential | Credential | undefined
-    let processedCredential: W3CCredential | Credential | undefined
+    let credentialObj: W3CCredential | undefined
+    let processedCredential: W3CCredential | undefined
     try {
       credentialObj = W3CCredential.fromJson(credential as unknown as JsonObject)
       processedCredential = credentialObj.process({

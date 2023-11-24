@@ -87,6 +87,7 @@ export interface CredentialFormatAcceptOfferOptions<CF extends CredentialFormat>
   attachmentId?: string
 
   offerAttachment: Attachment
+  isW3C?: boolean
 }
 
 export interface CredentialFormatCreateOfferReturn extends CredentialFormatCreateReturn {

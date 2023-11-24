@@ -123,6 +123,7 @@ export interface AcceptCredentialOfferOptions<CFs extends CredentialFormatServic
   credentialFormats?: CredentialFormatPayload<ExtractCredentialFormats<CFs>, 'acceptOffer'>
   autoAcceptCredential?: AutoAcceptCredential
   comment?: string
+  isW3C?: boolean
 }
 
 export interface NegotiateCredentialOfferOptions<CFs extends CredentialFormatService[]> {

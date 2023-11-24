@@ -98,6 +98,7 @@ export interface CreateCredentialRequestOptions {
   credentialDefinition: AnonCredsCredentialDefinition
   linkSecretId?: string
   useLegacyProverDid?: boolean
+  isW3C?: boolean
 }
 
 export interface CreateCredentialRequestReturn {

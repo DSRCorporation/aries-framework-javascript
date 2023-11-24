@@ -74,7 +74,9 @@ export class AliceInquirer extends BaseInquirer {
     if (confirm.options === ConfirmOptions.No) {
       await this.alice.agent.credentials.declineOffer(credentialRecord.id)
     } else if (confirm.options === ConfirmOptions.Yes) {
-      await this.alice.acceptCredentialOffer(credentialRecord)
+      const confirm = await prompt([this.inquireConfirmation('Do you want to get credential in W3C format')])
+
+      await this.alice.acceptCredentialOffer(credentialRecord, confirm.options == ConfirmOptions.Yes)
     }
   }
 

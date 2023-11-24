@@ -444,7 +444,7 @@ export class V2CredentialProtocol<CFs extends CredentialFormatService[] = Creden
 
   public async acceptOffer(
     agentContext: AgentContext,
-    { credentialRecord, autoAcceptCredential, comment, credentialFormats }: AcceptCredentialOfferOptions<CFs>
+    { credentialRecord, autoAcceptCredential, comment, credentialFormats, isW3C }: AcceptCredentialOfferOptions<CFs>
   ) {
     const didCommMessageRepository = agentContext.dependencyManager.resolve(DidCommMessageRepository)
 
@@ -479,6 +479,7 @@ export class V2CredentialProtocol<CFs extends CredentialFormatService[] = Creden
       formatServices,
       comment,
       credentialFormats,
+      isW3C,
     })
 
     credentialRecord.autoAcceptCredential = autoAcceptCredential ?? credentialRecord.autoAcceptCredential
