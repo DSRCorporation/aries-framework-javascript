@@ -96,12 +96,8 @@ export class IndyBesuAnonCredsRegistry implements AnonCredsRegistry {
       const { credDef, metadata } = await ledgerService.credentialDefinitionRegistry.resolveCredentialDefinition(
         credentialDefinitionId
       )
-      
-      console.log(JSON.stringify(credDef))
 
-      const value = JsonTransformer.fromJSON(credDef.value, CredentialDefinitionValue)
-
-      console.log(JSON.stringify(value))
+      const value = JsonTransformer.deserialize(credDef.value, CredentialDefinitionValue)
 
       return {
         credentialDefinition: {

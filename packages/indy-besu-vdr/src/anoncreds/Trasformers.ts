@@ -10,4 +10,9 @@ export class CredentialDefinitionValue {
   @IsObject()
   @IsOptional()
   public revocation?: unknown
+
+  constructor(primary: Record<string, unknown>, revocation: unknown) {
+    this.primary = this.primary
+    this.revocation = revocation
+  }
 }
