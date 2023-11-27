@@ -9,6 +9,7 @@ import type {
   CreateLinkSecretReturn,
   CreateLinkSecretOptions,
   GetCredentialsOptions,
+  StoreW3CCredentialOptions,
 } from './AnonCredsHolderServiceOptions'
 import type { AnonCredsCredentialInfo } from '../models'
 import type { AnonCredsProof } from '../models/exchange'
@@ -20,9 +21,16 @@ export interface AnonCredsHolderService {
   createLinkSecret(agentContext: AgentContext, options: CreateLinkSecretOptions): Promise<CreateLinkSecretReturn>
 
   createProof(agentContext: AgentContext, options: CreateProofOptions): Promise<AnonCredsProof>
+  createW3CProof(agentContext: AgentContext, options: CreateProofOptions): Promise<AnonCredsProof>
+
   storeCredential(
     agentContext: AgentContext,
     options: StoreCredentialOptions,
+    metadata?: Record<string, unknown>
+  ): Promise<string>
+  storeW3CCredential(
+    agentContext: AgentContext,
+    options: StoreW3CCredentialOptions,
     metadata?: Record<string, unknown>
   ): Promise<string>
 

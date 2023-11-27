@@ -1205,22 +1205,11 @@
   resolved "https://registry.yarnpkg.com/@hutson/parse-repository-url/-/parse-repository-url-3.0.2.tgz#98c23c950a3d9b6c8f0daed06da6c3af06981340"
   integrity sha512-H9XAx3hc0BQHY6l+IFSWHDySypcXsvsuLhgYLUGywmJ5pswRVQJUHpOsobnLYp2ZUaUlKiKDrgWWhosOwAEM8Q==
 
-"@hyperledger/anoncreds-nodejs@^0.2.0-dev.4":
-  version "0.2.0-dev.4"
-  resolved "https://registry.yarnpkg.com/@hyperledger/anoncreds-nodejs/-/anoncreds-nodejs-0.2.0-dev.4.tgz#ac125817beb631dedbe27cb8d4c21d2123104d5e"
-  integrity sha512-EH/jAH+aATH9KByWF1lk1p76BN6VIsRZhG7jyRT1LAaaUNnmpQnjX6d/Mfkofvk4xFIRbp0cDl/UjaKaKfLsww==
-  dependencies:
-    "@2060.io/ffi-napi" "4.0.8"
-    "@2060.io/ref-napi" "3.0.6"
-    "@hyperledger/anoncreds-shared" "0.2.0-dev.4"
-    "@mapbox/node-pre-gyp" "^1.0.11"
-    ref-array-di "1.2.2"
-    ref-struct-di "1.1.1"
+"@hyperledger/anoncreds-nodejs@file:../anoncreds-rs/wrappers/javascript/packages/anoncreds-nodejs/build":
+  version "0.0.0"
 
-"@hyperledger/anoncreds-shared@0.2.0-dev.4", "@hyperledger/anoncreds-shared@^0.2.0-dev.4":
-  version "0.2.0-dev.4"
-  resolved "https://registry.yarnpkg.com/@hyperledger/anoncreds-shared/-/anoncreds-shared-0.2.0-dev.4.tgz#8050647fcb153b594671270d4c51b3b423e575be"
-  integrity sha512-8hwXc9zab8MgXgwo0OL5bShxMAfDEiBAB1/r+8mbwgANefDZwHwNOkq0yQLwT2KfSsvH9la7N2ehrtUf5E2FKg==
+"@hyperledger/anoncreds-shared@file:../anoncreds-rs/wrappers/javascript/packages/anoncreds-shared/build":
+  version "0.0.0"
 
 "@hyperledger/aries-askar-nodejs@^0.2.0-dev.1":
   version "0.2.0-dev.1"
@@ -1711,7 +1700,7 @@
     write-pkg "4.0.0"
     yargs "16.2.0"
 
-"@mapbox/node-pre-gyp@1.0.11", "@mapbox/node-pre-gyp@^1.0.11":
+"@mapbox/node-pre-gyp@1.0.11":
   version "1.0.11"
   resolved "https://registry.yarnpkg.com/@mapbox/node-pre-gyp/-/node-pre-gyp-1.0.11.tgz#417db42b7f5323d79e93b34a6d7a2a12c0df43fa"
   integrity sha512-Yhlar6v9WQgUp/He7BdgzOz8lqMQ8sU+jkCq7Wx8Myc5YFJLbEe7lgui/V7G1qB1DJykHSGwreceSaD60Y0PUQ==
@@ -10705,7 +10694,7 @@ reduce-flatten@^2.0.0:
   resolved "https://registry.yarnpkg.com/reduce-flatten/-/reduce-flatten-2.0.0.tgz#734fd84e65f375d7ca4465c69798c25c9d10ae27"
   integrity sha512-EJ4UNY/U1t2P/2k6oqotuX2Cc3T6nxJwsM0N0asT7dhrtH1ltUxDn4NalSYmPE2rCkVpcf/X6R0wDwcFpzhd4w==
 
-ref-array-di@1.2.2, ref-array-di@^1.2.2:
+ref-array-di@^1.2.2:
   version "1.2.2"
   resolved "https://registry.yarnpkg.com/ref-array-di/-/ref-array-di-1.2.2.tgz#ceee9d667d9c424b5a91bb813457cc916fb1f64d"
   integrity sha512-jhCmhqWa7kvCVrWhR/d7RemkppqPUdxEil1CtTtm7FkZV8LcHHCK3Or9GinUiFP5WY3k0djUkMvhBhx49Jb2iA==
@@ -10713,7 +10702,7 @@ ref-array-di@1.2.2, ref-array-di@^1.2.2:
     array-index "^1.0.0"
     debug "^3.1.0"
 
-ref-struct-di@1.1.1, ref-struct-di@^1.1.0, ref-struct-di@^1.1.1:
+ref-struct-di@^1.1.0, ref-struct-di@^1.1.1:
   version "1.1.1"
   resolved "https://registry.yarnpkg.com/ref-struct-di/-/ref-struct-di-1.1.1.tgz#5827b1d3b32372058f177547093db1fe1602dc10"
   integrity sha512-2Xyn/0Qgz89VT+++WP0sTosdm9oeowLP23wRJYhG4BFdMUrLj3jhwHZNEytYNYgtPKLNTP3KJX4HEgBvM1/Y2g==

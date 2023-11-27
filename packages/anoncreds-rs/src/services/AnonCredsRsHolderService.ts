@@ -19,6 +19,7 @@ import type {
   GetCredentialsForProofRequestReturn,
   GetCredentialsOptions,
   StoreCredentialOptions,
+  StoreW3CCredentialOptions,
 } from '@aries-framework/anoncreds'
 import type { AgentContext, Query, SimpleQuery } from '@aries-framework/core'
 import type { CredentialEntry } from '@hyperledger/anoncreds-nodejs'
@@ -44,6 +45,7 @@ import { AriesFrameworkError, injectable, JsonTransformer, TypedArrayEncoder, ut
 import { CredentialRequest } from '@hyperledger/anoncreds-nodejs'
 import {
   anoncreds,
+  Credential,
   CredentialRevocationState,
   LinkSecret,
   Presentation,
@@ -71,141 +73,6 @@ export class AnonCredsRsHolderService implements AnonCredsHolderService {
   }
 
   public async createProof(agentContext: AgentContext, options: CreateProofOptions): Promise<AnonCredsProof> {
-    const { proofRequest } = options
-    if (proofRequest.isW3C) {
-      return this.createProofW3C(agentContext, options)
-    } else {
-      return this.createProofLegacy(agentContext, options)
-    }
-  }
-  public async createProofW3C(agentContext: AgentContext, options: CreateProofOptions): Promise<AnonCredsProof> {
-    const { credentialDefinitions, proofRequest, selectedCredentials, schemas } = options
-
-    let presentation: W3CPresentation | undefined
-    try {
-      const rsCredentialDefinitions: Record<string, JsonObject> = {}
-      for (const credDefId in credentialDefinitions) {
-        rsCredentialDefinitions[credDefId] = credentialDefinitions[credDefId] as unknown as JsonObject
-      }
-
-      const rsSchemas: Record<string, JsonObject> = {}
-      for (const schemaId in schemas) {
-        rsSchemas[schemaId] = schemas[schemaId] as unknown as JsonObject
-      }
-      const credentialRepository = agentContext.dependencyManager.resolve(AnonCredsW3CCredentialRepository)
-
-      // Cache retrieved credentials in order to minimize storage calls
-      const retrievedCredentials = new Map<string, AnonCredsW3CCredentialRecord>()
-
-      const credentialEntryFromAttribute = async (
-        attribute: AnonCredsRequestedAttributeMatch | AnonCredsRequestedPredicateMatch
-      ): Promise<{ linkSecretId: string; credentialEntry: W3CCredentialEntry }> => {
-        let credentialRecord = retrievedCredentials.get(attribute.credentialId)
-        if (!credentialRecord) {
-          credentialRecord = await credentialRepository.getByCredentialId(agentContext, attribute.credentialId)
-          retrievedCredentials.set(attribute.credentialId, credentialRecord)
-        }
-
-        // @ts-ignore
-        const revocationRegistryDefinitionId = credentialRecord.credential.credentialStatus?.id
-        const revocationRegistryIndex = credentialRecord.credentialRevocationId
-
-        // TODO: Check if credential has a revocation registry id (check response from anoncreds-rs API, as it is
-        // sending back a mandatory string in Credential.revocationRegistryId)
-        const timestamp = attribute.timestamp
-
-        let revocationState: CredentialRevocationState | undefined
-        let revocationRegistryDefinition: RevocationRegistryDefinition | undefined
-        try {
-          if (timestamp && revocationRegistryIndex && revocationRegistryDefinitionId) {
-            if (!options.revocationRegistries[revocationRegistryDefinitionId]) {
-              throw new AnonCredsRsError(`Revocation Registry ${revocationRegistryDefinitionId} not found`)
-            }
-
-            const { definition, revocationStatusLists, tailsFilePath } =
-              options.revocationRegistries[revocationRegistryDefinitionId]
-
-            // Extract revocation status list for the given timestamp
-            const revocationStatusList = revocationStatusLists[timestamp]
-            if (!revocationStatusList) {
-              throw new AriesFrameworkError(
-                `Revocation status list for revocation registry ${revocationRegistryDefinitionId} and timestamp ${timestamp} not found in revocation status lists. All revocation status lists must be present.`
-              )
-            }
-
-            revocationRegistryDefinition = RevocationRegistryDefinition.fromJson(definition as unknown as JsonObject)
-            revocationState = CredentialRevocationState.create({
-              revocationRegistryIndex: Number(revocationRegistryIndex),
-              revocationRegistryDefinition,
-              tailsPath: tailsFilePath,
-              revocationStatusList: RevocationStatusList.fromJson(revocationStatusList as unknown as JsonObject),
-            })
-          }
-          return {
-            linkSecretId: credentialRecord.linkSecretId,
-            credentialEntry: {
-              credential: credentialRecord.credential as unknown as JsonObject,
-              revocationState: revocationState?.toJson(),
-              timestamp,
-            },
-          }
-        } finally {
-          revocationState?.handle.clear()
-          revocationRegistryDefinition?.handle.clear()
-        }
-      }
-
-      const credentialsProve: CredentialProve[] = []
-      const credentials: { linkSecretId: string; credentialEntry: W3CCredentialEntry }[] = []
-
-      let entryIndex = 0
-      for (const referent in selectedCredentials.attributes) {
-        const attribute = selectedCredentials.attributes[referent]
-        credentials.push(await credentialEntryFromAttribute(attribute))
-        credentialsProve.push({ entryIndex, isPredicate: false, referent, reveal: attribute.revealed })
-        entryIndex = entryIndex + 1
-      }
-
-      for (const referent in selectedCredentials.predicates) {
-        const predicate = selectedCredentials.predicates[referent]
-        credentials.push(await credentialEntryFromAttribute(predicate))
-        credentialsProve.push({ entryIndex, isPredicate: true, referent, reveal: true })
-        entryIndex = entryIndex + 1
-      }
-
-      // Get all requested credentials and take linkSecret. If it's not the same for every credential, throw error
-      const linkSecretsMatch = credentials.every((item) => item.linkSecretId === credentials[0].linkSecretId)
-      if (!linkSecretsMatch) {
-        throw new AnonCredsRsError('All credentials in a Proof should have been issued using the same Link Secret')
-      }
-
-      const linkSecretRecord = await agentContext.dependencyManager
-        .resolve(AnonCredsLinkSecretRepository)
-        .getByLinkSecretId(agentContext, credentials[0].linkSecretId)
-
-      if (!linkSecretRecord.value) {
-        throw new AnonCredsRsError('Link Secret value not stored')
-      }
-
-      presentation = W3CPresentation.create({
-        credentialDefinitions: rsCredentialDefinitions,
-        schemas: rsSchemas,
-        presentationRequest: proofRequest as unknown as JsonObject,
-        credentials: credentials.map((entry) => entry.credentialEntry),
-        credentialsProve,
-        // selfAttest: selectedCredentials.selfAttestedAttributes,
-        linkSecret: linkSecretRecord.value,
-      })
-      console.log('\n------------Created presentation in W3C format------------')
-      console.dir(presentation.toJson(), { depth: null })
-      console.log('------------------------------------------------------\n')
-
-      return presentation.toJson() as unknown as AnonCredsProof
-    } finally {
-      presentation?.handle.clear()
-    }
-  }
-  public async createProofLegacy(agentContext: AgentContext, options: CreateProofOptions): Promise<AnonCredsProof> {
     const { credentialDefinitions, proofRequest, selectedCredentials, schemas } = options
 
     let presentation: Presentation | undefined
@@ -360,7 +227,11 @@ export class AnonCredsRsHolderService implements AnonCredsHolderService {
           )
         }
         const { linkSecretId, linkSecretValue } = await this.createLinkSecret(agentContext, {})
-        linkSecretRecord = await storeLinkSecret(agentContext, { linkSecretId, linkSecretValue, setAsDefault: true })
+        linkSecretRecord = await storeLinkSecret(agentContext, {
+          linkSecretId,
+          linkSecretValue,
+          setAsDefault: true,
+        })
       }
 
       if (!linkSecretRecord.value) {
@@ -408,7 +279,216 @@ export class AnonCredsRsHolderService implements AnonCredsHolderService {
     }
   }
 
+  public async createW3CProof(agentContext: AgentContext, options: CreateProofOptions): Promise<AnonCredsProof> {
+    const { credentialDefinitions, proofRequest, selectedCredentials, schemas } = options
+
+    let presentation: W3CPresentation | undefined
+    try {
+      const rsCredentialDefinitions: Record<string, JsonObject> = {}
+      for (const credDefId in credentialDefinitions) {
+        rsCredentialDefinitions[credDefId] = credentialDefinitions[credDefId] as unknown as JsonObject
+      }
+
+      const rsSchemas: Record<string, JsonObject> = {}
+      for (const schemaId in schemas) {
+        rsSchemas[schemaId] = schemas[schemaId] as unknown as JsonObject
+      }
+      const credentialRepository = agentContext.dependencyManager.resolve(AnonCredsW3CCredentialRepository)
+
+      // Cache retrieved credentials in order to minimize storage calls
+      const retrievedCredentials = new Map<string, AnonCredsW3CCredentialRecord>()
+
+      const credentialEntryFromAttribute = async (
+        attribute: AnonCredsRequestedAttributeMatch | AnonCredsRequestedPredicateMatch
+      ): Promise<{ linkSecretId: string; credentialEntry: W3CCredentialEntry }> => {
+        let credentialRecord = retrievedCredentials.get(attribute.credentialId)
+        if (!credentialRecord) {
+          credentialRecord = await credentialRepository.getByCredentialId(agentContext, attribute.credentialId)
+          retrievedCredentials.set(attribute.credentialId, credentialRecord)
+        }
+
+        // @ts-ignore
+        const revocationRegistryDefinitionId = credentialRecord.credential.credentialStatus?.id
+        const revocationRegistryIndex = credentialRecord.credentialRevocationId
+
+        // TODO: Check if credential has a revocation registry id (check response from anoncreds-rs API, as it is
+        // sending back a mandatory string in Credential.revocationRegistryId)
+        const timestamp = attribute.timestamp
+
+        let revocationState: CredentialRevocationState | undefined
+        let revocationRegistryDefinition: RevocationRegistryDefinition | undefined
+        try {
+          if (timestamp && revocationRegistryIndex && revocationRegistryDefinitionId) {
+            if (!options.revocationRegistries[revocationRegistryDefinitionId]) {
+              throw new AnonCredsRsError(`Revocation Registry ${revocationRegistryDefinitionId} not found`)
+            }
+
+            const { definition, revocationStatusLists, tailsFilePath } =
+              options.revocationRegistries[revocationRegistryDefinitionId]
+
+            // Extract revocation status list for the given timestamp
+            const revocationStatusList = revocationStatusLists[timestamp]
+            if (!revocationStatusList) {
+              throw new AriesFrameworkError(
+                `Revocation status list for revocation registry ${revocationRegistryDefinitionId} and timestamp ${timestamp} not found in revocation status lists. All revocation status lists must be present.`
+              )
+            }
+
+            revocationRegistryDefinition = RevocationRegistryDefinition.fromJson(definition as unknown as JsonObject)
+            revocationState = CredentialRevocationState.create({
+              revocationRegistryIndex: Number(revocationRegistryIndex),
+              revocationRegistryDefinition,
+              tailsPath: tailsFilePath,
+              revocationStatusList: RevocationStatusList.fromJson(revocationStatusList as unknown as JsonObject),
+            })
+          }
+          return {
+            linkSecretId: credentialRecord.linkSecretId,
+            credentialEntry: {
+              credential: credentialRecord.credential as unknown as JsonObject,
+              revocationState: revocationState?.toJson(),
+              timestamp,
+            },
+          }
+        } finally {
+          revocationState?.handle.clear()
+          revocationRegistryDefinition?.handle.clear()
+        }
+      }
+
+      const credentialsProve: CredentialProve[] = []
+      const credentials: { linkSecretId: string; credentialEntry: W3CCredentialEntry }[] = []
+
+      let entryIndex = 0
+      for (const referent in selectedCredentials.attributes) {
+        const attribute = selectedCredentials.attributes[referent]
+        credentials.push(await credentialEntryFromAttribute(attribute))
+        credentialsProve.push({ entryIndex, isPredicate: false, referent, reveal: attribute.revealed })
+        entryIndex = entryIndex + 1
+      }
+
+      for (const referent in selectedCredentials.predicates) {
+        const predicate = selectedCredentials.predicates[referent]
+        credentials.push(await credentialEntryFromAttribute(predicate))
+        credentialsProve.push({ entryIndex, isPredicate: true, referent, reveal: true })
+        entryIndex = entryIndex + 1
+      }
+
+      // Get all requested credentials and take linkSecret. If it's not the same for every credential, throw error
+      const linkSecretsMatch = credentials.every((item) => item.linkSecretId === credentials[0].linkSecretId)
+      if (!linkSecretsMatch) {
+        throw new AnonCredsRsError('All credentials in a Proof should have been issued using the same Link Secret')
+      }
+
+      const linkSecretRecord = await agentContext.dependencyManager
+        .resolve(AnonCredsLinkSecretRepository)
+        .getByLinkSecretId(agentContext, credentials[0].linkSecretId)
+
+      if (!linkSecretRecord.value) {
+        throw new AnonCredsRsError('Link Secret value not stored')
+      }
+
+      presentation = W3CPresentation.create({
+        credentialDefinitions: rsCredentialDefinitions,
+        schemas: rsSchemas,
+        presentationRequest: proofRequest as unknown as JsonObject,
+        credentials: credentials.map((entry) => entry.credentialEntry),
+        credentialsProve,
+        // selfAttest: selectedCredentials.selfAttestedAttributes,
+        linkSecret: linkSecretRecord.value,
+      })
+      console.log('\n------------Created presentation in W3C format------------')
+      console.dir(presentation.toJson(), { depth: null })
+      console.log('------------------------------------------------------\n')
+
+      return presentation.toJson() as unknown as AnonCredsProof
+    } finally {
+      presentation?.handle.clear()
+    }
+  }
+
   public async storeCredential(agentContext: AgentContext, options: StoreCredentialOptions): Promise<string> {
+    const { credential, credentialDefinition, credentialRequestMetadata, revocationRegistry, schema } = options
+
+    const linkSecretRecord = await agentContext.dependencyManager
+      .resolve(AnonCredsLinkSecretRepository)
+      .getByLinkSecretId(agentContext, credentialRequestMetadata.link_secret_name)
+
+    if (!linkSecretRecord.value) {
+      throw new AnonCredsRsError('Link Secret value not stored')
+    }
+
+    const revocationRegistryDefinition = revocationRegistry?.definition as unknown as JsonObject
+
+    const credentialId = options.credentialId ?? utils.uuid()
+
+    let credentialObj: Credential | undefined
+    let processedCredential: Credential | undefined
+    try {
+      credentialObj = Credential.fromJson(credential as unknown as JsonObject)
+      processedCredential = credentialObj.process({
+        credentialDefinition: credentialDefinition as unknown as JsonObject,
+        credentialRequestMetadata: credentialRequestMetadata as unknown as JsonObject,
+        linkSecret: linkSecretRecord.value,
+        revocationRegistryDefinition,
+      })
+
+      const credentialRepository = agentContext.dependencyManager.resolve(AnonCredsCredentialRepository)
+
+      const methodName = agentContext.dependencyManager
+        .resolve(AnonCredsRegistryService)
+        .getRegistryForIdentifier(agentContext, credential.cred_def_id).methodName
+
+      await credentialRepository.save(
+        agentContext,
+        new AnonCredsCredentialRecord({
+          credential: processedCredential.toJson() as unknown as AnonCredsCredential,
+          credentialId,
+          linkSecretId: linkSecretRecord.linkSecretId,
+          issuerId: options.credentialDefinition.issuerId,
+          schemaName: schema.name,
+          schemaIssuerId: schema.issuerId,
+          schemaVersion: schema.version,
+          credentialRevocationId: processedCredential.revocationRegistryIndex?.toString(),
+          methodName,
+        })
+      )
+
+      console.log('\n------------Saved credential in Legacy format------------')
+      console.log(processedCredential.toJson())
+      console.log('------------------------------------------------------\n')
+
+      const w3cCredentialRepository = agentContext.dependencyManager.resolve(AnonCredsW3CCredentialRepository)
+      const w3cCredential = processedCredential
+        .toW3C({ credentialDefinition: credentialDefinition as unknown as JsonObject })
+        .toJson() as unknown as AnonCredsW3CCredential
+      await w3cCredentialRepository.save(
+        agentContext,
+        new AnonCredsW3CCredentialRecord({
+          credential: w3cCredential,
+          credentialId: options.credentialId ?? utils.uuid(),
+          linkSecretId: linkSecretRecord.linkSecretId,
+          issuerId: options.credentialDefinition.issuerId,
+          schemaName: schema.name,
+          schemaIssuerId: schema.issuerId,
+          schemaVersion: schema.version,
+          credentialRevocationId: processedCredential.revocationRegistryIndex?.toString(),
+          methodName,
+        })
+      )
+
+      console.log('\n------------Saved credential in W3C format------------')
+      console.log(w3cCredential)
+      console.log('------------------------------------------------------\n')
+
+      return credentialId
+    } finally {
+      credentialObj?.handle.clear()
+      processedCredential?.handle.clear()
+    }
+  }
+
+  public async storeW3CCredential(agentContext: AgentContext, options: StoreW3CCredentialOptions): Promise<string> {
     const { credential, credentialDefinition, credentialRequestMetadata, revocationRegistry, schema } = options
 
     const linkSecretRecord = await agentContext.dependencyManager
@@ -509,6 +589,7 @@ export class AnonCredsRsHolderService implements AnonCredsHolderService {
 
     return credInfo
   }
+
   private createAnonCredsCredentialInfoW3C(credentialRecord: AnonCredsW3CCredentialRecord): AnonCredsCredentialInfo {
     const cred = credentialRecord.credential
     const credId = credentialRecord.credentialId
@@ -532,6 +613,7 @@ export class AnonCredsRsHolderService implements AnonCredsHolderService {
       methodName: methodName,
     }
   }
+
   private createAnonCredsCredentialInfo(credentialRecord: AnonCredsCredentialRecord): AnonCredsCredentialInfo {
     const credId = credentialRecord.credentialId
     const methodName = credentialRecord.methodName

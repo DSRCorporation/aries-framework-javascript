@@ -3,7 +3,8 @@ import type {
   AnonCredsCredential,
   AnonCredsCredentialOffer,
   AnonCredsCredentialRequest,
-  AnonCredsCredentialRequestMetadata, AnonCredsW3CCredential,
+  AnonCredsCredentialRequestMetadata,
+  AnonCredsW3CCredential,
 } from '../models'
 import type { AnonCredsIssuerService, AnonCredsHolderService, GetRevocationRegistryDefinitionReturn } from '../services'
 import type { AnonCredsCredentialMetadata } from '../utils/metadata'
@@ -40,6 +41,7 @@ import {
   CredentialProblemReportReason,
   JsonTransformer,
 } from '@aries-framework/core'
+import { JsonObject, W3CCredential } from '@hyperledger/anoncreds-shared'
 
 import { AnonCredsError } from '../error'
 import { AnonCredsCredentialProposal } from '../models/AnonCredsCredentialProposal'
@@ -55,8 +57,6 @@ import {
 import { isUnqualifiedCredentialDefinitionId, isUnqualifiedSchemaId } from '../utils/indyIdentifiers'
 import { AnonCredsCredentialMetadataKey, AnonCredsCredentialRequestMetadataKey } from '../utils/metadata'
 import { generateLegacyProverDidLikeString } from '../utils/proverDid'
-
-import {JsonObject, W3CCredential} from "@hyperledger/anoncreds-shared";
 
 const INDY_CRED_ABSTRACT = 'hlindy/cred-abstract@v2.0'
 const INDY_CRED_REQUEST = 'hlindy/cred-req@v2.0'
@@ -419,7 +419,7 @@ export class LegacyIndyCredentialFormatService implements CredentialFormatServic
     const credentialId = await anonCredsHolderService.storeCredential(agentContext, {
       credentialId: utils.uuid(),
       credentialRequestMetadata,
-      credential: anonCredsCredential as unknown as AnonCredsW3CCredential,
+      credential: anonCredsCredential as unknown as AnonCredsCredential,
       credentialDefinitionId: credentialDefinitionResult.credentialDefinitionId,
       credentialDefinition: credentialDefinitionResult.credentialDefinition,
       schema: schemaResult.schema,

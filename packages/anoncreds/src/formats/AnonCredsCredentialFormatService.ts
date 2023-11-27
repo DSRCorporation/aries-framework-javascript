@@ -49,6 +49,7 @@ import {
   JsonTransformer,
 } from '@aries-framework/core'
 import { Credential, W3CCredential } from '@hyperledger/anoncreds-shared'
+import console from 'console'
 
 import { AnonCredsError } from '../error'
 import { AnonCredsCredentialProposal } from '../models/AnonCredsCredentialProposal'
@@ -62,7 +63,6 @@ import {
   createAndLinkAttachmentsToPreview,
 } from '../utils/credential'
 import { AnonCredsCredentialMetadataKey, AnonCredsCredentialRequestMetadataKey } from '../utils/metadata'
-import console from 'console'
 
 const ANONCREDS_CREDENTIAL_OFFER = 'anoncreds/credential-offer@v1.0'
 const ANONCREDS_CREDENTIAL_REQUEST = 'anoncreds/credential-request@v1.0'
@@ -375,6 +375,7 @@ export class AnonCredsCredentialFormatService implements CredentialFormatService
     let schemaResult: GetSchemaReturn
     let revocationRegistryResult: null | GetRevocationRegistryDefinitionReturn = null
     let anonCredsCredential: AnonCredsW3CCredential
+    let credentialId: string
 
     console.log('\n------------Processing an incoming credential------------')
     console.log(attachment.getDataAsJson<JsonObject>())
@@ -413,6 +414,21 @@ export class AnonCredsCredentialFormatService implements CredentialFormatService
           )
         }
       }
+
+      credentialId = await anonCredsHolderService.storeW3CCredential(agentContext, {
+        credentialId: utils.uuid(),
+        credentialRequestMetadata,
+        credential: anonCredsCredential,
+        credentialDefinitionId: credentialDefinitionResult.credentialDefinitionId,
+        credentialDefinition: credentialDefinitionResult.credentialDefinition,
+        schema: schemaResult.schema,
+        revocationRegistry: revocationRegistryResult?.revocationRegistryDefinition
+          ? {
+              definition: revocationRegistryResult.revocationRegistryDefinition,
+              id: revocationRegistryResult.revocationRegistryDefinitionId,
+            }
+          : undefined,
+      })
     } else {
       const cred = attachment.getDataAsJson<AnonCredsCredential>()
 
@@ -449,30 +465,22 @@ export class AnonCredsCredentialFormatService implements CredentialFormatService
       // assert the credential values match the offer values
       const recordCredentialValues = convertAttributesToCredentialValues(credentialRecord.credentialAttributes)
       assertCredentialValuesMatch(cred.values, recordCredentialValues)
-      const credLegacy = Credential.fromJson(cred as unknown as JsonObject)
 
-      const credential = W3CCredential.fromLegacy({
-        credential: credLegacy,
-        credentialDefinition: credentialDefinitionResult.credentialDefinition as unknown as JsonObject,
+      credentialId = await anonCredsHolderService.storeCredential(agentContext, {
+        credentialId: utils.uuid(),
+        credentialRequestMetadata,
+        credential: cred,
+        credentialDefinitionId: credentialDefinitionResult.credentialDefinitionId,
+        credentialDefinition: credentialDefinitionResult.credentialDefinition,
+        schema: schemaResult.schema,
+        revocationRegistry: revocationRegistryResult?.revocationRegistryDefinition
+          ? {
+              definition: revocationRegistryResult.revocationRegistryDefinition,
+              id: revocationRegistryResult.revocationRegistryDefinitionId,
+            }
+          : undefined,
       })
-
-      anonCredsCredential = credential.toJson() as unknown as AnonCredsW3CCredential
     }
-
-    const credentialId = await anonCredsHolderService.storeCredential(agentContext, {
-      credentialId: utils.uuid(),
-      credentialRequestMetadata,
-      credential: anonCredsCredential,
-      credentialDefinitionId: credentialDefinitionResult.credentialDefinitionId,
-      credentialDefinition: credentialDefinitionResult.credentialDefinition,
-      schema: schemaResult.schema,
-      revocationRegistry: revocationRegistryResult?.revocationRegistryDefinition
-        ? {
-            definition: revocationRegistryResult.revocationRegistryDefinition,
-            id: revocationRegistryResult.revocationRegistryDefinitionId,
-          }
-        : undefined,
-    })
 
     // If the credential is revocable, store the revocation identifiers in the credential record
     if (revocationRegistryResult?.revocationRegistryDefinitionId) {

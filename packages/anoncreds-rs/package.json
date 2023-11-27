@@ -32,8 +32,8 @@
     "tsyringe": "^4.8.0"
   },
   "devDependencies": {
-    "@hyperledger/anoncreds-nodejs": "file:///Users/abdulbois/Documents/anoncreds-rs/wrappers/javascript/packages/anoncreds-nodejs/build",
-    "@hyperledger/anoncreds-shared": "file:///Users/abdulbois/Documents/anoncreds-rs/wrappers/javascript/packages/anoncreds-shared/build",
+    "@hyperledger/anoncreds-nodejs": "file:/Users/artem/anoncreds-rs/wrappers/javascript/packages/anoncreds-nodejs/build",
+    "@hyperledger/anoncreds-shared": "file:/Users/artem/anoncreds-rs/wrappers/javascript/packages/anoncreds-shared/build",
     "@types/ref-array-di": "^1.2.6",
     "@types/ref-struct-di": "^1.1.10",
     "reflect-metadata": "^0.1.13",

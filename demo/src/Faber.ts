@@ -29,7 +29,7 @@ export class Faber extends BaseAgent {
   }
 
   public static async build(): Promise<Faber> {
-    const faber = new Faber(9001, 'faber11')
+    const faber = new Faber(9001, 'faber1')
     await faber.initializeAgent()
     return faber
   }

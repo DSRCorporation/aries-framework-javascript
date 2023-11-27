@@ -621,13 +621,23 @@ export class AnonCredsProofFormatService implements ProofFormatService<AnonCreds
       selectedCredentials
     )
 
-    return await holderService.createProof(agentContext, {
-      proofRequest,
-      selectedCredentials: updatedSelectedCredentials,
-      schemas,
-      credentialDefinitions,
-      revocationRegistries,
-    })
+    if (proofRequest.isW3C) {
+      return await holderService.createW3CProof(agentContext, {
+        proofRequest,
+        selectedCredentials: updatedSelectedCredentials,
+        schemas,
+        credentialDefinitions,
+        revocationRegistries,
+      })
+    } else {
+      return await holderService.createProof(agentContext, {
+        proofRequest,
+        selectedCredentials: updatedSelectedCredentials,
+        schemas,
+        credentialDefinitions,
+        revocationRegistries,
+      })
+    }
   }
 
   /**

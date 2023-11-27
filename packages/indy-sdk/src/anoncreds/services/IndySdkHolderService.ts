@@ -12,7 +12,9 @@ import type {
   AnonCredsSelectedCredentials,
   CreateLinkSecretOptions,
   CreateLinkSecretReturn,
-  GetCredentialsOptions, AnonCredsCredential,
+  GetCredentialsOptions,
+  AnonCredsCredential,
+  StoreW3CCredentialOptions,
 } from '@aries-framework/anoncreds'
 import type { AgentContext } from '@aries-framework/core'
 import type {
@@ -169,6 +171,10 @@ export class IndySdkHolderService implements AnonCredsHolderService {
     }
   }
 
+  public async createW3CProof(agentContext: AgentContext, options: CreateProofOptions): Promise<AnonCredsProof> {
+    throw new AriesFrameworkError('Not supported')
+  }
+
   public async storeCredential(agentContext: AgentContext, options: StoreCredentialOptions): Promise<string> {
     assertIndySdkWallet(agentContext.wallet)
     assertAllUnqualified({
@@ -209,6 +215,10 @@ export class IndySdkHolderService implements AnonCredsHolderService {
 
       throw isIndyError(error) ? new IndySdkError(error) : error
     }
+  }
+
+  public async storeW3CCredential(agentContext: AgentContext, options: StoreW3CCredentialOptions): Promise<string> {
+    throw new AriesFrameworkError('Not supported')
   }
 
   public async getCredential(

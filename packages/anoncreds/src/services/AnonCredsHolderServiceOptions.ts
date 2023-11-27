@@ -1,4 +1,5 @@
 import type {
+  AnonCredsCredential,
   AnonCredsCredentialInfo,
   AnonCredsCredentialRequestMetadata,
   AnonCredsSelectedCredentials,
@@ -16,8 +17,6 @@ import type {
   AnonCredsRevocationRegistryDefinition,
   AnonCredsSchema,
 } from '../models/registry'
-
-import { W3CCredential } from '@hyperledger/anoncreds-shared'
 
 export interface AnonCredsAttributeInfo {
   name?: string
@@ -46,6 +45,19 @@ export interface CreateProofOptions {
 }
 
 export interface StoreCredentialOptions {
+  credentialRequestMetadata: AnonCredsCredentialRequestMetadata
+  credential: AnonCredsCredential
+  credentialDefinition: AnonCredsCredentialDefinition
+  schema: AnonCredsSchema
+  credentialDefinitionId: string
+  credentialId?: string
+  revocationRegistry?: {
+    id: string
+    definition: AnonCredsRevocationRegistryDefinition
+  }
+}
+
+export interface StoreW3CCredentialOptions {
   credentialRequestMetadata: AnonCredsCredentialRequestMetadata
   credential: AnonCredsW3CCredential
   credentialDefinition: AnonCredsCredentialDefinition
