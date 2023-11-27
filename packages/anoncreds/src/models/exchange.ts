@@ -41,7 +41,6 @@ export interface AnonCredsCredentialRequest {
   blinded_ms: Record<string, unknown>
   blinded_ms_correctness_proof: Record<string, unknown>
   nonce: string
-  isW3C?: boolean
 }
 
 export type AnonCredsCredentialValues = Record<string, AnonCredsCredentialValue>

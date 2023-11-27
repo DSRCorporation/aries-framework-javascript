@@ -195,7 +195,7 @@ export class Faber extends BaseAgent {
     return this.credentialDefinition
   }
 
-  public async issueCredential() {
+  public async issueCredential(isW3C?: boolean) {
     const schema = await this.registerSchema()
     const credentialDefinition = await this.registerCredentialDefinition(schema.schemaId)
     const connectionRecord = await this.getConnectionRecord()
@@ -224,6 +224,7 @@ export class Faber extends BaseAgent {
           credentialDefinitionId: credentialDefinition.credentialDefinitionId,
         },
       },
+      isW3C,
     })
     this.ui.updateBottomBar(
       `\nCredential offer sent!\n\nGo to the Alice agent to accept the credential offer\n\n${Color.Reset}`

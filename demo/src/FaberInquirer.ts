@@ -91,7 +91,9 @@ export class FaberInquirer extends BaseInquirer {
   public async credential() {
     const registry = await prompt([this.inquireOptions([RegistryOptions.indy, RegistryOptions.cheqd])])
     await this.faber.importDid(registry.options)
-    await this.faber.issueCredential()
+    const confirm = await prompt([this.inquireConfirmation('Do you want to issue credential in W3C format')])
+
+    await this.faber.issueCredential(confirm.options == ConfirmOptions.Yes)
     const title = 'Is the credential offer accepted?'
     await this.listener.newAcceptedPrompt(title, this)
   }

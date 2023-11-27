@@ -49,7 +49,6 @@ import {
   JsonTransformer,
 } from '@aries-framework/core'
 import { Credential, W3CCredential } from '@hyperledger/anoncreds-shared'
-import { Schema } from '@hyperledger/anoncreds-shared/api/Schema'
 
 import { AnonCredsError } from '../error'
 import { AnonCredsCredentialProposal } from '../models/AnonCredsCredentialProposal'
@@ -254,10 +253,8 @@ export class AnonCredsCredentialFormatService implements CredentialFormatService
       credentialOffer,
       credentialDefinition,
       linkSecretId: credentialFormats?.anoncreds?.linkSecretId,
-      isW3C: isW3C,
+      isW3C,
     })
-
-    credentialRequestMetadata.isW3C = isW3C
 
     credentialRecord.metadata.set<AnonCredsCredentialRequestMetadata>(
       AnonCredsCredentialRequestMetadataKey,
@@ -299,6 +296,7 @@ export class AnonCredsCredentialFormatService implements CredentialFormatService
       attachmentId,
       offerAttachment,
       requestAttachment,
+      isW3C,
     }: CredentialFormatAcceptRequestOptions<AnonCredsCredentialFormat>
   ): Promise<CredentialFormatCreateReturn> {
     // Assert credential attributes
@@ -322,6 +320,7 @@ export class AnonCredsCredentialFormatService implements CredentialFormatService
       credentialOffer,
       credentialRequest,
       credentialValues: convertAttributesToCredentialValues(credentialAttributes),
+      isW3C,
     })
 
     if (credential.rev_reg_id) {
@@ -351,7 +350,7 @@ export class AnonCredsCredentialFormatService implements CredentialFormatService
    */
   public async processCredential(
     agentContext: AgentContext,
-    { credentialRecord, attachment }: CredentialFormatProcessCredentialOptions
+    { credentialRecord, attachment, isW3C }: CredentialFormatProcessCredentialOptions
   ): Promise<void> {
     const credentialRequestMetadata = credentialRecord.metadata.get<AnonCredsCredentialRequestMetadata>(
       AnonCredsCredentialRequestMetadataKey
@@ -381,7 +380,7 @@ export class AnonCredsCredentialFormatService implements CredentialFormatService
     console.log(attachment.getDataAsJson<JsonObject>())
     console.log('------------------------------------------------------\n')
 
-    if (credentialRequestMetadata.isW3C) {
+    if (isW3C) {
       anonCredsCredential = attachment.getDataAsJson<AnonCredsW3CCredential>()
 
       credentialDefinitionResult = await registryService

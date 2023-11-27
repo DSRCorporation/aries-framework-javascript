@@ -138,7 +138,7 @@ export class AnonCredsRsIssuerService implements AnonCredsIssuerService {
     agentContext: AgentContext,
     options: CreateCredentialOptions
   ): Promise<CreateCredentialReturn> {
-    if (options.credentialRequest.isW3C) {
+    if (options.isW3C) {
       return this.createCredentialW3c(agentContext, options)
     } else {
       return this.createCredentialLegacy(agentContext, options)

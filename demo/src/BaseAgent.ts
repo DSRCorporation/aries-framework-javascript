@@ -85,6 +85,7 @@ export class BaseAgent {
         key: name,
       },
       endpoints: [`http://localhost:${this.port}`],
+      // logger: new ConsoleLogger(LogLevel.trace),
     } satisfies InitConfig
 
     this.config = config

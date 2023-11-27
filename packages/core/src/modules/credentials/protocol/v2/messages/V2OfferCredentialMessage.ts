@@ -1,5 +1,5 @@
 import { Expose, Type } from 'class-transformer'
-import { IsArray, IsInstance, IsOptional, IsString, ValidateNested } from 'class-validator'
+import {IsArray, IsBoolean, IsInstance, IsOptional, IsString, ValidateNested} from 'class-validator'
 
 import { AgentMessage } from '../../../../../agent/AgentMessage'
 import { Attachment } from '../../../../../decorators/attachment/Attachment'
@@ -15,6 +15,7 @@ export interface V2OfferCredentialMessageOptions {
   credentialPreview: V2CredentialPreview
   replacementId?: string
   comment?: string
+  isW3C?: boolean
 }
 
 export class V2OfferCredentialMessage extends AgentMessage {
@@ -26,6 +27,7 @@ export class V2OfferCredentialMessage extends AgentMessage {
       this.formats = options.formats
       this.credentialPreview = options.credentialPreview
       this.offerAttachments = options.offerAttachments
+      this.isW3C = options.isW3C
     }
   }
 
@@ -62,6 +64,11 @@ export class V2OfferCredentialMessage extends AgentMessage {
   @IsString()
   @IsOptional()
   public replacementId?: string
+
+  @Expose({ name: 'isW3C' })
+  @IsBoolean()
+  @IsOptional()
+  public isW3C?: boolean
 
   public getOfferAttachmentById(id: string): Attachment | undefined {
     return this.offerAttachments.find((attachment) => attachment.id === id)

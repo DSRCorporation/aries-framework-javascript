@@ -207,11 +207,13 @@ export class CredentialFormatCoordinator<CFs extends CredentialFormatService[]> 
       formatServices,
       credentialRecord,
       comment,
+      isW3C,
     }: {
       formatServices: CredentialFormatService[]
       credentialFormats: CredentialFormatPayload<ExtractCredentialFormats<CFs>, 'createOffer'>
       credentialRecord: CredentialExchangeRecord
       comment?: string
+      isW3C?: boolean
     }
   ): Promise<V2OfferCredentialMessage> {
     const didCommMessageRepository = agentContext.dependencyManager.resolve(DidCommMessageRepository)
@@ -252,6 +254,7 @@ export class CredentialFormatCoordinator<CFs extends CredentialFormatService[]> 
       comment,
       offerAttachments,
       credentialPreview,
+      isW3C,
     })
 
     message.setThread({ threadId: credentialRecord.threadId, parentThreadId: credentialRecord.parentThreadId })
@@ -302,13 +305,11 @@ export class CredentialFormatCoordinator<CFs extends CredentialFormatService[]> 
       credentialFormats,
       formatServices,
       comment,
-      isW3C,
     }: {
       credentialRecord: CredentialExchangeRecord
       credentialFormats?: CredentialFormatPayload<ExtractCredentialFormats<CFs>, 'acceptOffer'>
       formatServices: CredentialFormatService[]
       comment?: string
-      isW3C?: boolean
     }
   ) {
     const didCommMessageRepository = agentContext.dependencyManager.resolve(DidCommMessageRepository)
@@ -333,7 +334,7 @@ export class CredentialFormatCoordinator<CFs extends CredentialFormatService[]> 
         offerAttachment,
         credentialRecord,
         credentialFormats,
-        isW3C,
+        isW3C: offerMessage.isW3C,
       })
 
       requestAttachments.push(attachment)
@@ -489,6 +490,7 @@ export class CredentialFormatCoordinator<CFs extends CredentialFormatService[]> 
         offerAttachment,
         credentialRecord,
         credentialFormats,
+        isW3C: offerMessage?.isW3C,
       })
 
       credentialAttachments.push(attachment)
@@ -520,11 +522,13 @@ export class CredentialFormatCoordinator<CFs extends CredentialFormatService[]> 
       message,
       requestMessage,
       formatServices,
+      isW3C,
     }: {
       credentialRecord: CredentialExchangeRecord
       message: V2IssueCredentialMessage
       requestMessage: V2RequestCredentialMessage
       formatServices: CredentialFormatService[]
+      isW3C?: boolean
     }
   ) {
     const didCommMessageRepository = agentContext.dependencyManager.resolve(DidCommMessageRepository)
@@ -541,6 +545,7 @@ export class CredentialFormatCoordinator<CFs extends CredentialFormatService[]> 
         attachment,
         requestAttachment,
         credentialRecord,
+        isW3C,
       })
     }
 

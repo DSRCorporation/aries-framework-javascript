@@ -27,7 +27,6 @@ import type {
   CredentialRequestMetadata,
   JsonObject,
   W3CCredentialEntry,
-  Credential,
 } from '@hyperledger/anoncreds-shared'
 
 import {
@@ -397,7 +396,6 @@ export class AnonCredsRsHolderService implements AnonCredsHolderService {
         })
       }
       const credRequest = createReturnObj.credentialRequest.toJson() as unknown as AnonCredsCredentialRequest
-      credRequest.isW3C = options.isW3C
 
       return {
         credentialRequest: credRequest,

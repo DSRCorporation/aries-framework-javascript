@@ -70,6 +70,7 @@ export interface CreateCredentialOfferOptions<CPs extends CredentialProtocol[] =
   extends BaseOptions {
   protocolVersion: CredentialProtocolVersionType<CPs>
   credentialFormats: CredentialFormatPayload<CredentialFormatsFromProtocols<CPs>, 'createOffer'>
+  isW3C?: boolean
 }
 
 /**
@@ -90,7 +91,6 @@ export interface AcceptCredentialOfferOptions<CPs extends CredentialProtocol[] =
   extends BaseOptions {
   credentialRecordId: string
   credentialFormats?: CredentialFormatPayload<CredentialFormatsFromProtocols<CPs>, 'acceptOffer'>
-  isW3C?: boolean
 }
 
 /**
