@@ -1,8 +1,4 @@
-import {
-  Agent,
-  JsonTransformer,
-  TypedArrayEncoder,
-} from '@aries-framework/core'
+import { Agent, JsonTransformer, TypedArrayEncoder } from '@aries-framework/core'
 import { getAgentOptions } from '../../core/tests/helpers'
 import { getBesuIndyModules } from './indy-bese-test-utils'
 import { IndyBesuDidCreateOptions } from '../src/dids'

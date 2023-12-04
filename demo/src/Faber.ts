@@ -1,5 +1,6 @@
 import type { RegisterCredentialDefinitionReturnStateFinished } from '@aries-framework/anoncreds'
 import type { ConnectionRecord, ConnectionStateChangedEvent } from '@aries-framework/core'
+import { IndyBesuDidCreateOptions } from '@aries-framework/indy-besu-vdr'
 import type {
   IndyVdrRegisterSchemaOptions,
   IndyVdrRegisterCredentialDefinitionOptions,
@@ -15,6 +16,7 @@ import { Color, Output, greenText, purpleText, redText } from './OutputClass'
 export enum RegistryOptions {
   indy = 'did:indy',
   cheqd = 'did:cheqd',
+  indyBesu = 'did:indy2',
 }
 
 export class Faber extends BaseAgent {
@@ -32,6 +34,42 @@ export class Faber extends BaseAgent {
     const faber = new Faber(9001, 'faber')
     await faber.initializeAgent()
     return faber
+  }
+
+  public async createOrImportIndy2Did() {
+    const did = 'did:indy2:testnet:4JG9HccaMGUS4E5k2gYVne'
+    const privateKey = TypedArrayEncoder.fromHex('8f2a55949038a9610f50fb23b5883af3b4ecb3c3bb792cbcefbd1542c692be63')
+
+    const result = await this.agent.dids.resolve(did)
+
+    if (result.didDocument) {
+      await this.agent.dids.import({
+        did,
+        overwrite: true,
+        privateKeys: [
+          {
+            keyType: KeyType.K256,
+            privateKey,
+          },
+        ],
+      })
+    } else {
+      const createdDid = await this.agent.dids.create<IndyBesuDidCreateOptions>({
+        method: 'indy2',
+        options: {
+          network: 'testnet',
+        },
+        secret: {
+          privateKey,
+        },
+      })
+
+      if (createdDid.didState.state == 'failed') {
+        throw new Error(createdDid.didState.reason)
+      }
+    }
+
+    this.anonCredsIssuerId = did
   }
 
   public async importDid(registry: string) {
@@ -279,6 +317,7 @@ export class Faber extends BaseAgent {
 
   public async exit() {
     console.log(Output.Exit)
+    await this.agent.wallet.delete()
     await this.agent.shutdown()
     process.exit(0)
   }

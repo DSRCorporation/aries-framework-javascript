@@ -1,16 +1,6 @@
-import {
-  AgentContext,
-  AriesFrameworkError,
-  DidResolutionOptions,
-  DidResolutionResult,
-  DidResolver,
-  Key,
-  KeyType,
-  ParsedDid,
-} from '@aries-framework/core'
+import { AgentContext, DidResolutionResult, DidResolver } from '@aries-framework/core'
 import { IndyBesuLedgerService } from '../ledger'
 import { fromIndyBesuDidDocument } from './DidTypesMapping'
-import { throws } from 'assert'
 
 export class IndyBesuDidResolver implements DidResolver {
   public readonly supportedMethods = ['indy', 'sov', 'indy2']

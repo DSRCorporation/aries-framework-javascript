@@ -32,6 +32,12 @@ import {
   Agent,
   HttpOutboundTransport,
 } from '@aries-framework/core'
+import {
+  IndyBesuAnonCredsRegistry,
+  IndyBesuDidRegistrar,
+  IndyBesuDidResolver,
+  IndyBesuModule,
+} from '@aries-framework/indy-besu-vdr'
 import { IndySdkAnonCredsRegistry, IndySdkModule, IndySdkSovDidResolver } from '@aries-framework/indy-sdk'
 import { IndyVdrIndyDidResolver, IndyVdrAnonCredsRegistry, IndyVdrModule } from '@aries-framework/indy-vdr'
 import { agentDependencies, HttpInboundTransport } from '@aries-framework/node'
@@ -138,7 +144,7 @@ function getAskarAnonCredsIndyModules() {
       ],
     }),
     anoncreds: new AnonCredsModule({
-      registries: [new IndyVdrAnonCredsRegistry(), new CheqdAnonCredsRegistry()],
+      registries: [new IndyVdrAnonCredsRegistry(), new CheqdAnonCredsRegistry(), new IndyBesuAnonCredsRegistry()],
     }),
     anoncredsRs: new AnonCredsRsModule({
       anoncreds,
@@ -158,9 +164,10 @@ function getAskarAnonCredsIndyModules() {
         ],
       })
     ),
+    indyBesu: new IndyBesuModule({ rpcUrl: 'http://localhost:8545' }),
     dids: new DidsModule({
-      resolvers: [new IndyVdrIndyDidResolver(), new CheqdDidResolver()],
-      registrars: [new CheqdDidRegistrar()],
+      resolvers: [new IndyVdrIndyDidResolver(), new CheqdDidResolver(), new IndyBesuDidResolver()],
+      registrars: [new CheqdDidRegistrar(), new IndyBesuDidRegistrar()],
     }),
     askar: new AskarModule({
       ariesAskar,
