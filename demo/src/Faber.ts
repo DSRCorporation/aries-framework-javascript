@@ -53,6 +53,8 @@ export class Faber extends BaseAgent {
           },
         ],
       })
+
+      console.log(`Imported DID: ${JSON.stringify(result.didDocument)}`)
     } else {
       const createdDid = await this.agent.dids.create<IndyBesuDidCreateOptions>({
         method: 'indy2',
@@ -67,6 +69,8 @@ export class Faber extends BaseAgent {
       if (createdDid.didState.state == 'failed') {
         throw new Error(createdDid.didState.reason)
       }
+
+      console.log(`Created DID: ${JSON.stringify(createdDid.didState.didDocument)}`)
     }
 
     this.anonCredsIssuerId = did
@@ -176,13 +180,13 @@ export class Faber extends BaseAgent {
       throw new Error(redText('Missing anoncreds issuerId'))
     }
     const schemaTemplate = {
-      name: 'Faber College' + utils.uuid(),
+      name: 'FaberCollege' + utils.uuid(),
       version: '1.0.0',
       attrNames: ['name', 'degree', 'date'],
       issuerId: this.anonCredsIssuerId,
     }
     this.printSchema(schemaTemplate.name, schemaTemplate.version, schemaTemplate.attrNames)
-    this.ui.updateBottomBar(greenText('\nRegistering schema...\n', false))
+    console.log(greenText('\nRegistering schema...\n', false))
 
     const { schemaState } = await this.agent.modules.anoncreds.registerSchema<IndyVdrRegisterSchemaOptions>({
       schema: schemaTemplate,
@@ -197,7 +201,7 @@ export class Faber extends BaseAgent {
         `Error registering schema: ${schemaState.state === 'failed' ? schemaState.reason : 'Not Finished'}`
       )
     }
-    this.ui.updateBottomBar('\nSchema registered!\n')
+    console.log(`\nSchema ${schemaState.schemaId} registered!\n`)
     return schemaState
   }
 
@@ -206,7 +210,7 @@ export class Faber extends BaseAgent {
       throw new Error(redText('Missing anoncreds issuerId'))
     }
 
-    this.ui.updateBottomBar('\nRegistering credential definition...\n')
+    console.log('\nRegistering credential definition...\n')
     const { credentialDefinitionState } =
       await this.agent.modules.anoncreds.registerCredentialDefinition<IndyVdrRegisterCredentialDefinitionOptions>({
         credentialDefinition: {
@@ -229,7 +233,7 @@ export class Faber extends BaseAgent {
     }
 
     this.credentialDefinition = credentialDefinitionState
-    this.ui.updateBottomBar('\nCredential definition registered!!\n')
+    console.log(`\nCredential definition ${this.credentialDefinition.credentialDefinitionId} registered!!\n`)
     return this.credentialDefinition
   }
 
@@ -240,7 +244,7 @@ export class Faber extends BaseAgent {
 
     this.ui.updateBottomBar('\nSending credential offer...\n')
 
-    await this.agent.credentials.offerCredential({
+    const record = await this.agent.credentials.offerCredential({
       connectionId: connectionRecord.id,
       protocolVersion: 'v2',
       credentialFormats: {
@@ -266,6 +270,8 @@ export class Faber extends BaseAgent {
     this.ui.updateBottomBar(
       `\nCredential offer sent!\n\nGo to the Alice agent to accept the credential offer\n\n${Color.Reset}`
     )
+
+    console.log(purpleText(`Credential Record${Color.Reset}\n ${JSON.stringify(record)}`))
   }
 
   private async printProofFlow(print: string) {
