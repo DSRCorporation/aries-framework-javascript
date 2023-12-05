@@ -19,7 +19,8 @@ export enum RegistryOptions {
 
 export class Faber extends BaseAgent {
   public outOfBandId?: string
-  public credentialDefinition?: RegisterCredentialDefinitionReturnStateFinished
+  public indyCredentialDefinition?: RegisterCredentialDefinitionReturnStateFinished
+  public cheqdCredentialDefinition?: RegisterCredentialDefinitionReturnStateFinished
   public anonCredsIssuerId?: string
   public ui: BottomBar
 
@@ -191,15 +192,59 @@ export class Faber extends BaseAgent {
       )
     }
 
-    this.credentialDefinition = credentialDefinitionState
     this.ui.updateBottomBar('\nCredential definition registered!!\n')
-    return this.credentialDefinition
+    return credentialDefinitionState
   }
 
-  public async issueCredential() {
+  public async setupIssuer(registry: string) {
     const schema = await this.registerSchema()
     const credentialDefinition = await this.registerCredentialDefinition(schema.schemaId)
+    console.log(greenText('-----------------------------'))
+    console.log(greenText(`Schema ID: ${schema.schemaId}`))
+    console.log(greenText(`Credential Definition ID: ${credentialDefinition.credentialDefinitionId}`))
+    if (registry === RegistryOptions.indy) {
+      this.indyCredentialDefinition = credentialDefinition
+    } else {
+      this.cheqdCredentialDefinition = credentialDefinition
+    }
+  }
+
+  public async issueCredential(registry: string) {
     const connectionRecord = await this.getConnectionRecord()
+
+    const indyCredentialDefinition =
+      registry === RegistryOptions.indy ? this.indyCredentialDefinition : this.cheqdCredentialDefinition
+
+    if (!indyCredentialDefinition) {
+      throw new Error(redText('Issuer is not ready'))
+    }
+
+    console.log('\n\nCredential preview:')
+
+    const attributes = [
+      {
+        name: 'name',
+        value: 'Alice Smith',
+      },
+      {
+        name: 'degree',
+        value: 'Computer Science',
+      },
+      {
+        name: 'date',
+        value: '01/01/2022',
+      },
+    ]
+
+    console.log('------------------')
+    console.log(purpleText(`Credential Definition ID: ${indyCredentialDefinition.credentialDefinitionId}`))
+
+    attributes.forEach((element) => {
+      console.log(purpleText(`${element.name} ${Color.Reset}${element.value}`))
+    })
+    console.log('------------------')
+    console.log('')
+    console.log('')
 
     this.ui.updateBottomBar('\nSending credential offer...\n')
 
@@ -208,21 +253,8 @@ export class Faber extends BaseAgent {
       protocolVersion: 'v2',
       credentialFormats: {
         anoncreds: {
-          attributes: [
-            {
-              name: 'name',
-              value: 'Alice Smith',
-            },
-            {
-              name: 'degree',
-              value: 'Computer Science',
-            },
-            {
-              name: 'date',
-              value: '01/01/2022',
-            },
-          ],
-          credentialDefinitionId: credentialDefinition.credentialDefinitionId,
+          attributes: attributes,
+          credentialDefinitionId: indyCredentialDefinition.credentialDefinitionId,
         },
       },
     })
@@ -237,13 +269,21 @@ export class Faber extends BaseAgent {
   }
 
   private async newProofAttribute() {
-    await this.printProofFlow(greenText(`Creating new proof attribute for 'name' ...\n`))
+    await this.printProofFlow(greenText(`Creating new proof attribute for 'name' and ''degree ...\n`))
     const proofAttribute = {
       name: {
         name: 'name',
         restrictions: [
           {
-            cred_def_id: this.credentialDefinition?.credentialDefinitionId,
+            cred_def_id: this.indyCredentialDefinition?.credentialDefinitionId,
+          },
+        ],
+      },
+      degree: {
+        name: 'degree',
+        restrictions: [
+          {
+            cred_def_id: this.indyCredentialDefinition?.credentialDefinitionId,
           },
         ],
       },

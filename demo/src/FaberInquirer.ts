@@ -16,6 +16,7 @@ export const runFaber = async () => {
 
 enum PromptOptions {
   CreateConnection = 'Create connection invitation',
+  SetupIssuer = 'Setup issuer',
   OfferCredential = 'Offer credential',
   RequestProof = 'Request proof',
   SendMessage = 'Send message',
@@ -44,7 +45,12 @@ export class FaberInquirer extends BaseInquirer {
   private async getPromptChoice() {
     if (this.faber.outOfBandId) return prompt([this.inquireOptions(this.promptOptionsString)])
 
-    const reducedOption = [PromptOptions.CreateConnection, PromptOptions.Exit, PromptOptions.Restart]
+    const reducedOption = [
+      PromptOptions.CreateConnection,
+      PromptOptions.SetupIssuer,
+      PromptOptions.Exit,
+      PromptOptions.Restart,
+    ]
     return prompt([this.inquireOptions(reducedOption)])
   }
 
@@ -56,6 +62,9 @@ export class FaberInquirer extends BaseInquirer {
       case PromptOptions.CreateConnection:
         await this.connection()
         break
+      case PromptOptions.SetupIssuer:
+        await this.setupIssuer()
+        return
       case PromptOptions.OfferCredential:
         await this.credential()
         return
@@ -88,10 +97,17 @@ export class FaberInquirer extends BaseInquirer {
     }
   }
 
+  public async setupIssuer() {
+    const registry = await prompt([this.inquireOptions([RegistryOptions.indy, RegistryOptions.cheqd])])
+    await this.faber.importDid(registry.options)
+    await this.faber.setupIssuer(registry.options)
+    await this.processAnswer()
+  }
+
   public async credential() {
     const registry = await prompt([this.inquireOptions([RegistryOptions.indy, RegistryOptions.cheqd])])
     await this.faber.importDid(registry.options)
-    await this.faber.issueCredential()
+    await this.faber.issueCredential(registry.options)
     const title = 'Is the credential offer accepted?'
     await this.listener.newAcceptedPrompt(title, this)
   }
