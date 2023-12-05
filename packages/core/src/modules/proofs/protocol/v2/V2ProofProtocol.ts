@@ -334,6 +334,7 @@ export class V2ProofProtocol<PFs extends ProofFormatService[] = ProofFormatServi
       parentThreadId,
       goalCode,
       willConfirm,
+      isW3C,
     }: CreateProofRequestOptions<PFs>
   ): Promise<ProofProtocolMsgReturnType<V2RequestPresentationMessage>> {
     const proofRepository = agentContext.dependencyManager.resolve(ProofRepository)
@@ -359,6 +360,7 @@ export class V2ProofProtocol<PFs extends ProofFormatService[] = ProofFormatServi
       comment,
       goalCode,
       willConfirm,
+      isW3C,
     })
 
     agentContext.config.logger.debug(
@@ -474,12 +476,12 @@ export class V2ProofProtocol<PFs extends ProofFormatService[] = ProofFormatServi
 
     // if no format services could be extracted from the proofFormats
     // take all available format services from the request message
-    if (formatServices.length === 0) {
-      const requestMessage = await didCommMessageRepository.getAgentMessage(agentContext, {
-        associatedRecordId: proofRecord.id,
-        messageClass: V2RequestPresentationMessage,
-      })
+    const requestMessage = await didCommMessageRepository.getAgentMessage(agentContext, {
+      associatedRecordId: proofRecord.id,
+      messageClass: V2RequestPresentationMessage,
+    })
 
+    if (formatServices.length === 0) {
       formatServices = this.getFormatServicesFromMessage(requestMessage.formats)
     }
 

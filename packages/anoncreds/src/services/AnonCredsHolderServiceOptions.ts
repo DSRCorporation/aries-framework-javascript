@@ -1,10 +1,11 @@
 import type {
+  AnonCredsCredential,
   AnonCredsCredentialInfo,
   AnonCredsCredentialRequestMetadata,
   AnonCredsSelectedCredentials,
+  AnonCredsW3CCredential,
 } from '../models'
 import type {
-  AnonCredsCredential,
   AnonCredsCredentialOffer,
   AnonCredsCredentialRequest,
   AnonCredsProofRequest,
@@ -56,8 +57,22 @@ export interface StoreCredentialOptions {
   }
 }
 
+export interface StoreW3CCredentialOptions {
+  credentialRequestMetadata: AnonCredsCredentialRequestMetadata
+  credential: AnonCredsW3CCredential
+  credentialDefinition: AnonCredsCredentialDefinition
+  schema: AnonCredsSchema
+  credentialDefinitionId: string
+  credentialId?: string
+  revocationRegistry?: {
+    id: string
+    definition: AnonCredsRevocationRegistryDefinition
+  }
+}
+
 export interface GetCredentialOptions {
   credentialId: string
+  isLegacy?: boolean
 }
 
 export interface GetCredentialsOptions {
@@ -82,6 +97,7 @@ export interface GetCredentialsForProofRequestOptions {
   start?: number
   limit?: number
   extraQuery?: ReferentWalletQuery
+  isLegacy?: boolean
 }
 
 export type GetCredentialsForProofRequestReturn = Array<{
@@ -94,6 +110,7 @@ export interface CreateCredentialRequestOptions {
   credentialDefinition: AnonCredsCredentialDefinition
   linkSecretId?: string
   useLegacyProverDid?: boolean
+  isW3C?: boolean
 }
 
 export interface CreateCredentialRequestReturn {

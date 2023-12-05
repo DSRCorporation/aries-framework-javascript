@@ -57,6 +57,7 @@ export interface AnonCredsCredentialsForProofRequest {
 
 export interface AnonCredsGetCredentialsForProofRequestOptions {
   filterByNonRevocationRequirements?: boolean
+  isW3C?: boolean
 }
 
 export interface AnonCredsProofFormat extends ProofFormat {

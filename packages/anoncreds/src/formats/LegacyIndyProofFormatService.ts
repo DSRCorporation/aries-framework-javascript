@@ -45,7 +45,7 @@ import {
 } from '@aries-framework/core'
 
 import { AnonCredsProofRequest as AnonCredsProofRequestClass } from '../models/AnonCredsProofRequest'
-import { AnonCredsVerifierServiceSymbol, AnonCredsHolderServiceSymbol } from '../services'
+import { AnonCredsVerifierServiceSymbol, AnonCredsHolderServiceSymbol, VerifyProofOptions} from '../services'
 import { AnonCredsRegistryService } from '../services/registry/AnonCredsRegistryService'
 import {
   sortRequestedCredentialsMatches,
@@ -59,6 +59,8 @@ import {
   getRevocationRegistriesForProof,
 } from '../utils'
 import { isUnqualifiedCredentialDefinitionId, isUnqualifiedSchemaId } from '../utils/indyIdentifiers'
+import { AnonCredsW3CPresentation } from '../models'
+import { getRevocationRegistriesForProofW3C } from '../utils/getRevocationRegistries'
 
 const V2_INDY_PRESENTATION_PROPOSAL = 'hlindy/proof-req@v2.0'
 const V2_INDY_PRESENTATION_REQUEST = 'hlindy/proof-req@v2.0'
@@ -239,12 +241,18 @@ export class LegacyIndyProofFormatService implements ProofFormatService<LegacyIn
       agentContext,
       new Set(proofJson.identifiers.map((i) => i.cred_def_id))
     )
-
-    const revocationRegistries = await getRevocationRegistriesForProof(agentContext, proofJson)
-
+    let presentation: AnonCredsW3CPresentation | AnonCredsProof
+    let revocationRegistries: VerifyProofOptions['revocationRegistries']
+    if (proofRequestJson.isW3C) {
+      presentation = proofJson as unknown as AnonCredsW3CPresentation
+      revocationRegistries = await getRevocationRegistriesForProofW3C(agentContext, presentation)
+    } else {
+      presentation = proofJson as unknown as AnonCredsProof
+      revocationRegistries = await getRevocationRegistriesForProof(agentContext, presentation)
+    }
     return await verifierService.verifyProof(agentContext, {
       proofRequest: proofRequestJson,
-      proof: proofJson,
+      proof: presentation,
       schemas,
       credentialDefinitions,
       revocationRegistries,

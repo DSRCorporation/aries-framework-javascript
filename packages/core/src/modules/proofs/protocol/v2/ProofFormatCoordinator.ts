@@ -188,6 +188,7 @@ export class ProofFormatCoordinator<PFs extends ProofFormatService[]> {
       goalCode,
       presentMultiple,
       willConfirm,
+      isW3C,
     }: {
       formatServices: ProofFormatService[]
       proofFormats: ProofFormatPayload<ExtractProofFormats<PFs>, 'createRequest'>
@@ -196,6 +197,7 @@ export class ProofFormatCoordinator<PFs extends ProofFormatService[]> {
       goalCode?: string
       presentMultiple?: boolean
       willConfirm?: boolean
+      isW3C?: boolean
     }
   ): Promise<V2RequestPresentationMessage> {
     const didCommMessageRepository = agentContext.dependencyManager.resolve(DidCommMessageRepository)
@@ -208,6 +210,7 @@ export class ProofFormatCoordinator<PFs extends ProofFormatService[]> {
       const { format, attachment } = await formatService.createRequest(agentContext, {
         proofFormats,
         proofRecord,
+        isW3C,
       })
 
       requestAttachments.push(attachment)

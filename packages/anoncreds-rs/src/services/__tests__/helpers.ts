@@ -8,10 +8,10 @@ import type { JsonObject } from '@hyperledger/anoncreds-nodejs'
 
 import {
   anoncreds,
-  Credential,
+  W3CCredential,
   CredentialDefinition,
-  CredentialOffer,
-  CredentialRequest,
+  W3CCredentialOffer,
+  W3CCredentialRequest,
   CredentialRevocationConfig,
   LinkSecret,
   RevocationRegistryDefinition,
@@ -62,7 +62,7 @@ export function createCredentialDefinition(options: { attributeNames: string[]; 
  * Creates a valid credential offer and returns itsf
  */
 export function createCredentialOffer(keyCorrectnessProof: Record<string, unknown>) {
-  const credentialOffer = CredentialOffer.create({
+  const credentialOffer = W3CCredentialOffer.create({
     credentialDefinitionId: 'creddef:uri',
     keyCorrectnessProof,
     schemaId: 'schema:uri',
@@ -105,13 +105,13 @@ export function createCredentialForHolder(options: {
     revocationRegistryDefinitionId,
   } = options
 
-  const credentialOffer = CredentialOffer.create({
+  const credentialOffer = W3CCredentialOffer.create({
     credentialDefinitionId,
     keyCorrectnessProof,
     schemaId,
   })
 
-  const { credentialRequest, credentialRequestMetadata } = CredentialRequest.create({
+  const { credentialRequest, credentialRequestMetadata } = W3CCredentialRequest.create({
     entropy: 'some-entropy',
     credentialDefinition,
     credentialOffer,
@@ -138,7 +138,7 @@ export function createCredentialForHolder(options: {
     revocationRegistryDefinitionId: 'mock:uri',
   })
 
-  const credentialObj = Credential.create({
+  const credentialObj = W3CCredential.create({
     credentialDefinition,
     credentialDefinitionPrivate,
     credentialOffer,

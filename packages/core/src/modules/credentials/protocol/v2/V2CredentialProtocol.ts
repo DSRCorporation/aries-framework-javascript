@@ -326,7 +326,7 @@ export class V2CredentialProtocol<CFs extends CredentialFormatService[] = Creden
    */
   public async createOffer(
     agentContext: AgentContext,
-    { credentialFormats, autoAcceptCredential, comment, connectionRecord }: CreateCredentialOfferOptions<CFs>
+    { credentialFormats, autoAcceptCredential, comment, connectionRecord, isW3C }: CreateCredentialOfferOptions<CFs>
   ): Promise<CredentialProtocolMsgReturnType<V2OfferCredentialMessage>> {
     const credentialRepository = agentContext.dependencyManager.resolve(CredentialRepository)
 
@@ -348,6 +348,7 @@ export class V2CredentialProtocol<CFs extends CredentialFormatService[] = Creden
       credentialFormats,
       credentialRecord,
       comment,
+      isW3C,
     })
 
     agentContext.config.logger.debug(
@@ -759,6 +760,7 @@ export class V2CredentialProtocol<CFs extends CredentialFormatService[] = Creden
       formatServices,
       requestMessage: requestMessage,
       message: credentialMessage,
+      isW3C: offerMessage?.isW3C,
     })
 
     await this.updateState(messageContext.agentContext, credentialRecord, CredentialState.CredentialReceived)

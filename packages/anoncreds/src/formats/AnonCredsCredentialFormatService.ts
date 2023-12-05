@@ -4,8 +4,15 @@ import type {
   AnonCredsCredentialOffer,
   AnonCredsCredentialRequest,
   AnonCredsCredentialRequestMetadata,
+  AnonCredsW3CCredential,
 } from '../models'
-import type { AnonCredsIssuerService, AnonCredsHolderService, GetRevocationRegistryDefinitionReturn } from '../services'
+import type {
+  AnonCredsIssuerService,
+  AnonCredsHolderService,
+  GetRevocationRegistryDefinitionReturn,
+  GetCredentialDefinitionReturn,
+  GetSchemaReturn,
+} from '../services'
 import type { AnonCredsCredentialMetadata } from '../utils/metadata'
 import type {
   CredentialFormatService,
@@ -28,6 +35,7 @@ import type {
   CredentialPreviewAttributeOptions,
   LinkedAttachment,
 } from '@aries-framework/core'
+import type { JsonObject } from '@hyperledger/anoncreds-shared'
 
 import {
   ProblemReportError,
@@ -40,6 +48,8 @@ import {
   CredentialProblemReportReason,
   JsonTransformer,
 } from '@aries-framework/core'
+import { Credential, W3CCredential } from '@hyperledger/anoncreds-shared'
+import console from 'console'
 
 import { AnonCredsError } from '../error'
 import { AnonCredsCredentialProposal } from '../models/AnonCredsCredentialProposal'
@@ -218,6 +228,7 @@ export class AnonCredsCredentialFormatService implements CredentialFormatService
       attachmentId,
       offerAttachment,
       credentialFormats,
+      isW3C,
     }: CredentialFormatAcceptOfferOptions<AnonCredsCredentialFormat>
   ): Promise<CredentialFormatCreateReturn> {
     const registryService = agentContext.dependencyManager.resolve(AnonCredsRegistryService)
@@ -242,6 +253,7 @@ export class AnonCredsCredentialFormatService implements CredentialFormatService
       credentialOffer,
       credentialDefinition,
       linkSecretId: credentialFormats?.anoncreds?.linkSecretId,
+      isW3C,
     })
 
     credentialRecord.metadata.set<AnonCredsCredentialRequestMetadata>(
@@ -284,6 +296,7 @@ export class AnonCredsCredentialFormatService implements CredentialFormatService
       attachmentId,
       offerAttachment,
       requestAttachment,
+      isW3C,
     }: CredentialFormatAcceptRequestOptions<AnonCredsCredentialFormat>
   ): Promise<CredentialFormatCreateReturn> {
     // Assert credential attributes
@@ -307,6 +320,7 @@ export class AnonCredsCredentialFormatService implements CredentialFormatService
       credentialOffer,
       credentialRequest,
       credentialValues: convertAttributesToCredentialValues(credentialAttributes),
+      isW3C,
     })
 
     if (credential.rev_reg_id) {
@@ -336,7 +350,7 @@ export class AnonCredsCredentialFormatService implements CredentialFormatService
    */
   public async processCredential(
     agentContext: AgentContext,
-    { credentialRecord, attachment }: CredentialFormatProcessCredentialOptions
+    { credentialRecord, attachment, isW3C }: CredentialFormatProcessCredentialOptions
   ): Promise<void> {
     const credentialRequestMetadata = credentialRecord.metadata.get<AnonCredsCredentialRequestMetadata>(
       AnonCredsCredentialRequestMetadataKey
@@ -357,62 +371,119 @@ export class AnonCredsCredentialFormatService implements CredentialFormatService
         'Missing credential attributes on credential record. Unable to check credential attributes'
       )
     }
-
-    const anonCredsCredential = attachment.getDataAsJson<AnonCredsCredential>()
-
-    const credentialDefinitionResult = await registryService
-      .getRegistryForIdentifier(agentContext, anonCredsCredential.cred_def_id)
-      .getCredentialDefinition(agentContext, anonCredsCredential.cred_def_id)
-    if (!credentialDefinitionResult.credentialDefinition) {
-      throw new AriesFrameworkError(
-        `Unable to resolve credential definition ${anonCredsCredential.cred_def_id}: ${credentialDefinitionResult.resolutionMetadata.error} ${credentialDefinitionResult.resolutionMetadata.message}`
-      )
-    }
-
-    const schemaResult = await registryService
-      .getRegistryForIdentifier(agentContext, anonCredsCredential.cred_def_id)
-      .getSchema(agentContext, anonCredsCredential.schema_id)
-    if (!schemaResult.schema) {
-      throw new AriesFrameworkError(
-        `Unable to resolve schema ${anonCredsCredential.schema_id}: ${schemaResult.resolutionMetadata.error} ${schemaResult.resolutionMetadata.message}`
-      )
-    }
-
-    // Resolve revocation registry if credential is revocable
+    let credentialDefinitionResult: GetCredentialDefinitionReturn
+    let schemaResult: GetSchemaReturn
     let revocationRegistryResult: null | GetRevocationRegistryDefinitionReturn = null
-    if (anonCredsCredential.rev_reg_id) {
-      revocationRegistryResult = await registryService
-        .getRegistryForIdentifier(agentContext, anonCredsCredential.rev_reg_id)
-        .getRevocationRegistryDefinition(agentContext, anonCredsCredential.rev_reg_id)
+    let anonCredsCredential: AnonCredsW3CCredential
+    let credentialId: string
 
-      if (!revocationRegistryResult.revocationRegistryDefinition) {
+    console.log('\n------------Processing an incoming credential------------')
+    console.log(attachment.getDataAsJson<JsonObject>())
+    console.log('------------------------------------------------------\n')
+
+    if (isW3C) {
+      anonCredsCredential = attachment.getDataAsJson<AnonCredsW3CCredential>()
+
+      credentialDefinitionResult = await registryService
+        .getRegistryForIdentifier(agentContext, anonCredsCredential.credentialSchema.definition)
+        .getCredentialDefinition(agentContext, anonCredsCredential.credentialSchema.definition)
+      if (!credentialDefinitionResult.credentialDefinition) {
         throw new AriesFrameworkError(
-          `Unable to resolve revocation registry definition ${anonCredsCredential.rev_reg_id}: ${revocationRegistryResult.resolutionMetadata.error} ${revocationRegistryResult.resolutionMetadata.message}`
+          `Unable to resolve credential definition ${anonCredsCredential.credentialSchema.definition}: ${credentialDefinitionResult.resolutionMetadata.error} ${credentialDefinitionResult.resolutionMetadata.message}`
         )
       }
+
+      schemaResult = await registryService
+        .getRegistryForIdentifier(agentContext, anonCredsCredential.credentialSchema.definition)
+        .getSchema(agentContext, anonCredsCredential.credentialSchema.schema)
+      if (!schemaResult.schema) {
+        throw new AriesFrameworkError(
+          `Unable to resolve schema ${anonCredsCredential.credentialSchema.schema}: ${schemaResult.resolutionMetadata.error} ${schemaResult.resolutionMetadata.message}`
+        )
+      }
+
+      // Resolve revocation registry if credential is revocable
+      if (anonCredsCredential.credentialStatus?.id) {
+        revocationRegistryResult = await registryService
+          .getRegistryForIdentifier(agentContext, anonCredsCredential.credentialStatus?.id)
+          .getRevocationRegistryDefinition(agentContext, anonCredsCredential.credentialStatus?.id)
+
+        if (!revocationRegistryResult.revocationRegistryDefinition) {
+          throw new AriesFrameworkError(
+            `Unable to resolve revocation registry definition ${anonCredsCredential.credentialStatus?.id}: ${revocationRegistryResult.resolutionMetadata.error} ${revocationRegistryResult.resolutionMetadata.message}`
+          )
+        }
+      }
+
+      credentialId = await anonCredsHolderService.storeW3CCredential(agentContext, {
+        credentialId: utils.uuid(),
+        credentialRequestMetadata,
+        credential: anonCredsCredential,
+        credentialDefinitionId: credentialDefinitionResult.credentialDefinitionId,
+        credentialDefinition: credentialDefinitionResult.credentialDefinition,
+        schema: schemaResult.schema,
+        revocationRegistry: revocationRegistryResult?.revocationRegistryDefinition
+          ? {
+              definition: revocationRegistryResult.revocationRegistryDefinition,
+              id: revocationRegistryResult.revocationRegistryDefinitionId,
+            }
+          : undefined,
+      })
+    } else {
+      const cred = attachment.getDataAsJson<AnonCredsCredential>()
+
+      credentialDefinitionResult = await registryService
+        .getRegistryForIdentifier(agentContext, cred.cred_def_id)
+        .getCredentialDefinition(agentContext, cred.cred_def_id)
+      if (!credentialDefinitionResult.credentialDefinition) {
+        throw new AriesFrameworkError(
+          `Unable to resolve credential definition ${cred.cred_def_id}: ${credentialDefinitionResult.resolutionMetadata.error} ${credentialDefinitionResult.resolutionMetadata.message}`
+        )
+      }
+
+      schemaResult = await registryService
+        .getRegistryForIdentifier(agentContext, cred.cred_def_id)
+        .getSchema(agentContext, cred.schema_id)
+      if (!schemaResult.schema) {
+        throw new AriesFrameworkError(
+          `Unable to resolve schema ${cred.schema_id}: ${schemaResult.resolutionMetadata.error} ${schemaResult.resolutionMetadata.message}`
+        )
+      }
+
+      // Resolve revocation registry if credential is revocable
+      if (cred.rev_reg_id) {
+        revocationRegistryResult = await registryService
+          .getRegistryForIdentifier(agentContext, cred.rev_reg_id)
+          .getRevocationRegistryDefinition(agentContext, cred.rev_reg_id)
+
+        if (!revocationRegistryResult.revocationRegistryDefinition) {
+          throw new AriesFrameworkError(
+            `Unable to resolve revocation registry definition ${cred.rev_reg_id}: ${revocationRegistryResult.resolutionMetadata.error} ${revocationRegistryResult.resolutionMetadata.message}`
+          )
+        }
+      }
+      // assert the credential values match the offer values
+      const recordCredentialValues = convertAttributesToCredentialValues(credentialRecord.credentialAttributes)
+      assertCredentialValuesMatch(cred.values, recordCredentialValues)
+
+      credentialId = await anonCredsHolderService.storeCredential(agentContext, {
+        credentialId: utils.uuid(),
+        credentialRequestMetadata,
+        credential: cred,
+        credentialDefinitionId: credentialDefinitionResult.credentialDefinitionId,
+        credentialDefinition: credentialDefinitionResult.credentialDefinition,
+        schema: schemaResult.schema,
+        revocationRegistry: revocationRegistryResult?.revocationRegistryDefinition
+          ? {
+              definition: revocationRegistryResult.revocationRegistryDefinition,
+              id: revocationRegistryResult.revocationRegistryDefinitionId,
+            }
+          : undefined,
+      })
     }
 
-    // assert the credential values match the offer values
-    const recordCredentialValues = convertAttributesToCredentialValues(credentialRecord.credentialAttributes)
-    assertCredentialValuesMatch(anonCredsCredential.values, recordCredentialValues)
-
-    const credentialId = await anonCredsHolderService.storeCredential(agentContext, {
-      credentialId: utils.uuid(),
-      credentialRequestMetadata,
-      credential: anonCredsCredential,
-      credentialDefinitionId: credentialDefinitionResult.credentialDefinitionId,
-      credentialDefinition: credentialDefinitionResult.credentialDefinition,
-      schema: schemaResult.schema,
-      revocationRegistry: revocationRegistryResult?.revocationRegistryDefinition
-        ? {
-            definition: revocationRegistryResult.revocationRegistryDefinition,
-            id: revocationRegistryResult.revocationRegistryDefinitionId,
-          }
-        : undefined,
-    })
-
     // If the credential is revocable, store the revocation identifiers in the credential record
-    if (anonCredsCredential.rev_reg_id) {
+    if (revocationRegistryResult?.revocationRegistryDefinitionId) {
       const credential = await anonCredsHolderService.getCredential(agentContext, { credentialId })
 
       credentialRecord.metadata.add<AnonCredsCredentialMetadata>(AnonCredsCredentialMetadataKey, {

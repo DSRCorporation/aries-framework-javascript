@@ -262,6 +262,7 @@ export class ProofsApi<PPs extends ProofProtocol[]> implements ProofsApi<PPs> {
       comment: options.comment,
       goalCode: options.goalCode,
       willConfirm: options.willConfirm,
+      isW3C: options.isW3C,
     })
 
     const outboundMessageContext = await getOutboundMessageContext(this.agentContext, {

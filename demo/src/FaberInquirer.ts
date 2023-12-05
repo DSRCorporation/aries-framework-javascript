@@ -91,13 +91,20 @@ export class FaberInquirer extends BaseInquirer {
   public async credential() {
     const registry = await prompt([this.inquireOptions([RegistryOptions.indy, RegistryOptions.cheqd])])
     await this.faber.importDid(registry.options)
-    await this.faber.issueCredential()
+    const confirm = await prompt([this.inquireConfirmation('Do you want to issue credential in W3C format')])
+
+    await this.faber.issueCredential(confirm.options == ConfirmOptions.Yes)
     const title = 'Is the credential offer accepted?'
     await this.listener.newAcceptedPrompt(title, this)
   }
 
   public async proof() {
-    await this.faber.sendProofRequest()
+    let isW3C = true
+    const confirm = await prompt([this.inquireConfirmation('Should be the proof in W3C format?')])
+    if (confirm.options === ConfirmOptions.No) {
+      isW3C = false
+    }
+    await this.faber.sendProofRequest(isW3C)
     const title = 'Is the proof request accepted?'
     await this.listener.newAcceptedPrompt(title, this)
   }

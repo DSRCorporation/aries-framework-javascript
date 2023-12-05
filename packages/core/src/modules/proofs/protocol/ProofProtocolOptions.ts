@@ -108,6 +108,7 @@ export interface CreateProofRequestOptions<PFs extends ProofFormatService[]> ext
 
   /** @default true */
   willConfirm?: boolean
+  isW3C?: boolean
 }
 
 export interface AcceptProofRequestOptions<PFs extends ProofFormatService[]> extends BaseOptions {

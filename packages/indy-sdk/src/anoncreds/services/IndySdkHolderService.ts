@@ -13,6 +13,8 @@ import type {
   CreateLinkSecretOptions,
   CreateLinkSecretReturn,
   GetCredentialsOptions,
+  AnonCredsCredential,
+  StoreW3CCredentialOptions,
 } from '@aries-framework/anoncreds'
 import type { AgentContext } from '@aries-framework/core'
 import type {
@@ -169,12 +171,25 @@ export class IndySdkHolderService implements AnonCredsHolderService {
     }
   }
 
+  public async createW3CProof(agentContext: AgentContext, options: CreateProofOptions): Promise<AnonCredsProof> {
+    throw new AriesFrameworkError('Not supported')
+  }
+
   public async storeCredential(agentContext: AgentContext, options: StoreCredentialOptions): Promise<string> {
     assertIndySdkWallet(agentContext.wallet)
     assertAllUnqualified({
-      schemaIds: [options.credentialDefinition.schemaId, options.credential.schema_id],
-      credentialDefinitionIds: [options.credentialDefinitionId, options.credential.cred_def_id],
-      revocationRegistryIds: [options.revocationRegistry?.id, options.credential.rev_reg_id],
+      schemaIds: [
+        options.credentialDefinition.schemaId,
+        (options.credential as unknown as AnonCredsCredential).schema_id,
+      ],
+      credentialDefinitionIds: [
+        options.credentialDefinitionId,
+        (options.credential as unknown as AnonCredsCredential).cred_def_id,
+      ],
+      revocationRegistryIds: [
+        options.revocationRegistry?.id,
+        (options.credential as unknown as AnonCredsCredential).rev_reg_id,
+      ],
     })
 
     const indyRevocationRegistryDefinition = options.revocationRegistry
@@ -189,7 +204,7 @@ export class IndySdkHolderService implements AnonCredsHolderService {
         agentContext.wallet.handle,
         options.credentialId ?? null,
         indySdkCredentialRequestMetadataFromAnonCreds(options.credentialRequestMetadata),
-        options.credential,
+        options.credential as unknown as AnonCredsCredential,
         indySdkCredentialDefinitionFromAnonCreds(options.credentialDefinitionId, options.credentialDefinition),
         indyRevocationRegistryDefinition
       )
@@ -200,6 +215,10 @@ export class IndySdkHolderService implements AnonCredsHolderService {
 
       throw isIndyError(error) ? new IndySdkError(error) : error
     }
+  }
+
+  public async storeW3CCredential(agentContext: AgentContext, options: StoreW3CCredentialOptions): Promise<string> {
+    throw new AriesFrameworkError('Not supported')
   }
 
   public async getCredential(

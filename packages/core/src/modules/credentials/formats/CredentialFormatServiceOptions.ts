@@ -55,6 +55,7 @@ export interface CredentialFormatProcessOptions {
 
 export interface CredentialFormatProcessCredentialOptions extends CredentialFormatProcessOptions {
   requestAttachment: Attachment
+  isW3C?: boolean
 }
 
 export interface CredentialFormatCreateProposalOptions<CF extends CredentialFormat> {
@@ -87,6 +88,7 @@ export interface CredentialFormatAcceptOfferOptions<CF extends CredentialFormat>
   attachmentId?: string
 
   offerAttachment: Attachment
+  isW3C?: boolean
 }
 
 export interface CredentialFormatCreateOfferReturn extends CredentialFormatCreateReturn {
@@ -105,6 +107,7 @@ export interface CredentialFormatAcceptRequestOptions<CF extends CredentialForma
 
   requestAttachment: Attachment
   offerAttachment?: Attachment
+  isW3C?: boolean
 }
 
 // Auto accept method interfaces

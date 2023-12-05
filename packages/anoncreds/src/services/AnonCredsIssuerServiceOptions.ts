@@ -33,6 +33,7 @@ export interface CreateCredentialOptions {
   revocationRegistryId?: string
   // TODO: should this just be the tails file instead of a path?
   tailsFilePath?: string
+  isW3C?: boolean
 }
 
 export interface CreateCredentialReturn {

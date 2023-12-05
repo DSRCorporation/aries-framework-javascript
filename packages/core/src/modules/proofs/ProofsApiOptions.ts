@@ -78,6 +78,7 @@ export interface CreateProofRequestOptions<PPs extends ProofProtocol[] = ProofPr
 
   /** @default true */
   willConfirm?: boolean
+  isW3C?: boolean
 }
 
 /**

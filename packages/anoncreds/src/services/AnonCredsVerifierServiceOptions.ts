@@ -6,9 +6,11 @@ import type {
   AnonCredsSchema,
 } from '../models/registry'
 
+import { AnonCredsW3CPresentation } from '../models/exchange'
+
 export interface VerifyProofOptions {
   proofRequest: AnonCredsProofRequest
-  proof: AnonCredsProof
+  proof: AnonCredsW3CPresentation | AnonCredsProof
   schemas: {
     [schemaId: string]: AnonCredsSchema
   }

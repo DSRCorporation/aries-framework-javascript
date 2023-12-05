@@ -13,7 +13,7 @@ export class Alice extends BaseAgent {
   }
 
   public static async build(): Promise<Alice> {
-    const alice = new Alice(9000, 'alice')
+    const alice = new Alice(9000, 'alice1')
     await alice.initializeAgent()
     return alice
   }

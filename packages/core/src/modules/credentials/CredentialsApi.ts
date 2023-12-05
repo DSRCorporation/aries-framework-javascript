@@ -265,6 +265,7 @@ export class CredentialsApi<CPs extends CredentialProtocol[]> implements Credent
       autoAcceptCredential: options.autoAcceptCredential,
       comment: options.comment,
       connectionRecord,
+      isW3C: options.isW3C,
     })
 
     this.logger.debug('Offer Message successfully created; message= ', message)

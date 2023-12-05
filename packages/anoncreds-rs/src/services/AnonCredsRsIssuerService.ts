@@ -24,7 +24,13 @@ import {
   AnonCredsCredentialDefinitionRepository,
 } from '@aries-framework/anoncreds'
 import { injectable, AriesFrameworkError } from '@aries-framework/core'
-import { Credential, CredentialDefinition, CredentialOffer, Schema } from '@hyperledger/anoncreds-shared'
+import {
+  Credential,
+  W3CCredential,
+  CredentialDefinition,
+  W3CCredentialOffer,
+  Schema,
+} from '@hyperledger/anoncreds-shared'
 
 import { AnonCredsRsError } from '../errors/AnonCredsRsError'
 
@@ -89,7 +95,7 @@ export class AnonCredsRsIssuerService implements AnonCredsIssuerService {
   ): Promise<AnonCredsCredentialOffer> {
     const { credentialDefinitionId } = options
 
-    let credentialOffer: CredentialOffer | undefined
+    let credentialOffer: W3CCredentialOffer | undefined
     try {
       // The getByCredentialDefinitionId supports both qualified and unqualified identifiers, even though the
       // record is always stored using the qualified identifier.
@@ -116,7 +122,7 @@ export class AnonCredsRsIssuerService implements AnonCredsIssuerService {
         schemaId = getUnqualifiedSchemaId(namespaceIdentifier, schemaName, schemaVersion)
       }
 
-      credentialOffer = CredentialOffer.create({
+      credentialOffer = W3CCredentialOffer.create({
         credentialDefinitionId,
         keyCorrectnessProof: keyCorrectnessProofRecord?.value,
         schemaId,
@@ -129,6 +135,17 @@ export class AnonCredsRsIssuerService implements AnonCredsIssuerService {
   }
 
   public async createCredential(
+    agentContext: AgentContext,
+    options: CreateCredentialOptions
+  ): Promise<CreateCredentialReturn> {
+    if (options.isW3C) {
+      return this.createCredentialW3c(agentContext, options)
+    } else {
+      return this.createCredentialLegacy(agentContext, options)
+    }
+  }
+
+  public async createCredentialLegacy(
     agentContext: AgentContext,
     options: CreateCredentialOptions
   ): Promise<CreateCredentialReturn> {
@@ -177,7 +194,70 @@ export class AnonCredsRsIssuerService implements AnonCredsIssuerService {
         credentialOffer: credentialOffer as unknown as JsonObject,
         credentialRequest: credentialRequest as unknown as JsonObject,
         revocationRegistryId,
-        attributeEncodedValues,
+        // attributeEncodedValues,
+        attributeRawValues,
+        credentialDefinitionPrivate: credentialDefinitionPrivateRecord.value,
+      })
+
+      return {
+        credential: credential.toJson() as unknown as AnonCredsCredential,
+        credentialRevocationId: credential.revocationRegistryIndex?.toString(),
+      }
+    } finally {
+      credential?.handle.clear()
+    }
+  }
+
+  public async createCredentialW3c(
+    agentContext: AgentContext,
+    options: CreateCredentialOptions
+  ): Promise<CreateCredentialReturn> {
+    const { tailsFilePath, credentialOffer, credentialRequest, credentialValues, revocationRegistryId } = options
+
+    let credential: W3CCredential | undefined
+    try {
+      if (revocationRegistryId || tailsFilePath) {
+        throw new AriesFrameworkError('Revocation not supported yet')
+      }
+
+      const attributeRawValues: Record<string, string> = {}
+      const attributeEncodedValues: Record<string, string> = {}
+
+      Object.keys(credentialValues).forEach((key) => {
+        attributeRawValues[key] = credentialValues[key].raw
+        attributeEncodedValues[key] = credentialValues[key].encoded
+      })
+
+      const credentialDefinitionRecord = await agentContext.dependencyManager
+        .resolve(AnonCredsCredentialDefinitionRepository)
+        .getByCredentialDefinitionId(agentContext, options.credentialRequest.cred_def_id)
+
+      // We fetch the private record based on the cred def id from the cred def record, as the
+      // credential definition id passed to this module could be unqualified, and the private record
+      // is only stored using the qualified identifier.
+      const credentialDefinitionPrivateRecord = await agentContext.dependencyManager
+        .resolve(AnonCredsCredentialDefinitionPrivateRepository)
+        .getByCredentialDefinitionId(agentContext, credentialDefinitionRecord.credentialDefinitionId)
+
+      let credentialDefinition = credentialDefinitionRecord.credentialDefinition
+
+      if (isUnqualifiedCredentialDefinitionId(options.credentialRequest.cred_def_id)) {
+        const { namespaceIdentifier, schemaName, schemaVersion } = parseIndySchemaId(credentialDefinition.schemaId)
+        const { namespaceIdentifier: unqualifiedDid } = parseIndyDid(credentialDefinition.issuerId)
+        parseIndyDid
+        credentialDefinition = {
+          ...credentialDefinition,
+          schemaId: getUnqualifiedSchemaId(namespaceIdentifier, schemaName, schemaVersion),
+          issuerId: unqualifiedDid,
+        }
+      }
+
+      credential = W3CCredential.create({
+        credentialDefinition: credentialDefinitionRecord.credentialDefinition as unknown as JsonObject,
+        credentialOffer: credentialOffer as unknown as JsonObject,
+        credentialRequest: credentialRequest as unknown as JsonObject,
+        revocationRegistryId,
+        // attributeEncodedValues,
         attributeRawValues,
         credentialDefinitionPrivate: credentialDefinitionPrivateRecord.value,
       })

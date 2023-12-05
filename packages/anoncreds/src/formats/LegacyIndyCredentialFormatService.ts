@@ -4,6 +4,7 @@ import type {
   AnonCredsCredentialOffer,
   AnonCredsCredentialRequest,
   AnonCredsCredentialRequestMetadata,
+  AnonCredsW3CCredential,
 } from '../models'
 import type { AnonCredsIssuerService, AnonCredsHolderService, GetRevocationRegistryDefinitionReturn } from '../services'
 import type { AnonCredsCredentialMetadata } from '../utils/metadata'
@@ -40,6 +41,7 @@ import {
   CredentialProblemReportReason,
   JsonTransformer,
 } from '@aries-framework/core'
+import { JsonObject, W3CCredential } from '@hyperledger/anoncreds-shared'
 
 import { AnonCredsError } from '../error'
 import { AnonCredsCredentialProposal } from '../models/AnonCredsCredentialProposal'
@@ -417,7 +419,7 @@ export class LegacyIndyCredentialFormatService implements CredentialFormatServic
     const credentialId = await anonCredsHolderService.storeCredential(agentContext, {
       credentialId: utils.uuid(),
       credentialRequestMetadata,
-      credential: anonCredsCredential,
+      credential: anonCredsCredential as unknown as AnonCredsCredential,
       credentialDefinitionId: credentialDefinitionResult.credentialDefinitionId,
       credentialDefinition: credentialDefinitionResult.credentialDefinition,
       schema: schemaResult.schema,

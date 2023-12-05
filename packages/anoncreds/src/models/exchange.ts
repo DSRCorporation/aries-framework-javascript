@@ -1,3 +1,5 @@
+import { SingleOrArray } from '@aries-framework/core/src/utils'
+
 export const anonCredsPredicateType = ['>=', '>', '<=', '<'] as const
 export type AnonCredsPredicateType = (typeof anonCredsPredicateType)[number]
 
@@ -56,6 +58,45 @@ export interface AnonCredsCredential {
   signature_correctness_proof: unknown
 }
 
+export interface AnonCredsW3CCredential {
+  context: Array<string>
+  type: Array<string>
+  issuer: string
+  issuanceDate?: string
+  credentialSchema: AnonCredsW3CCredentialSchema
+  credentialStatus?: AnonCredsW3CCredentialStatus
+  credentialSubject: Record<string, string>
+  proof: SingleOrArray<AnonCredsW3CCredentialProof>
+}
+
+export interface AnonCredsW3CCredentialSchema {
+  type: string
+  definition: string
+  schema: string
+  encoding: string
+}
+
+export interface AnonCredsW3CCredentialStatus {
+  type: string
+  id: string
+}
+export interface AnonCredsW3CCredentialProof {
+  type: string
+  signature: string
+}
+
+export interface AnonCredsW3CPresentation {
+  context: Array<string>
+  type: Array<string>
+  verifiableCredential: Array<AnonCredsW3CCredential>
+  proof: AnonCredsW3CPresentationProof
+}
+
+export interface AnonCredsW3CPresentationProof {
+  type: string
+  challenge: string
+  proofValue: string
+}
 export interface AnonCredsProof {
   requested_proof: {
     revealed_attrs: Record<
@@ -122,4 +163,5 @@ export interface AnonCredsProofRequest {
   requested_predicates: Record<string, AnonCredsRequestedPredicate>
   non_revoked?: AnonCredsNonRevokedInterval
   ver?: '1.0' | '2.0'
+  isW3C?: boolean
 }

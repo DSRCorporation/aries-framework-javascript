@@ -70,6 +70,7 @@ export interface CreateCredentialOfferOptions<CPs extends CredentialProtocol[] =
   extends BaseOptions {
   protocolVersion: CredentialProtocolVersionType<CPs>
   credentialFormats: CredentialFormatPayload<CredentialFormatsFromProtocols<CPs>, 'createOffer'>
+  isW3C?: boolean
 }
 
 /**

@@ -29,7 +29,7 @@ export class Faber extends BaseAgent {
   }
 
   public static async build(): Promise<Faber> {
-    const faber = new Faber(9001, 'faber')
+    const faber = new Faber(9001, 'faber1')
     await faber.initializeAgent()
     return faber
   }
@@ -195,7 +195,7 @@ export class Faber extends BaseAgent {
     return this.credentialDefinition
   }
 
-  public async issueCredential() {
+  public async issueCredential(isW3C?: boolean) {
     const schema = await this.registerSchema()
     const credentialDefinition = await this.registerCredentialDefinition(schema.schemaId)
     const connectionRecord = await this.getConnectionRecord()
@@ -224,6 +224,7 @@ export class Faber extends BaseAgent {
           credentialDefinitionId: credentialDefinition.credentialDefinitionId,
         },
       },
+      isW3C,
     })
     this.ui.updateBottomBar(
       `\nCredential offer sent!\n\nGo to the Alice agent to accept the credential offer\n\n${Color.Reset}`
@@ -251,7 +252,7 @@ export class Faber extends BaseAgent {
     return proofAttribute
   }
 
-  public async sendProofRequest() {
+  public async sendProofRequest(isW3C?: boolean) {
     const connectionRecord = await this.getConnectionRecord()
     const proofAttribute = await this.newProofAttribute()
     await this.printProofFlow(greenText('\nRequesting proof...\n', false))
@@ -266,6 +267,7 @@ export class Faber extends BaseAgent {
           requested_attributes: proofAttribute,
         },
       },
+      isW3C: isW3C,
     })
     this.ui.updateBottomBar(
       `\nProof request sent!\n\nGo to the Alice agent to accept the proof request\n\n${Color.Reset}`

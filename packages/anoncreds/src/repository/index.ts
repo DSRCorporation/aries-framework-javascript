@@ -1,5 +1,5 @@
-export * from './AnonCredsCredentialRecord'
-export * from './AnonCredsCredentialRepository'
+export * from './AnonCredsW3CCredentialRecord'
+export * from './AnonCredsW3CCredentialRepository'
 export * from './AnonCredsCredentialDefinitionRecord'
 export * from './AnonCredsCredentialDefinitionRepository'
 export * from './AnonCredsCredentialDefinitionPrivateRecord'
