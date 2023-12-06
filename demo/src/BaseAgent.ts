@@ -13,6 +13,7 @@ import {
 } from '@aries-framework/anoncreds'
 import { AnonCredsRsModule } from '@aries-framework/anoncreds-rs'
 import { AskarModule } from '@aries-framework/askar'
+import { CardanoAnonCredsRegistry } from '@aries-framework/cardano'
 import {
   CheqdAnonCredsRegistry,
   CheqdDidRegistrar,
@@ -138,7 +139,15 @@ function getAskarAnonCredsIndyModules() {
       ],
     }),
     anoncreds: new AnonCredsModule({
-      registries: [new IndyVdrAnonCredsRegistry(), new CheqdAnonCredsRegistry()],
+      registries: [
+        new IndyVdrAnonCredsRegistry(),
+        new CheqdAnonCredsRegistry(),
+        new CardanoAnonCredsRegistry({
+          blockfrostProjectId: 'CHANGE',
+          cardanoNerwork: 'preview',
+          cardanoAddressCborHex: 'CHANGE',
+        }),
+      ],
     }),
     anoncredsRs: new AnonCredsRsModule({
       anoncreds,

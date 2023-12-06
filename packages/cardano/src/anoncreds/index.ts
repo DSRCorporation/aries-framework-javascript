@@ -1,0 +1,1 @@
+export { CardanoAnonCredsRegistry } from './CardanoAnonCredsRegistry'

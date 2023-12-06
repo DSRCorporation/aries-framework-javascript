@@ -6,6 +6,7 @@ import type {
   V1OfferCredentialMessage,
   V1RequestPresentationMessage,
   AnonCredsProofRequest,
+  AnonCredsCredentialOffer,
 } from '@aries-framework/anoncreds'
 import type {
   Agent,
@@ -49,9 +50,11 @@ export class Listener {
   }
 
   private printCredentialAttributes(credentialOffer: V1OfferCredentialMessage | V2OfferCredentialMessage) {
+    const offerJson = credentialOffer.offerAttachments[0].getDataAsJson<AnonCredsCredentialOffer>()
     if (credentialOffer.credentialPreview) {
       const attribute = credentialOffer.credentialPreview.attributes
       console.log('\n\nCredential preview:')
+      console.log(purpleText(`Credential Definition ID: ${offerJson.cred_def_id}`))
       attribute.forEach((element) => {
         console.log(purpleText(`${element.name} ${Color.Reset}${element.value}`))
       })
@@ -66,10 +69,12 @@ export class Listener {
       console.log(' Requested attributes:\n')
       for (const [, requested_attribute] of Object.entries(requestJson.requested_attributes)) {
         if (requested_attribute.name) {
-          console.log(purpleText(` ${requested_attribute.name}`))
-        }
-        if (requested_attribute.names) {
-          console.log(purpleText(` ${requested_attribute.names}`))
+          const cred_def_id = requested_attribute.restrictions
+            ? requested_attribute.restrictions[0].cred_def_id
+            : 'None'
+          console.log(
+            purpleText(` Attribute: ${requested_attribute.name}     Credential Definition ID: ${cred_def_id}`)
+          )
         }
       }
     }
@@ -121,8 +126,6 @@ export class Listener {
 
   private async newProofRequestPrompt(alice: Alice, proofRecord: ProofExchangeRecord, aliceInquirer: AliceInquirer) {
     const proofRequest = await alice.agent.proofs.findRequestMessage(proofRecord.id)
-    console.log('payload.proofRequest')
-    console.log(proofRequest)
     if (proofRequest) {
       this.printRequestedAttributes(proofRequest)
     }

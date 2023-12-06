@@ -24,6 +24,8 @@ enum PromptOptions {
   Restart = 'Restart',
 }
 
+const networks = [RegistryOptions.indy, RegistryOptions.cheqd, RegistryOptions.cardano]
+
 export class FaberInquirer extends BaseInquirer {
   public faber: Faber
   public promptOptionsString: string[]
@@ -98,22 +100,22 @@ export class FaberInquirer extends BaseInquirer {
   }
 
   public async setupIssuer() {
-    const registry = await prompt([this.inquireOptions([RegistryOptions.indy, RegistryOptions.cheqd])])
+    const registry = await prompt([this.inquireOptions(networks)])
     await this.faber.importDid(registry.options)
     await this.faber.setupIssuer(registry.options)
     await this.processAnswer()
   }
 
   public async credential() {
-    const registry = await prompt([this.inquireOptions([RegistryOptions.indy, RegistryOptions.cheqd])])
-    await this.faber.importDid(registry.options)
+    const registry = await prompt([this.inquireOptions(networks)])
     await this.faber.issueCredential(registry.options)
     const title = 'Is the credential offer accepted?'
     await this.listener.newAcceptedPrompt(title, this)
   }
 
   public async proof() {
-    await this.faber.sendProofRequest()
+    const registry = await prompt([this.inquireOptions(networks)])
+    await this.faber.sendProofRequest(registry.options)
     const title = 'Is the proof request accepted?'
     await this.listener.newAcceptedPrompt(title, this)
   }

@@ -15,12 +15,14 @@ import { Color, Output, greenText, purpleText, redText } from './OutputClass'
 export enum RegistryOptions {
   indy = 'did:indy',
   cheqd = 'did:cheqd',
+  cardano = 'did:cardano',
 }
 
 export class Faber extends BaseAgent {
   public outOfBandId?: string
   public indyCredentialDefinition?: RegisterCredentialDefinitionReturnStateFinished
   public cheqdCredentialDefinition?: RegisterCredentialDefinitionReturnStateFinished
+  public cardanoCredentialDefinition?: RegisterCredentialDefinitionReturnStateFinished
   public anonCredsIssuerId?: string
   public ui: BottomBar
 
@@ -43,18 +45,40 @@ export class Faber extends BaseAgent {
     const cheqdDid = 'did:cheqd:testnet:d37eba59-513d-42d3-8f9f-d1df0548b675'
     const indyDid = `did:indy:${indyNetworkConfig.indyNamespace}:${unqualifiedIndyDid}`
 
-    const did = registry === RegistryOptions.indy ? indyDid : cheqdDid
-    await this.agent.dids.import({
-      did,
-      overwrite: true,
-      privateKeys: [
-        {
+    if (registry === RegistryOptions.indy) {
+      await this.agent.dids.import({
+        did: indyDid,
+        overwrite: true,
+        privateKeys: [
+          {
+            keyType: KeyType.Ed25519,
+            privateKey: TypedArrayEncoder.fromString('afjdemoverysercure00000000000000'),
+          },
+        ],
+      })
+      this.anonCredsIssuerId = indyDid
+    } else if (registry === RegistryOptions.cheqd) {
+      await this.agent.dids.import({
+        did: cheqdDid,
+        overwrite: true,
+        privateKeys: [
+          {
+            keyType: KeyType.Ed25519,
+            privateKey: TypedArrayEncoder.fromString('afjdemoverysercure00000000000000'),
+          },
+        ],
+      })
+      this.anonCredsIssuerId = cheqdDid
+    } else {
+      const didResult = await this.agent.dids.create({
+        method: 'key',
+        options: {
           keyType: KeyType.Ed25519,
-          privateKey: TypedArrayEncoder.fromString('afjdemoverysercure00000000000000'),
         },
-      ],
-    })
-    this.anonCredsIssuerId = did
+      })
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      this.anonCredsIssuerId = didResult.didState.did!
+    }
   }
 
   private async getConnectionRecord() {
@@ -204,18 +228,24 @@ export class Faber extends BaseAgent {
     console.log(greenText(`Credential Definition ID: ${credentialDefinition.credentialDefinitionId}`))
     if (registry === RegistryOptions.indy) {
       this.indyCredentialDefinition = credentialDefinition
-    } else {
+    } else if (registry === RegistryOptions.cheqd) {
       this.cheqdCredentialDefinition = credentialDefinition
+    } else {
+      this.cardanoCredentialDefinition = credentialDefinition
     }
   }
 
   public async issueCredential(registry: string) {
     const connectionRecord = await this.getConnectionRecord()
 
-    const indyCredentialDefinition =
-      registry === RegistryOptions.indy ? this.indyCredentialDefinition : this.cheqdCredentialDefinition
+    const credentialDefinition =
+      registry === RegistryOptions.indy
+        ? this.indyCredentialDefinition
+        : registry === RegistryOptions.cheqd
+        ? this.cheqdCredentialDefinition
+        : this.cardanoCredentialDefinition
 
-    if (!indyCredentialDefinition) {
+    if (!credentialDefinition) {
       throw new Error(redText('Issuer is not ready'))
     }
 
@@ -237,7 +267,7 @@ export class Faber extends BaseAgent {
     ]
 
     console.log('------------------')
-    console.log(purpleText(`Credential Definition ID: ${indyCredentialDefinition.credentialDefinitionId}`))
+    console.log(purpleText(`Credential Definition ID: ${credentialDefinition.credentialDefinitionId}`))
 
     attributes.forEach((element) => {
       console.log(purpleText(`${element.name} ${Color.Reset}${element.value}`))
@@ -254,7 +284,7 @@ export class Faber extends BaseAgent {
       credentialFormats: {
         anoncreds: {
           attributes: attributes,
-          credentialDefinitionId: indyCredentialDefinition.credentialDefinitionId,
+          credentialDefinitionId: credentialDefinition.credentialDefinitionId,
         },
       },
     })
@@ -268,14 +298,20 @@ export class Faber extends BaseAgent {
     await new Promise((f) => setTimeout(f, 2000))
   }
 
-  private async newProofAttribute() {
-    await this.printProofFlow(greenText(`Creating new proof attribute for 'name' and ''degree ...\n`))
+  private async newProofAttribute(credentialDefinitionId: string) {
+    console.log(purpleText(`Credential Definition ID: ${credentialDefinitionId}`))
+    console.log(purpleText(`Request attributes: 'name' and 'degree\n\n`))
+    console.log('')
+    console.log('')
+    console.log('')
+
+    await this.printProofFlow(greenText(`Creating request...`))
     const proofAttribute = {
       name: {
         name: 'name',
         restrictions: [
           {
-            cred_def_id: this.indyCredentialDefinition?.credentialDefinitionId,
+            cred_def_id: credentialDefinitionId,
           },
         ],
       },
@@ -283,7 +319,7 @@ export class Faber extends BaseAgent {
         name: 'degree',
         restrictions: [
           {
-            cred_def_id: this.indyCredentialDefinition?.credentialDefinitionId,
+            cred_def_id: credentialDefinitionId,
           },
         ],
       },
@@ -292,9 +328,20 @@ export class Faber extends BaseAgent {
     return proofAttribute
   }
 
-  public async sendProofRequest() {
+  public async sendProofRequest(registry: string) {
+    const credentialDefinition =
+      registry === RegistryOptions.indy
+        ? this.indyCredentialDefinition
+        : registry === RegistryOptions.cheqd
+        ? this.cheqdCredentialDefinition
+        : this.cardanoCredentialDefinition
+
+    if (!credentialDefinition) {
+      throw new Error(redText('Issuer is not ready'))
+    }
+
     const connectionRecord = await this.getConnectionRecord()
-    const proofAttribute = await this.newProofAttribute()
+    const proofAttribute = await this.newProofAttribute(credentialDefinition?.credentialDefinitionId)
     await this.printProofFlow(greenText('\nRequesting proof...\n', false))
 
     await this.agent.proofs.requestProof({
