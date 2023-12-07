@@ -1,6 +1,4 @@
 import type { InitConfig } from '@aries-framework/core'
-import type { IndySdkPoolConfig } from '@aries-framework/indy-sdk'
-import type { IndyVdrPoolConfig } from '@aries-framework/indy-vdr'
 
 import {
   AnonCredsCredentialFormatService,
@@ -32,7 +30,10 @@ import {
   CredentialsModule,
   Agent,
   HttpOutboundTransport,
+  W3cCredentialsModule,
+  JsonLdCredentialFormatService,
 } from '@aries-framework/core'
+import { defaultDocumentLoader } from '@aries-framework/core/src/modules/vc/data-integrity/libraries/documentLoader'
 import { IndySdkAnonCredsRegistry, IndySdkModule, IndySdkSovDidResolver } from '@aries-framework/indy-sdk'
 import { IndyVdrIndyDidResolver, IndyVdrAnonCredsRegistry, IndyVdrModule } from '@aries-framework/indy-vdr'
 import { agentDependencies, HttpInboundTransport } from '@aries-framework/node'
@@ -56,7 +57,7 @@ export const indyNetworkConfig = {
   indyNamespace: 'bcovrin:test',
   isProduction: false,
   connectOnStartup: true,
-} satisfies IndySdkPoolConfig | IndyVdrPoolConfig
+}
 
 type DemoAgent = Agent<ReturnType<typeof getAskarAnonCredsIndyModules>>
 
@@ -86,7 +87,7 @@ export class BaseAgent {
         key: name,
       },
       endpoints: [`http://localhost:${this.port}`],
-    } satisfies InitConfig
+    }
 
     this.config = config
 
@@ -116,6 +117,9 @@ function getAskarAnonCredsIndyModules() {
     connections: new ConnectionsModule({
       autoAcceptConnections: true,
     }),
+    w3cCredentials: new W3cCredentialsModule({
+      documentLoader: defaultDocumentLoader,
+    }),
     credentials: new CredentialsModule({
       autoAcceptCredentials: AutoAcceptCredential.ContentApproved,
       credentialProtocols: [
@@ -123,7 +127,11 @@ function getAskarAnonCredsIndyModules() {
           indyCredentialFormat: legacyIndyCredentialFormatService,
         }),
         new V2CredentialProtocol({
-          credentialFormats: [legacyIndyCredentialFormatService, new AnonCredsCredentialFormatService()],
+          credentialFormats: [
+            legacyIndyCredentialFormatService,
+            new AnonCredsCredentialFormatService(),
+            new JsonLdCredentialFormatService(),
+          ],
         }),
       ],
     }),

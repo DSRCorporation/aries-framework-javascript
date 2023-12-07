@@ -24,7 +24,13 @@ enum PromptOptions {
   Restart = 'Restart',
 }
 
-const networks = [RegistryOptions.indy, RegistryOptions.cheqd, RegistryOptions.cardano]
+const options = [
+  RegistryOptions.indy,
+  RegistryOptions.cheqd,
+  RegistryOptions.cardano,
+  RegistryOptions.w3ccheqd,
+  RegistryOptions.w3cdidkey,
+]
 
 export class FaberInquirer extends BaseInquirer {
   public faber: Faber
@@ -100,21 +106,27 @@ export class FaberInquirer extends BaseInquirer {
   }
 
   public async setupIssuer() {
-    const registry = await prompt([this.inquireOptions(networks)])
-    await this.faber.importDid(registry.options)
+    const registry = await prompt([this.inquireOptions(options)])
+    await this.faber.importIssuerDid(registry.options)
     await this.faber.setupIssuer(registry.options)
     await this.processAnswer()
   }
 
   public async credential() {
-    const registry = await prompt([this.inquireOptions(networks)])
-    await this.faber.issueCredential(registry.options)
+    const registry = await prompt([this.inquireOptions(options)])
+    if (registry.options === RegistryOptions.w3ccheqd || registry.options === RegistryOptions.w3cdidkey) {
+      await this.faber.issueW3CCredential(registry.options)
+    } else {
+      await this.faber.issueCredential(registry.options)
+    }
     const title = 'Is the credential offer accepted?'
     await this.listener.newAcceptedPrompt(title, this)
   }
 
   public async proof() {
-    const registry = await prompt([this.inquireOptions(networks)])
+    const registry = await prompt([
+      this.inquireOptions([RegistryOptions.indy, RegistryOptions.cheqd, RegistryOptions.cardano]),
+    ])
     await this.faber.sendProofRequest(registry.options)
     const title = 'Is the proof request accepted?'
     await this.listener.newAcceptedPrompt(title, this)

@@ -17,6 +17,7 @@ import type {
   ProofStateChangedEvent,
   V2OfferCredentialMessage,
   V2RequestPresentationMessage,
+  JsonLdFormatDataCredentialDetail,
 } from '@aries-framework/core'
 import type BottomBar from 'inquirer/lib/ui/bottom-bar'
 
@@ -25,12 +26,13 @@ import {
   BasicMessageRole,
   CredentialEventTypes,
   CredentialState,
+  isJsonObject,
   ProofEventTypes,
   ProofState,
 } from '@aries-framework/core'
 import { ui } from 'inquirer'
 
-import { Color, purpleText } from './OutputClass'
+import { Color, greenText, purpleText } from './OutputClass'
 
 export class Listener {
   public on: boolean
@@ -50,13 +52,27 @@ export class Listener {
   }
 
   private printCredentialAttributes(credentialOffer: V1OfferCredentialMessage | V2OfferCredentialMessage) {
-    const offerJson = credentialOffer.offerAttachments[0].getDataAsJson<AnonCredsCredentialOffer>()
-    if (credentialOffer.credentialPreview) {
-      const attribute = credentialOffer.credentialPreview.attributes
+    const attachment = credentialOffer.offerAttachments[0]
+    const anonCredsOfferJson = attachment.getDataAsJson<AnonCredsCredentialOffer>()
+    const w3cOffer = attachment.getDataAsJson<JsonLdFormatDataCredentialDetail>()
+
+    if (anonCredsOfferJson.cred_def_id) {
+      if (credentialOffer.credentialPreview) {
+        const attribute = credentialOffer.credentialPreview.attributes
+        console.log('\n\nCredential preview:')
+        console.log(purpleText(`Credential Definition ID: ${anonCredsOfferJson.cred_def_id}`))
+        attribute.forEach((element) => {
+          console.log(purpleText(`${element.name} ${Color.Reset}${element.value}`))
+        })
+        console.log('\n\n')
+        return
+      }
+    }
+    if (w3cOffer && isJsonObject(w3cOffer.credential.credentialSubject)) {
       console.log('\n\nCredential preview:')
-      console.log(purpleText(`Credential Definition ID: ${offerJson.cred_def_id}`))
-      attribute.forEach((element) => {
-        console.log(purpleText(`${element.name} ${Color.Reset}${element.value}`))
+      Object.keys(w3cOffer.credential.credentialSubject).forEach((key) => {
+        // @ts-ignore
+        console.log(purpleText(`${key} ${Color.Reset}${JSON.stringify(w3cOffer.credential.credentialSubject[key])}`))
       })
       console.log('\n\n')
     }
@@ -111,6 +127,9 @@ export class Listener {
       async ({ payload }: CredentialStateChangedEvent) => {
         if (payload.credentialRecord.state === CredentialState.OfferReceived) {
           await this.newCredentialPrompt(alice, payload.credentialRecord, aliceInquirer)
+        }
+        if (payload.credentialRecord.state === CredentialState.Done) {
+          console.log(greenText(`\n\nCredential received!\n\n`))
         }
       }
     )

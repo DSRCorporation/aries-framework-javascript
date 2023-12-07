@@ -29,21 +29,28 @@ export class CheqdDidResolver implements DidResolver {
         throw new Error('Invalid DID')
       }
 
+      let didResult: DidResolutionResult
+
       switch (did) {
         case did.match(cheqdDidRegex)?.input:
-          return await this.resolveDidDoc(agentContext, parsedDid.did)
+          didResult = await this.resolveDidDoc(agentContext, parsedDid.did)
+          break
         case did.match(cheqdDidVersionRegex)?.input: {
           const version = did.split('/')[2]
-          return await this.resolveDidDoc(agentContext, parsedDid.did, version)
+          didResult = await this.resolveDidDoc(agentContext, parsedDid.did, version)
+          break
         }
         case did.match(cheqdDidVersionsRegex)?.input:
-          return await this.resolveAllDidDocVersions(agentContext, parsedDid)
+          didResult = await this.resolveAllDidDocVersions(agentContext, parsedDid)
+          break
         case did.match(cheqdDidMetadataRegex)?.input:
-          return await this.dereferenceCollectionResources(agentContext, parsedDid)
+          didResult = await this.dereferenceCollectionResources(agentContext, parsedDid)
+          break
         case did.match(cheqdResourceMetadataRegex)?.input:
-          return await this.dereferenceResourceMetadata(agentContext, parsedDid)
+          didResult = await this.dereferenceResourceMetadata(agentContext, parsedDid)
+          break
         default:
-          return {
+          didResult = {
             didDocument: null,
             didDocumentMetadata,
             didResolutionMetadata: {
@@ -52,6 +59,13 @@ export class CheqdDidResolver implements DidResolver {
             },
           }
       }
+
+      // FIXME: Duty hack to get cheqd Demo DID working for w3c credentials
+      if (didResult.didDocument && !didResult.didDocument.assertionMethod && didResult.didDocument.authentication) {
+        didResult.didDocument.assertionMethod = [didResult.didDocument.authentication[0]]
+      }
+
+      return didResult
     } catch (error) {
       return {
         didDocument: null,

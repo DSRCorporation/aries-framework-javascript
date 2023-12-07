@@ -6,12 +6,16 @@ import { isBase58 } from 'class-validator'
 const ID_CHAR = '([a-z,A-Z,0-9,-])'
 const NETWORK = '(testnet|mainnet)'
 const IDENTIFIER = `((?:${ID_CHAR}*:)*(${ID_CHAR}+))`
+const PARAM_CHAR = '[a-zA-Z0-9_.:%-]'
+const PARAM = `;${PARAM_CHAR}+=${PARAM_CHAR}*`
+const PARAMS = `((${PARAM})*)`
 const PATH = `(/[^#?]*)?`
 const QUERY = `([?][^#]*)?`
+const FRAGMENT = `(#.*)?`
 const VERSION_ID = `(.*?)`
 
 export const cheqdSdkAnonCredsRegistryIdentifierRegex = new RegExp(
-  `^did:cheqd:${NETWORK}:${IDENTIFIER}${PATH}${QUERY}$`
+  `^did:cheqd:${NETWORK}:${IDENTIFIER}${PARAMS}${PATH}${QUERY}${FRAGMENT}$`
 )
 
 export const cheqdDidRegex = new RegExp(`^did:cheqd:${NETWORK}:${IDENTIFIER}${QUERY}$`)
