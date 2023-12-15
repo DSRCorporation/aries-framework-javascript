@@ -93,6 +93,7 @@ export function getOfferedCredentialsWithMetadata(
       const foundSupportedCredentials = supportedCredentials.filter(
         (supportedCredential) =>
           supportedCredential.id === offeredCredential ||
+          supportedCredential.id === offeredCredential + 'Jwt' ||
           supportedCredential.id ===
             `${offeredCredential}-${getFormatForVersion(supportedCredential.format, OpenId4VCIVersion.VER_1_0_08)}`
       )

@@ -2599,26 +2599,32 @@
     cross-fetch "^3.1.5"
     did-resolver "^4.1.0"
 
-"@sphereon/oid4vci-client@file:../Sphereon/sphereon-oidvci-client-0.8.1":
-  version "0.8.1"
+"@sphereon/oid4vci-client@0.8.2":
+  version "0.8.2-next.12"
+  resolved "https://registry.yarnpkg.com/@sphereon/oid4vci-client/-/oid4vci-client-0.8.2-next.12.tgz#4db8f8941860b9c14d878bfb01d14d707dfab05c"
+  integrity sha512-e00YkSl42ZuSatDS1oc20aIHK3ibVo1m98EZVknDc1FTSrDM9p4i3XnA7PzYCqag+1Y3KemHklbBakWB4PJZ2g==
   dependencies:
-    "@sphereon/oid4vci-common" "file:../../../Library/Caches/Yarn/v6/npm-@sphereon-oid4vci-client-0.8.1-9e507f08-cbb1-4d9a-b896-929b2cd56c8c-1702036843167/node_modules/@sphereon/sphereon-oid4vci-common-0.8.1"
+    "@sphereon/oid4vci-common" "0.8.2-next.12+1595df2"
     "@sphereon/ssi-types" "0.17.2"
     cross-fetch "^3.1.8"
     debug "^4.3.4"
 
-"@sphereon/oid4vci-common@0.8.1", "@sphereon/oid4vci-common@file:../Sphereon/sphereon-oid4vci-common-0.8.1":
-  version "0.8.1"
+"@sphereon/oid4vci-common@0.8.2", "@sphereon/oid4vci-common@0.8.2-next.12+1595df2":
+  version "0.8.2-next.12"
+  resolved "https://registry.yarnpkg.com/@sphereon/oid4vci-common/-/oid4vci-common-0.8.2-next.12.tgz#03469d8324aac45d5be9ac83761d8e7eb726dcb3"
+  integrity sha512-5EanskXwcafFnWPEp+63keSzsyd8hraokmbRubJNNdH4+IFDWSlGzMIn0ZkXXgSVapS3uw/tZuB/pRPP/Cy0aA==
   dependencies:
     "@sphereon/ssi-types" "0.17.2"
     cross-fetch "^3.1.8"
     jwt-decode "^3.1.2"
 
-"@sphereon/oid4vci-issuer-server@file:../Sphereon/sphereon-oid4vci-issuer-server-0.8.1":
-  version "0.8.1"
+"@sphereon/oid4vci-issuer-server@0.8.2":
+  version "0.8.2-next.12"
+  resolved "https://registry.yarnpkg.com/@sphereon/oid4vci-issuer-server/-/oid4vci-issuer-server-0.8.2-next.12.tgz#8ef7200d098bfea52ca3a8b1f4de702c6b2ec0fc"
+  integrity sha512-bMAscZC97xpvK0OlJrkBOY7bMxsuT7Ls2WxWtn8hOGYHzHlTDRS6MQWtli/UICr9Te+T5GGX+mYEe8TohF1ytg==
   dependencies:
-    "@sphereon/oid4vci-common" "file:../../../Library/Caches/Yarn/v6/npm-@sphereon-oid4vci-issuer-server-0.8.1-59950255-e85d-4321-ab13-55be7622189a-1702036843161/node_modules/@sphereon/sphereon-oid4vci-common-0.8.1"
-    "@sphereon/oid4vci-issuer" "file:../../../Library/Caches/Yarn/v6/npm-@sphereon-oid4vci-issuer-server-0.8.1-59950255-e85d-4321-ab13-55be7622189a-1702036843161/node_modules/@sphereon/sphereon-oid4vci-issuer-0.8.1"
+    "@sphereon/oid4vci-common" "0.8.2-next.12+1595df2"
+    "@sphereon/oid4vci-issuer" "0.8.2-next.12+1595df2"
     "@sphereon/ssi-express-support" "0.17.2"
     "@sphereon/ssi-types" "0.17.2"
     body-parser "^1.20.2"
@@ -2629,10 +2635,12 @@
     http-terminator "^3.2.0"
     uuid "^9.0.0"
 
-"@sphereon/oid4vci-issuer@file:../Sphereon/sphereon-oid4vci-issuer-0.8.1":
-  version "0.8.1"
+"@sphereon/oid4vci-issuer@0.8.2", "@sphereon/oid4vci-issuer@0.8.2-next.12+1595df2":
+  version "0.8.2-next.12"
+  resolved "https://registry.yarnpkg.com/@sphereon/oid4vci-issuer/-/oid4vci-issuer-0.8.2-next.12.tgz#2d838da92d824baa4c32704b28836fe222a9d47b"
+  integrity sha512-FqWyKxqFUT93ECZyhYSmBsN5ZZkG0KNlUZwJsj2+89ucEXsUe9OvppF9EGkyFI1pVXTGd7dpTwhb+0+9S0jeuw==
   dependencies:
-    "@sphereon/oid4vci-common" "0.8.1"
+    "@sphereon/oid4vci-common" "0.8.2-next.12+1595df2"
     "@sphereon/ssi-types" "0.17.2"
     uuid "^9.0.0"
 
