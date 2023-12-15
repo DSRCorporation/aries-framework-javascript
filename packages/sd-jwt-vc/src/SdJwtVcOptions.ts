@@ -9,8 +9,8 @@ export type SdJwtVcCreateOptions<Payload extends Record<string, unknown> = Recor
   hashingAlgorithm?: HashName
 }
 
-export type SdJwtVcReceiveOptions = {
-  issuerDidUrl: string
+export type SdJwtVcFromSerializedJwtOptions = {
+  issuerDidUrl?: string
   holderDidUrl: string
 }
 

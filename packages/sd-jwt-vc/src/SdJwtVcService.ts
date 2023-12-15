@@ -1,7 +1,8 @@
+import type { SdJwtCredential } from './SdJwtCredential'
 import type {
   SdJwtVcCreateOptions,
   SdJwtVcPresentOptions,
-  SdJwtVcReceiveOptions,
+  SdJwtVcFromSerializedJwtOptions,
   SdJwtVcVerifyOptions,
 } from './SdJwtVcOptions'
 import type { AgentContext, JwkJson, Query } from '@aries-framework/core'
@@ -98,6 +99,78 @@ export class SdJwtVcService {
     }
   }
 
+  public async signCredential<Payload extends Record<string, unknown> = Record<string, unknown>>(
+    agentContext: AgentContext,
+    sdJwtCredential: SdJwtCredential<Payload>
+  ): Promise<{ sdJwtVcRecord: SdJwtVcRecord; compact: string }> {
+    const { holderDidUrl, issuerDidUrl, payload, disclosureFrame, hashingAlgorithm, jsonWebAlgorithm } = sdJwtCredential
+
+    if (hashingAlgorithm !== 'sha2-256') {
+      throw new SdJwtVcError(`Unsupported hashing algorithm used: ${hashingAlgorithm}`)
+    }
+
+    const parsedDid = parseDid(issuerDidUrl)
+    if (!parsedDid.fragment) {
+      throw new SdJwtVcError(
+        `issuer did url '${issuerDidUrl}' does not contain a '#'. Unable to derive key from did document`
+      )
+    }
+
+    const { verificationMethod: issuerVerificationMethod, didDocument: issuerDidDocument } = await this.resolveDidUrl(
+      agentContext,
+      issuerDidUrl
+    )
+    const issuerKey = getKeyFromVerificationMethod(issuerVerificationMethod)
+    const alg = jsonWebAlgorithm ?? getJwkFromKey(issuerKey).supportedSignatureAlgorithms[0]
+
+    const { verificationMethod: holderVerificationMethod } = await this.resolveDidUrl(agentContext, holderDidUrl)
+    const holderKey = getKeyFromVerificationMethod(holderVerificationMethod)
+    const holderKeyJwk = getJwkFromKey(holderKey).toJson()
+
+    const header = {
+      alg: alg.toString(),
+      typ: 'vc+sd-jwt',
+      kid: parsedDid.fragment,
+    }
+
+    const sdJwtVc = new SdJwtVc<typeof header, Payload>({}, { disclosureFrame })
+      .withHasher(this.hasher)
+      .withSigner(this.signer(agentContext, issuerKey))
+      .withSaltGenerator(agentContext.wallet.generateNonce)
+      .withHeader(header)
+      .withPayload({ ...payload })
+
+    // Add the `cnf` claim for the holder key binding
+    sdJwtVc.addPayloadClaim('cnf', { jwk: holderKeyJwk })
+
+    // Add the issuer DID as the `iss` claim
+    sdJwtVc.addPayloadClaim('iss', issuerDidDocument.id)
+
+    // Add the issued at (iat) claim
+    sdJwtVc.addPayloadClaim('iat', Math.floor(new Date().getTime() / 1000))
+
+    const compact = await sdJwtVc.toCompact()
+
+    if (!sdJwtVc.signature) {
+      throw new SdJwtVcError('Invalid sd-jwt-vc state. Signature should have been set when calling `toCompact`.')
+    }
+
+    const sdJwtVcRecord = new SdJwtVcRecord<typeof header, Payload>({
+      sdJwtVc: {
+        header: sdJwtVc.header,
+        payload: sdJwtVc.payload,
+        signature: sdJwtVc.signature,
+        disclosures: sdJwtVc.disclosures?.map((d) => d.decoded),
+        holderDidUrl,
+      },
+    })
+
+    return {
+      sdJwtVcRecord,
+      compact,
+    }
+  }
+
   public async create<Payload extends Record<string, unknown> = Record<string, unknown>>(
     agentContext: AgentContext,
     payload: Payload,
@@ -169,29 +242,44 @@ export class SdJwtVcService {
       },
     })
 
-    await this.sdJwtVcRepository.save(agentContext, sdJwtVcRecord)
-
     return {
       sdJwtVcRecord,
       compact,
     }
   }
 
-  public async storeCredential<
+  public async fromSerializedJwt<
     Header extends Record<string, unknown> = Record<string, unknown>,
     Payload extends Record<string, unknown> = Record<string, unknown>
   >(
     agentContext: AgentContext,
     sdJwtVcCompact: string,
-    { issuerDidUrl, holderDidUrl }: SdJwtVcReceiveOptions
+    { issuerDidUrl, holderDidUrl }: SdJwtVcFromSerializedJwtOptions
   ): Promise<SdJwtVcRecord> {
     const sdJwtVc = SdJwtVc.fromCompact<Header, Payload>(sdJwtVcCompact)
+
+    let url: string | undefined
+    if (issuerDidUrl) {
+      url = issuerDidUrl
+    } else {
+      const iss = sdJwtVc.payload?.iss
+      if (typeof iss === 'string' && iss.startsWith('did')) {
+        const kid = sdJwtVc.header?.kid
+        if (!kid || typeof kid !== 'string') throw new SdJwtVcError(`Missing 'kid' in header of SdJwtVc.`)
+        if (kid.startsWith('did:')) url = kid
+        else url = `${iss}#${kid}`
+      } else if (typeof iss === 'string' && URL.canParse(iss)) {
+        throw new SdJwtVcError(`Resolving the key material from the 'iss' claim is not supported yet.`)
+      } else {
+        throw new SdJwtVcError(`Invalid iss claim '${iss}' in SdJwtVc.`)
+      }
+    }
 
     if (!sdJwtVc.signature) {
       throw new SdJwtVcError('A signature must be included for an sd-jwt-vc')
     }
 
-    const { verificationMethod: issuerVerificationMethod } = await this.resolveDidUrl(agentContext, issuerDidUrl)
+    const { verificationMethod: issuerVerificationMethod } = await this.resolveDidUrl(agentContext, url)
     const issuerKey = getKeyFromVerificationMethod(issuerVerificationMethod)
 
     const { isSignatureValid } = await sdJwtVc.verify(this.verifier(agentContext, issuerKey))
@@ -216,6 +304,10 @@ export class SdJwtVcService {
       },
     })
 
+    return sdJwtVcRecord
+  }
+
+  public async storeCredential(agentContext: AgentContext, sdJwtVcRecord: SdJwtVcRecord): Promise<SdJwtVcRecord> {
     await this.sdJwtVcRepository.save(agentContext, sdJwtVcRecord)
 
     return sdJwtVcRecord
