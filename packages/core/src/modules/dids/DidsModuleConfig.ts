@@ -100,6 +100,12 @@ export class DidsModuleConfig {
       resolvers = [...resolvers, new KeyDidResolver()]
     }
 
+    // Add key did resolver if it is not included yet
+    if (!resolvers.find((resolver) => resolver instanceof JwkDidResolver)) {
+      // Do not modify original options array
+      resolvers = [...resolvers, new JwkDidResolver()]
+    }
+
     this._resolvers = resolvers
     return resolvers
   }

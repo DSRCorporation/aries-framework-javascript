@@ -37,6 +37,8 @@ import { defaultDocumentLoader } from '@aries-framework/core/src/modules/vc/data
 import { IndySdkAnonCredsRegistry, IndySdkModule, IndySdkSovDidResolver } from '@aries-framework/indy-sdk'
 import { IndyVdrIndyDidResolver, IndyVdrAnonCredsRegistry, IndyVdrModule } from '@aries-framework/indy-vdr'
 import { agentDependencies, HttpInboundTransport } from '@aries-framework/node'
+import { OpenId4VcHolderModule } from '@aries-framework/openid4vc'
+import { SdJwtVcModule } from '@aries-framework/sd-jwt-vc'
 import { anoncreds } from '@hyperledger/anoncreds-nodejs'
 import { ariesAskar } from '@hyperledger/aries-askar-nodejs'
 import { indyVdr } from '@hyperledger/indy-vdr-nodejs'
@@ -182,6 +184,8 @@ function getAskarAnonCredsIndyModules() {
     askar: new AskarModule({
       ariesAskar,
     }),
+    openId4VcHolder: new OpenId4VcHolderModule(),
+    sdJwtVc: new SdJwtVcModule(),
   } as const
 }
 

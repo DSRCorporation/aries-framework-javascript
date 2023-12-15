@@ -614,9 +614,6 @@ export class OpenId4VciHolderService {
     if (issuerSupportedCryptographicSuites === undefined) {
       signatureAlgorithm = options.possibleProofOfPossessionSignatureAlgorithms[0]
     } else {
-      console.log('credentialsToRequest.format')
-      console.log(options.possibleProofOfPossessionSignatureAlgorithms)
-      console.log(issuerSupportedCryptographicSuites)
       switch (credentialsToRequest.format) {
         case OpenIdCredentialFormatProfile.JwtVcJson:
         case OpenIdCredentialFormatProfile.JwtVcJsonLd:

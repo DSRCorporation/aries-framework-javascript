@@ -457,7 +457,6 @@ describe('OpenId4VcHolder', () => {
         expect(w3cCredentialRecords).toHaveLength(1)
         expect(w3cCredentialRecords[0]).toBeInstanceOf(W3cCredentialRecord)
         const w3cCredentialRecord = w3cCredentialRecords[0] as W3cCredentialRecord
-        console.log(w3cCredentialRecord.credential, null, 2)
         expect(w3cCredentialRecord.credential.credentialSubjectIds[0]).toEqual(holderDid)
       })
 

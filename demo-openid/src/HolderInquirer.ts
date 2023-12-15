@@ -89,9 +89,10 @@ export class HolderInquirer extends BaseInquirer {
     this.resolvedCredentialOffer = resolvedCredentialOffer
 
     console.log(greenText(`Received credential offer for the following credentials.`))
-    console.log(
-      greenText(resolvedCredentialOffer.offeredCredentials.map((credential) => credential.types.join(', ')).join('\n'))
-    )
+    for (const credential of resolvedCredentialOffer.offeredCredentials) {
+      console.log(greenText(` Credential Format: ${credential.format}`))
+      console.log(greenText(` Credential Type: ${credential.types.join(', ')}`))
+    }
   }
 
   public async requestCredential() {
@@ -118,17 +119,15 @@ export class HolderInquirer extends BaseInquirer {
     )
 
     console.log(greenText(`Received and stored the following credentials.`))
-    console.log(
-      greenText(
-        credentials
-          .map((credential) => {
-            if (credential.type === 'W3cCredentialRecord')
-              return credential.credential.type.join(', ') + `, CredentialType: 'W3CVerifiableCredential'`
-            else return credential.sdJwtVc.payload.type + `, CredentialType: 'SdJwtVc'`
-          })
-          .join('\n')
-      )
-    )
+    for (const credential of credentials) {
+      if (credential.type === 'W3cCredentialRecord') {
+        console.log(greenText(` CredentialType: 'W3CVerifiableCredential'`))
+        console.log(greenText(` ${credential.credential.type.join(', ')}`))
+      } else {
+        console.log(greenText(` CredentialType: 'SdJwtVc'`))
+        console.log(greenText(` ${credential.sdJwtVc.payload.type}`))
+      }
+    }
   }
 
   public async resolveProofRequest() {
