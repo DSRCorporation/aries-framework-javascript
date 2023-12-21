@@ -1,11 +1,14 @@
 export interface IndyBesuModuleConfigOptions {
-  rpcUrl: string
+  chainId: number
+  nodeAddress: string
 }
 
 export class IndyBesuModuleConfig {
-  public readonly rpcUrl!: string
+  public readonly chainId!: number
+  public readonly nodeAddress!: string
 
   constructor(options: IndyBesuModuleConfigOptions) {
-    this.rpcUrl = options.rpcUrl
+    this.chainId = options.chainId
+    this.nodeAddress = options.nodeAddress
   }
 }

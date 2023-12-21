@@ -14,7 +14,7 @@ import {
   getEcdsaSecp256k1VerificationKey2019,
 } from '@aries-framework/core'
 import { DidDocumentBuilder, KeyType } from '@aries-framework/core'
-import { DidDocument as IndyBesuDidDocument, IndyBesuLedgerService } from '../ledger'
+import { DidRegistry, DidDocument as IndyBesuDidDocument, IndyBesuSigner } from '../ledger'
 import { buildDid, failedResult, validateSpecCompliantPayload } from './DidUtils'
 import { fromIndyBesuDidDocument, toIndyBesuDidDocument } from './DidTypesMapping'
 
@@ -22,10 +22,13 @@ export class IndyBesuDidRegistrar implements DidRegistrar {
   public readonly supportedMethods = ['indy', 'sov', 'indy2']
 
   public async create(agentContext: AgentContext, options: IndyBesuDidCreateOptions): Promise<DidCreateResult> {
-    const ledgerService = agentContext.dependencyManager.resolve(IndyBesuLedgerService)
+    const didRegistry = agentContext.dependencyManager.resolve(DidRegistry)
 
-    const key = await agentContext.wallet.createKey({ keyType: KeyType.K256, privateKey: options.secret?.privateKey })
-    const did = buildDid(options.method, options.options.network, key.publicKey)
+    const didKey = await agentContext.wallet.createKey({
+      keyType: KeyType.K256,
+      privateKey: options.secret.didPrivateKey,
+    })
+    const did = buildDid(options.method, options.options.network, didKey.publicKey)
 
     let didDocument: DidDocument
 
@@ -35,7 +38,11 @@ export class IndyBesuDidRegistrar implements DidRegistrar {
 
       didDocument = options.didDocument
     } else {
-      const verificationMethod = getEcdsaSecp256k1VerificationKey2019({ key: key, id: `${did}#KEY-1`, controller: did })
+      const verificationMethod = getEcdsaSecp256k1VerificationKey2019({
+        key: didKey,
+        id: `${did}#KEY-1`,
+        controller: did,
+      })
 
       const didDocumentBuilder = new DidDocumentBuilder(did)
         .addContext('https://www.w3.org/ns/did/v1')
@@ -54,12 +61,11 @@ export class IndyBesuDidRegistrar implements DidRegistrar {
 
       didDocument = didDocumentBuilder.build()
     }
-
-    const signer = ledgerService.createSigner(key, agentContext.wallet)
-    const didRegistry = ledgerService.didRegistry.connect(signer)
+    
+    const signer = new IndyBesuSigner(options.secret.accountKey, agentContext.wallet)
 
     try {
-      await didRegistry.createDid(toIndyBesuDidDocument(didDocument))
+      await didRegistry.createDid(toIndyBesuDidDocument(didDocument), signer)
 
       return {
         didDocumentMetadata: {},
@@ -79,17 +85,14 @@ export class IndyBesuDidRegistrar implements DidRegistrar {
   }
 
   public async update(agentContext: AgentContext, options: IndyBesuDidUpdateOptions): Promise<DidUpdateResult> {
-    const ledgerService = agentContext.dependencyManager.resolve(IndyBesuLedgerService)
+    const didRegistry = agentContext.dependencyManager.resolve(DidRegistry)
 
-    const key = Key.fromPublicKey(options.secret.publicKey, KeyType.K256)
-    const signer = ledgerService.createSigner(key, agentContext.wallet)
-    const didRegistry = ledgerService.didRegistry.connect(signer)
+    const signer = new IndyBesuSigner(options.secret.accountKey, agentContext.wallet)
 
     try {
-      const { document: resolvedDocument, metadata: resolvedMetadata } = await didRegistry.resolveDid(options.did)
+      const resolvedDocument = await didRegistry.resolveDid(options.did)
 
       if (!resolvedDocument) return failedResult('DID not found')
-      if (resolvedMetadata.deactivated) return failedResult('DID has been deactivated')
 
       let didDocument: DidDocument
 
@@ -112,7 +115,7 @@ export class IndyBesuDidRegistrar implements DidRegistrar {
       const error = validateSpecCompliantPayload(didDocument)
       if (error) return failedResult(error)
 
-      await didRegistry.updateDid(toIndyBesuDidDocument(didDocument))
+      await didRegistry.updateDid(toIndyBesuDidDocument(didDocument), signer)
 
       return {
         didDocumentMetadata: {},
@@ -133,19 +136,16 @@ export class IndyBesuDidRegistrar implements DidRegistrar {
     agentContext: AgentContext,
     options: IndyBesuDidDeactivateOptions
   ): Promise<DidDeactivateResult> {
-    const ledgerService = agentContext.dependencyManager.resolve(IndyBesuLedgerService)
+    const didRegistry = agentContext.dependencyManager.resolve(DidRegistry)
 
-    const key = Key.fromPublicKey(options.secret.publicKey, KeyType.K256)
-    const signer = ledgerService.createSigner(key, agentContext.wallet)
-    const didRegistry = ledgerService.didRegistry.connect(signer)
+    const signer = new IndyBesuSigner(options.secret.accountKey, agentContext.wallet)
 
     try {
-      const { document: resolvedDocument, metadata: resolvedMetadata } = await didRegistry.resolveDid(options.did)
+      const resolvedDocument = await didRegistry.resolveDid(options.did)
 
       if (!resolvedDocument) return failedResult('DID not found')
-      if (resolvedMetadata.deactivated) return failedResult('DID has been deactivated')
 
-      await didRegistry.deactivateDid(options.did)
+      await didRegistry.deactivateDid(options.did, signer)
 
       return {
         didDocumentMetadata: {},
@@ -189,8 +189,9 @@ export interface IndyBesuDidCreateOptions extends DidCreateOptions {
     network: string
     endpoints?: IndyBesuEndpoint[]
   }
-  secret?: {
-    privateKey: Buffer
+  secret: {
+    accountKey: Key
+    didPrivateKey?: Buffer
   }
 }
 
@@ -199,7 +200,7 @@ export interface IndyBesuDidUpdateOptions extends DidUpdateOptions {
     network: string
   }
   secret: {
-    publicKey: Buffer
+    accountKey: Key
   }
 }
 
@@ -208,6 +209,6 @@ export interface IndyBesuDidDeactivateOptions extends DidDeactivateOptions {
     network: string
   }
   secret: {
-    publicKey: Buffer
+    accountKey: Key
   }
 }

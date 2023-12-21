@@ -1,30 +1,31 @@
+import { injectable } from '@aries-framework/core'
 import { AddressLike, BigNumberish } from 'ethers'
 import { BaseContract } from './BaseContract'
+import fs from 'fs'
 import path from 'path'
+import { IndyDidRegistry, LedgerClient } from 'indy2-vdr'
+import { IndyBesuSigner } from '../IndyBesuSigner'
 
 export type VerificationMethod = {
   id: string
-  verificationMethodType: string
+  type: string
   controller: string
   publicKeyJwk: string
   publicKeyMultibase: string
 }
 
-export type VerificationRelationship = {
-  id: string
-  verificationMethod: VerificationMethod
-}
+export type VerificationRelationship = string | VerificationMethod
 
 export type Service = {
   id: string
-  serviceType: string
+  type: string
   serviceEndpoint: string
   accept: string[]
   routingKeys: string[]
 }
 
 export type DidDocument = {
-  context: string[]
+  '@context': string[]
   id: string
   controller: string[]
   verificationMethod: VerificationMethod[]
@@ -49,109 +50,35 @@ export type DidDocumentStorage = {
   metadata: DidMetadata
 }
 
+@injectable()
 export class DidRegistry extends BaseContract {
-  public static readonly address = '0x0000000000000000000000000000000000003333'
-  public static readonly specPath = path.resolve(__dirname, './abi/DidRegistryInterface.json')
-
-  constructor(ethersContract: any) {
-    super(ethersContract)
+  public static readonly config = {
+    address: '0x0000000000000000000000000000000000003333',
+    spec: JSON.parse(fs.readFileSync(path.resolve(__dirname, './abi/IndyDidRegistry.json'), 'utf8')),
   }
 
-  public async createDid(didDocument: DidDocument) {
-    try {
-      const tx = await this.ethersContract.createDid(didDocument)
-      return tx.wait()
-    } catch (error) {
-      throw this.decodeError(error)
-    }
+  constructor(client: LedgerClient) {
+    super(client)
   }
 
-  public async updateDid(didDocument: DidDocument) {
-    try {
-      const tx = await this.ethersContract.updateDid(didDocument)
-      return tx.wait()
-    } catch (error) {
-      throw this.decodeError(error)
-    }
+  public async createDid(didDocument: DidDocument, signer: IndyBesuSigner) {
+    let transaction = await IndyDidRegistry.buildCreateDidTransaction(this.client, signer.address, didDocument)
+    return await this.signAndSubmit(transaction, signer)
   }
 
-  public async deactivateDid(id: string) {
-    try {
-      const tx = await this.ethersContract.deactivateDid(id)
-      return tx.wait()
-    } catch (error) {
-      throw this.decodeError(error)
-    }
+  public async updateDid(didDocument: DidDocument, signer: IndyBesuSigner) {
+    let transaction = await IndyDidRegistry.buildUpdateDidTransaction(this.client, signer.address, didDocument)
+    return await this.signAndSubmit(transaction, signer)
   }
 
-  public async resolveDid(id: string): Promise<DidDocumentStorage> {
-    try {
-      const didDocumentStorage = await this.ethersContract.resolveDid(id)
-
-      return {
-        document: {
-          context: didDocumentStorage.document.context.map((context: string) => context),
-          id: didDocumentStorage.document.id,
-          controller: didDocumentStorage.document.controller,
-          verificationMethod: didDocumentStorage.document.verificationMethod.map(
-            (verificationMethod: VerificationMethod) => DidRegistry.mapVerificationMethod(verificationMethod)
-          ),
-          authentication: didDocumentStorage.document.authentication.map((relationship: VerificationRelationship) =>
-            DidRegistry.mapVerificationRelationship(relationship)
-          ),
-          assertionMethod: didDocumentStorage.document.assertionMethod.map((relationship: VerificationRelationship) =>
-            DidRegistry.mapVerificationRelationship(relationship)
-          ),
-          capabilityInvocation: didDocumentStorage.document.capabilityInvocation.map(
-            (relationship: VerificationRelationship) => DidRegistry.mapVerificationRelationship(relationship)
-          ),
-          capabilityDelegation: didDocumentStorage.document.capabilityDelegation.map(
-            (relationship: VerificationRelationship) => DidRegistry.mapVerificationRelationship(relationship)
-          ),
-          keyAgreement: didDocumentStorage.document.keyAgreement.map((relationship: VerificationRelationship) =>
-            DidRegistry.mapVerificationRelationship(relationship)
-          ),
-          service: didDocumentStorage.document.service.map((relationship: Service) =>
-            DidRegistry.mapService(relationship)
-          ),
-          alsoKnownAs: didDocumentStorage.document.alsoKnownAs.map((alsoKnownAs: string) => alsoKnownAs),
-        },
-        metadata: {
-          creator: didDocumentStorage.metadata.creator,
-          created: didDocumentStorage.metadata.created,
-          updated: didDocumentStorage.metadata.updated,
-          deactivated: didDocumentStorage.metadata.deactivated,
-        },
-      } as DidDocumentStorage
-    } catch (error) {
-      throw this.decodeError(error)
-    }
+  public async deactivateDid(id: string, signer: IndyBesuSigner) {
+    let transaction = await IndyDidRegistry.buildDeactivateDidTransaction(this.client, signer.address, id)
+    return await this.signAndSubmit(transaction, signer)
   }
 
-  private static mapVerificationMethod(verificationMethod: VerificationMethod): VerificationMethod {
-    return {
-      id: verificationMethod.id,
-      verificationMethodType: verificationMethod.verificationMethodType,
-      controller: verificationMethod.controller,
-      publicKeyJwk: verificationMethod.publicKeyJwk,
-      publicKeyMultibase: verificationMethod.publicKeyMultibase,
-    }
-  }
-
-  private static mapVerificationRelationship(relationship: VerificationRelationship): VerificationRelationship {
-    return {
-      id: relationship.id,
-      verificationMethod: DidRegistry.mapVerificationMethod(relationship.verificationMethod),
-    }
-  }
-
-  private static mapService(service: Service): Service {
-    return {
-      id: service.id,
-      serviceType: service.serviceType,
-      serviceEndpoint: service.serviceEndpoint,
-      accept: service.accept.map((accept: string) => accept),
-      routingKeys: service.routingKeys.map((routingKey: string) => routingKey),
-    }
+  public async resolveDid(id: string): Promise<DidDocument> {
+    let transaction = await IndyDidRegistry.buildResolveDidTransaction(this.client, id)
+    const response = await this.client.submitTransaction(transaction)
+    return IndyDidRegistry.parseResolveDidResult(this.client, response)
   }
 }

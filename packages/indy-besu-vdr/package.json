@@ -15,7 +15,8 @@
     "@aries-framework/anoncreds": "0.4.2",
     "@aries-framework/core": "0.4.2",
     "@aries-framework/askar": "0.4.2",
-    "ethers": "^6.8.1"
+    "ethers": "^6.8.1",
+    "indy2-vdr": "file:vdr-pkg"
   },
   "devDependencies": {
     "@aries-framework/indy-sdk": "0.4.2",

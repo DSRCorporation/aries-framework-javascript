@@ -8,7 +8,7 @@ import {
 
 export function toIndyBesuDidDocument(didDocument: DidDocument): IndyBesuDidDocument {
   return {
-    context: ensureArray(didDocument.context),
+    '@context': ensureArray(didDocument.context),
     id: didDocument.id,
     controller: ensureArray(didDocument.controller ?? []),
     verificationMethod: mapOrEmpty(didDocument.verificationMethod, toIndyBesuVerificationMethod),
@@ -23,7 +23,7 @@ export function toIndyBesuDidDocument(didDocument: DidDocument): IndyBesuDidDocu
 }
 
 export function fromIndyBesuDidDocument(didDocument: IndyBesuDidDocument): DidDocument {
-  const context = didDocument.context.length === 1 ? didDocument.context[0] : didDocument.context
+  const context = didDocument['@context'].length === 1 ? didDocument['@context'][0] : didDocument['@context']
   return new DidDocument({
     context,
     id: didDocument.id,
@@ -54,7 +54,7 @@ function mapOrUndefined<T, R>(array: T[], mapfunction: (item: T) => R): R[] | un
 function toIndyBesuVerificationMethod(verificationMethod: VerificationMethod): IndyBesuVerificationMethod {
   return {
     id: verificationMethod.id,
-    verificationMethodType: verificationMethod.type,
+    type: verificationMethod.type,
     controller: verificationMethod.controller,
     publicKeyJwk: verificationMethod.publicKeyJwk ? JSON.stringify(verificationMethod.publicKeyJwk) : '',
     publicKeyMultibase: verificationMethod.publicKeyMultibase ?? '',
@@ -64,7 +64,7 @@ function toIndyBesuVerificationMethod(verificationMethod: VerificationMethod): I
 function fromIndyBesuVerificationMethod(verificationMethod: IndyBesuVerificationMethod): VerificationMethod {
   return new VerificationMethod({
     id: verificationMethod.id,
-    type: verificationMethod.verificationMethodType,
+    type: verificationMethod.type,
     controller: verificationMethod.controller,
     publicKeyMultibase: verificationMethod.publicKeyMultibase || undefined,
     publicKeyJwk: verificationMethod.publicKeyJwk ? JSON.parse(verificationMethod.publicKeyJwk) : undefined,
@@ -74,7 +74,7 @@ function fromIndyBesuVerificationMethod(verificationMethod: IndyBesuVerification
 function toIndyBesuService(service: DidDocumentService): Service {
   return {
     id: service.id,
-    serviceType: service.type,
+    type: service.type,
     serviceEndpoint: service.serviceEndpoint,
     accept: [],
     routingKeys: [],
@@ -82,31 +82,21 @@ function toIndyBesuService(service: DidDocumentService): Service {
 }
 
 function fromIndyBesuService(service: Service): DidDocumentService {
-  return new DidDocumentService({ id: service.id, serviceEndpoint: service.serviceEndpoint, type: service.serviceType })
+  return new DidDocumentService({ id: service.id, serviceEndpoint: service.serviceEndpoint, type: service.type })
 }
 
 function toVerificationRelationship(verificationMethod: string | VerificationMethod): VerificationRelationship {
   if (typeof verificationMethod === 'string') {
-    return {
-      id: verificationMethod,
-      verificationMethod: {
-        id: '',
-        verificationMethodType: '',
-        controller: '',
-        publicKeyJwk: '',
-        publicKeyMultibase: '',
-      },
-    }
+    return verificationMethod
   } else {
-    return {
-      id: '',
-      verificationMethod: toIndyBesuVerificationMethod(verificationMethod),
-    }
+    return toIndyBesuVerificationMethod(verificationMethod)
   }
 }
 
 function fromVerificationRelationship(verificationRelationship: VerificationRelationship): string | VerificationMethod {
-  return verificationRelationship.verificationMethod.id !== ''
-    ? fromIndyBesuVerificationMethod(verificationRelationship.verificationMethod)
-    : verificationRelationship.id
+  if (typeof verificationRelationship === 'string') {
+    return verificationRelationship
+  } else {
+    return fromIndyBesuVerificationMethod(verificationRelationship)
+  }
 }

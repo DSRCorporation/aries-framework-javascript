@@ -1,7 +1,7 @@
 {
   "_format": "hh-sol-artifact-1",
-  "contractName": "DidRegistryInterface",
-  "sourceName": "contracts/did/DidRegistryInterface.sol",
+  "contractName": "IndyDidRegistry",
+  "sourceName": "contracts/did/IndyDidRegistry.sol",
   "abi": [
     {
       "inputs": [

@@ -1,26 +1,31 @@
-import { Agent, JsonTransformer, TypedArrayEncoder } from '@aries-framework/core'
+import { Agent, JsonTransformer, Key, KeyType, TypedArrayEncoder } from '@aries-framework/core'
 import { getAgentOptions } from '../../core/tests/helpers'
-import { getBesuIndyModules } from './indy-bese-test-utils'
+import { getBesuIndyModules, trusteePrivateKey } from './indy-bese-test-utils'
 import { IndyBesuDidCreateOptions } from '../src/dids'
-import { IndyBesuLedgerService } from '../src/ledger'
 
 const agentOptions = getAgentOptions('Faber', {}, getBesuIndyModules())
 
 describe('Indy-Besu DID', () => {
   let agent: Agent<ReturnType<typeof getBesuIndyModules>>
+  let trusteeKey: Key
 
   beforeAll(async () => {
     agent = new Agent(agentOptions)
     await agent.initialize()
+    trusteeKey = await agent.wallet.createKey({
+      keyType: KeyType.K256,
+      privateKey: trusteePrivateKey,
+    })
   })
 
   afterAll(async () => {
-    agent.dependencyManager.resolve(IndyBesuLedgerService).destroyProvider()
     await agent.shutdown()
     await agent.wallet.delete()
   })
 
   it('create and resolve a did:indy2 did', async () => {
+    const didPrivateKey = TypedArrayEncoder.fromHex('8f2a55949038a9610f50fb23b5883af3b4ecb3c3bb792cbcefbd1542c692be63')
+
     const createdDid = await agent.dids.create<IndyBesuDidCreateOptions>({
       method: 'indy2',
       options: {
@@ -33,7 +38,8 @@ describe('Indy-Besu DID', () => {
         ],
       },
       secret: {
-        privateKey: TypedArrayEncoder.fromHex('8f2a55949038a9610f50fb23b5883af3b4ecb3c3bb792cbcefbd1542c692be63'),
+        accountKey: trusteeKey,
+        didPrivateKey,
       },
     })
 

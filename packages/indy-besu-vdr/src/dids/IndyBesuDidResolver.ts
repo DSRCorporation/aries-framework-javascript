@@ -1,23 +1,21 @@
 import { AgentContext, DidResolutionResult, DidResolver } from '@aries-framework/core'
-import { IndyBesuLedgerService } from '../ledger'
+import { DidRegistry } from '../ledger'
 import { fromIndyBesuDidDocument } from './DidTypesMapping'
 
 export class IndyBesuDidResolver implements DidResolver {
   public readonly supportedMethods = ['indy', 'sov', 'indy2']
 
   public async resolve(agentContext: AgentContext, did: string): Promise<DidResolutionResult> {
-    const ledgerService = agentContext.dependencyManager.resolve(IndyBesuLedgerService)
+    const didRegistry = agentContext.dependencyManager.resolve(DidRegistry)
 
     try {
-      const { document, metadata } = await ledgerService.didRegistry.resolveDid(did)
+      const didDicument = await didRegistry.resolveDid(did)
+
+      console.log(JSON.stringify(didDicument))
 
       return {
-        didDocument: fromIndyBesuDidDocument(document),
-        didDocumentMetadata: {
-          created: metadata.created.toString(),
-          updated: metadata.updated.toString(),
-          deactivated: metadata.deactivated,
-        },
+        didDocument: fromIndyBesuDidDocument(didDicument),
+        didDocumentMetadata: {},
         didResolutionMetadata: {},
       }
     } catch (error) {

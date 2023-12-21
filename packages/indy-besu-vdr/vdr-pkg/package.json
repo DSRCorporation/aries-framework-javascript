@@ -1,0 +1,16 @@
+{
+  "name": "indy2-vdr",
+  "collaborators": [
+    "Artem Ivanov <artem.ivanov@dsr-corporation.com>"
+  ],
+  "description": "JavaScript bindings for Indy 2.0 VDR",
+  "version": "0.1.0",
+  "license": "Apache-2.0",
+  "files": [
+    "indy2_vdr_wasm_bg.wasm",
+    "indy2_vdr_wasm.js",
+    "indy2_vdr_wasm.d.ts"
+  ],
+  "main": "indy2_vdr_wasm.js",
+  "types": "indy2_vdr_wasm.d.ts"
+}

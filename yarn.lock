@@ -6640,6 +6640,9 @@ indy-sdk@^1.16.0-dev-1636, indy-sdk@^1.16.0-dev-1655:
     nan "^2.11.1"
     node-gyp "^8.0.0"
 
+"indy2-vdr@file:packages/indy-besu-vdr/vdr-pkg":
+  version "0.1.0"
+
 infer-owner@^1.0.4:
   version "1.0.4"
   resolved "https://registry.yarnpkg.com/infer-owner/-/infer-owner-1.0.4.tgz#c4cefcaa8e51051c2a40ba2ce8a3d27295af9467"

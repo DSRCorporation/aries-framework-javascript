@@ -9,10 +9,9 @@ import type {
   RegisterSchemaReturn,
   RegisterSchemaOptions,
 } from '@aries-framework/anoncreds'
-import { JsonTransformer, type AgentContext, AriesFrameworkError } from '@aries-framework/core'
-import { IndyBesuLedgerService } from '../ledger'
+import { Key, JsonTransformer, type AgentContext, AriesFrameworkError } from '@aries-framework/core'
+import { CredentialDefinitionRegistry, IndyBesuSigner, SchemaRegistry } from '../ledger'
 import { buildCredentialDefinitionId, buildSchemaId } from './AnonCredsUtils'
-import { verificationKeyForDid } from '../dids/DidUtils'
 import { CredentialDefinitionValue } from './Trasformers'
 
 export class IndyBesuAnonCredsRegistry implements AnonCredsRegistry {
@@ -22,9 +21,9 @@ export class IndyBesuAnonCredsRegistry implements AnonCredsRegistry {
 
   public async getSchema(agentContext: AgentContext, schemaId: string): Promise<GetSchemaReturn> {
     try {
-      const ledgerService = agentContext.dependencyManager.resolve(IndyBesuLedgerService)
+      const schemaRegistry = agentContext.dependencyManager.resolve(SchemaRegistry)
 
-      const { schema, metadata } = await ledgerService.schemaRegistry.resolveSchema(schemaId)
+      const { schema, metadata } = await schemaRegistry.resolveSchema(schemaId)
 
       return {
         schema: schema,
@@ -46,14 +45,12 @@ export class IndyBesuAnonCredsRegistry implements AnonCredsRegistry {
 
   public async registerSchema(
     agentContext: AgentContext,
-    options: RegisterSchemaOptions
+    options: IndyBesuRegisterSchemaOptions
   ): Promise<RegisterSchemaReturn> {
     try {
-      const ledgerService = agentContext.dependencyManager.resolve(IndyBesuLedgerService)
+      const schemaRegistry = agentContext.dependencyManager.resolve(SchemaRegistry)
 
-      const key = await verificationKeyForDid(agentContext, options.schema.issuerId)
-      const signer = ledgerService.createSigner(key, agentContext.wallet)
-      const schemaRegistry = ledgerService.schemaRegistry.connect(signer)
+      const signer = new IndyBesuSigner(options.secret.accountKey, agentContext.wallet)
 
       const schemaId = buildSchemaId(options.schema)
 
@@ -62,7 +59,7 @@ export class IndyBesuAnonCredsRegistry implements AnonCredsRegistry {
         ...options.schema,
       }
 
-      await schemaRegistry.createSchema(schema)
+      await schemaRegistry.createSchema(schema, signer)
 
       return {
         schemaState: {
@@ -91,9 +88,9 @@ export class IndyBesuAnonCredsRegistry implements AnonCredsRegistry {
     credentialDefinitionId: string
   ): Promise<GetCredentialDefinitionReturn> {
     try {
-      const ledgerService = agentContext.dependencyManager.resolve(IndyBesuLedgerService)
+      const credentialDefinitionRegistry = agentContext.dependencyManager.resolve(CredentialDefinitionRegistry)
 
-      const { credDef, metadata } = await ledgerService.credentialDefinitionRegistry.resolveCredentialDefinition(
+      const { credDef, metadata } = await credentialDefinitionRegistry.resolveCredentialDefinition(
         credentialDefinitionId
       )
 
@@ -125,19 +122,17 @@ export class IndyBesuAnonCredsRegistry implements AnonCredsRegistry {
 
   public async registerCredentialDefinition(
     agentContext: AgentContext,
-    options: RegisterCredentialDefinitionOptions
+    options: IndyBesuRegisterCredentialDefinitionOptions
   ): Promise<RegisterCredentialDefinitionReturn> {
     try {
-      const ledgerService = agentContext.dependencyManager.resolve(IndyBesuLedgerService)
+      const credentialDefinitionRegistry = agentContext.dependencyManager.resolve(CredentialDefinitionRegistry)
 
       const schema = await this.getSchema(agentContext, options.credentialDefinition.schemaId)
       if (!schema.schema) {
         throw new AriesFrameworkError(`Schema not found for schemaId: ${options.credentialDefinition.schemaId}`)
       }
 
-      const key = await verificationKeyForDid(agentContext, options.credentialDefinition.issuerId)
-      const signer = ledgerService.createSigner(key, agentContext.wallet)
-      const credentialDefinitionRegistry = ledgerService.credentialDefinitionRegistry.connect(signer)
+      const signer = new IndyBesuSigner(options.secret.accountKey, agentContext.wallet)
 
       const createCredentialDefinitionId = buildCredentialDefinitionId(options.credentialDefinition)
 
@@ -150,7 +145,7 @@ export class IndyBesuAnonCredsRegistry implements AnonCredsRegistry {
         value: JSON.stringify(options.credentialDefinition.value),
       }
 
-      await credentialDefinitionRegistry.createCredentialDefinition(credentialDefinition)
+      await credentialDefinitionRegistry.createCredentialDefinition(credentialDefinition, signer)
 
       return {
         credentialDefinitionState: {
@@ -187,5 +182,17 @@ export class IndyBesuAnonCredsRegistry implements AnonCredsRegistry {
     timestamp: number
   ): Promise<GetRevocationStatusListReturn> {
     throw new Error('Method not implemented.')
+  }
+}
+
+export interface IndyBesuRegisterSchemaOptions extends RegisterSchemaOptions {
+  secret: {
+    accountKey: Key
+  }
+}
+
+export interface IndyBesuRegisterCredentialDefinitionOptions extends RegisterCredentialDefinitionOptions {
+  secret: {
+    accountKey: Key
   }
 }

@@ -1,27 +1,17 @@
 import { Signer } from 'ethers'
+import { IndyBesuSigner } from '../IndyBesuSigner'
+import { LedgerClient, Transaction } from 'indy2-vdr'
 
 export class BaseContract {
-  protected ethersContract: any
+  protected client: LedgerClient
 
-  constructor(etherContract: any) {
-    this.ethersContract = etherContract
+  constructor(client: LedgerClient) {
+    this.client = client
   }
 
-  public connect(signer: Signer): this {
-    const instance = this.ethersContract.connect(signer)
-    const { constructor } = Object.getPrototypeOf(this)
-    return new constructor(instance)
-  }
-
-  public decodeError(error: any) {
-    if (error.data) {
-      const decodedError = this.ethersContract.interface.parseError(error.data)
-
-      if (decodedError) {
-        return Error(`Transaction failed: ${decodedError?.name}(${decodedError?.args})`)
-      }
-    }
-
-    return error
+  public async signAndSubmit(transaction: Transaction, signer: IndyBesuSigner) {
+    await signer.signTransaction(transaction)
+    const transactionHash = await this.client.submitTransaction(transaction)
+    return await this.client.getReceipt(transactionHash)
   }
 }

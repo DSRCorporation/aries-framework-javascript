@@ -1,6 +1,7 @@
 import { AgentContext, DependencyManager, Module } from '@aries-framework/core'
 import { IndyBesuModuleConfig, IndyBesuModuleConfigOptions } from './IndyBesuModuleConfig'
-import { IndyBesuLedgerService } from './ledger'
+import { CredentialDefinitionRegistry, DidRegistry, SchemaRegistry } from './ledger'
+import { LedgerClient } from 'indy2-vdr'
 
 export class IndyBesuModule implements Module {
   public readonly config: IndyBesuModuleConfig
@@ -10,14 +11,20 @@ export class IndyBesuModule implements Module {
   }
 
   public register(dependencyManager: DependencyManager) {
-    // Register config
-    dependencyManager.registerInstance(IndyBesuModuleConfig, this.config)
+    const client = new LedgerClient(this.config.chainId, this.config.nodeAddress, [
+      DidRegistry.config,
+      SchemaRegistry.config,
+      CredentialDefinitionRegistry.config,
+    ])
 
-    dependencyManager.registerSingleton(IndyBesuLedgerService)
+    dependencyManager.registerInstance(LedgerClient, client)
+    dependencyManager.registerSingleton(DidRegistry)
+    dependencyManager.registerSingleton(SchemaRegistry)
+    dependencyManager.registerSingleton(CredentialDefinitionRegistry)
   }
 
   public async initialize(agentContext: AgentContext): Promise<void> {
-    const ledgerService = agentContext.dependencyManager.resolve(IndyBesuLedgerService)
-    await ledgerService.initContracts()
+    const client = agentContext.dependencyManager.resolve(LedgerClient)
+    await client.ping()
   }
 }

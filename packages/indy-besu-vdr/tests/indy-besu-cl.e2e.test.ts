@@ -1,6 +1,5 @@
-import { getBesuIndyModules } from './indy-bese-test-utils'
-import { Agent, JsonTransformer, TypedArrayEncoder } from '@aries-framework/core'
-import { IndyBesuLedgerService } from '../src/ledger'
+import { getBesuIndyModules, trusteePrivateKey } from './indy-bese-test-utils'
+import { Agent, Key, KeyType, TypedArrayEncoder } from '@aries-framework/core'
 import { IndyBesuDidCreateOptions } from '../src/dids'
 import { IndyBesuAnonCredsRegistry } from '../src/anoncreds/IndyBesuAnonCredsRegistry'
 import { getAgentOptions } from '../../core/tests/helpers'
@@ -8,23 +7,26 @@ import { getAgentOptions } from '../../core/tests/helpers'
 const agentOptions = getAgentOptions('Faber', {}, getBesuIndyModules())
 const anonCredsRegistry = new IndyBesuAnonCredsRegistry()
 
-describe('Indy-Besu DID', () => {
+describe('Indy-Besu CL', () => {
   let agent: Agent<ReturnType<typeof getBesuIndyModules>>
+  let trusteeKey: Key
 
   beforeAll(async () => {
     agent = new Agent(agentOptions)
     await agent.initialize()
-    agent.dependencyManager.resolve(IndyBesuLedgerService)
+    trusteeKey = await agent.wallet.createKey({
+      keyType: KeyType.K256,
+      privateKey: trusteePrivateKey,
+    })
   })
 
   afterAll(async () => {
-    agent.dependencyManager.resolve(IndyBesuLedgerService).destroyProvider()
     await agent.shutdown()
     await agent.wallet.delete()
   })
 
   it('register and resolve a schema and credential definition', async () => {
-    const privateKey = TypedArrayEncoder.fromHex('c87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3')
+    const didPrivateKey = TypedArrayEncoder.fromHex('8f2a55949038a9610f50fb23b5883af3b4ecb3c3bb792cbcefbd1542c692be63')
 
     const did = await agent.dids.create<IndyBesuDidCreateOptions>({
       method: 'indy2',
@@ -38,7 +40,8 @@ describe('Indy-Besu DID', () => {
         ],
       },
       secret: {
-        privateKey: privateKey,
+        accountKey: trusteeKey,
+        didPrivateKey,
       },
     })
 
@@ -54,6 +57,9 @@ describe('Indy-Besu DID', () => {
         version: '1.0',
       },
       options: {},
+      secret: {
+        accountKey: trusteeKey,
+      },
     })
 
     console.log(JSON.stringify(schemaResult))
@@ -98,6 +104,9 @@ describe('Indy-Besu DID', () => {
         },
       },
       options: {},
+      secret: {
+        accountKey: trusteeKey,
+      },
     })
 
     console.log(JSON.stringify(credentialDefinitionResult))
