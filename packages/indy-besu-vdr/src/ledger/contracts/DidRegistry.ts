@@ -1,46 +1,10 @@
 import { injectable } from '@aries-framework/core'
-import { AddressLike, BigNumberish } from 'ethers'
 import { BaseContract } from './BaseContract'
 import fs from 'fs'
 import path from 'path'
 import { IndyDidRegistry, LedgerClient } from 'indy2-vdr'
 import { IndyBesuSigner } from '../IndyBesuSigner'
-export type VerificationMethod = {
-  id: string
-  type: string
-  controller: string
-  publicKeyJwk?: string
-  publicKeyMultibase?: string
-}
-
-export type VerificationRelationship = string | VerificationMethod
-
-export type Service = {
-  id: string
-  type: string
-  serviceEndpoint: { uri: string } | string
-}
-
-export type DidDocument = {
-  '@context': string[]
-  id: string
-  controller: string[]
-  verificationMethod: VerificationMethod[]
-  authentication: VerificationRelationship[]
-  assertionMethod: VerificationRelationship[]
-  capabilityInvocation: VerificationRelationship[]
-  capabilityDelegation: VerificationRelationship[]
-  keyAgreement: VerificationRelationship[]
-  service: Service[]
-  alsoKnownAs: string[]
-}
-
-export type DidMetadata = {
-  creator: AddressLike
-  created: BigNumberish
-  updated: BigNumberish
-  deactivated: boolean
-}
+import { DidDocument } from '../types/DidDocument'
 
 @injectable()
 export class DidRegistry extends BaseContract {

@@ -1,26 +1,17 @@
-import { BigNumberish } from 'ethers'
 import fs from 'fs'
 import { CredentialDefinitionRegistry as IndyCredentialDefinitionRegistry, LedgerClient } from 'indy2-vdr'
 import path from 'path'
 import { BaseContract } from './BaseContract'
 import { IndyBesuSigner } from '../IndyBesuSigner'
 import { injectable } from '@aries-framework/core'
-
-export type CredentialDefinition = {
-  id: string
-  issuerId: string
-  schemaId: string
-  credDefType: string
-  tag: string
-  value: string
-}
+import { CredentialDefinition } from '../types/CredentialDefinition'
 
 @injectable()
 export class CredentialDefinitionRegistry extends BaseContract {
   public static readonly config = {
     address: '0x0000000000000000000000000000000000004444',
     spec: JSON.parse(
-      fs.readFileSync(path.resolve(__dirname, './abi/CredentialDefinitionRegistryInterface.json'), 'utf8')
+      fs.readFileSync(path.resolve(__dirname, './abi/CredentialDefinitionRegistry.json'), 'utf8')
     ),
   }
 

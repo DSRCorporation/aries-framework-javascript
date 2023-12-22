@@ -55,7 +55,7 @@ export class IndyBesuAnonCredsRegistry implements AnonCredsRegistry {
       const schemaId = buildSchemaId(options.schema)
 
       const schema = {
-        id: schemaId,
+        id: { value: schemaId },
         ...options.schema,
       }
 
@@ -99,7 +99,7 @@ export class IndyBesuAnonCredsRegistry implements AnonCredsRegistry {
       return {
         credentialDefinition: {
           issuerId: credDef.issuerId,
-          schemaId: credDef.schemaId,
+          schemaId: credDef.schemaId.value,
           type: 'CL',
           tag: credDef.tag,
           value: value,
@@ -137,9 +137,9 @@ export class IndyBesuAnonCredsRegistry implements AnonCredsRegistry {
       const createCredentialDefinitionId = buildCredentialDefinitionId(options.credentialDefinition)
 
       const credentialDefinition = {
-        id: createCredentialDefinitionId,
+        id: { value: createCredentialDefinitionId },
         issuerId: options.credentialDefinition.issuerId,
-        schemaId: options.credentialDefinition.schemaId,
+        schemaId:  { value: options.credentialDefinition.schemaId },
         credDefType: options.credentialDefinition.type,
         tag: options.credentialDefinition.tag,
         value: JSON.stringify(options.credentialDefinition.value),

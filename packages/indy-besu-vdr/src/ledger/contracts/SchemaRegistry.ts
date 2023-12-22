@@ -4,20 +4,13 @@ import path from 'path'
 import { SchemaRegistry as IndySchemaRegistry, LedgerClient } from 'indy2-vdr'
 import { injectable } from '@aries-framework/core'
 import { IndyBesuSigner } from '../IndyBesuSigner'
-
-export type Schema = {
-  id: string
-  issuerId: string
-  name: string
-  version: string
-  attrNames: string[]
-}
+import { Schema } from '../types/Schema'
 
 @injectable()
 export class SchemaRegistry extends BaseContract {
   public static readonly config = {
     address: '0x0000000000000000000000000000000000005555',
-    spec: JSON.parse(fs.readFileSync(path.resolve(__dirname, './abi/SchemaRegistryInterface.json'), 'utf8')),
+    spec: JSON.parse(fs.readFileSync(path.resolve(__dirname, './abi/SchemaRegistry.json'), 'utf8')),
   }
 
   constructor(client: LedgerClient) {

@@ -44,6 +44,8 @@ describe('Indy-Besu DID', () => {
       },
     })
 
+    console.log(JSON.stringify(createdDid))
+
     expect(createdDid.didState).toMatchObject({ state: 'finished' })
 
     const id = createdDid.didState.did!

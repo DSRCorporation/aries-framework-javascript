@@ -1,7 +1,7 @@
 {
   "_format": "hh-sol-artifact-1",
-  "contractName": "SchemaRegistryInterface",
-  "sourceName": "contracts/cl/SchemaRegistryInterface.sol",
+  "contractName": "SchemaRegistry",
+  "sourceName": "contracts/cl/SchemaRegistry.sol",
   "abi": [
     {
       "inputs": [
