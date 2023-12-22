@@ -1,4 +1,3 @@
-import { BigNumberish } from 'ethers'
 import { BaseContract } from './BaseContract'
 import fs from 'fs'
 import path from 'path'
@@ -12,13 +11,6 @@ export type Schema = {
   name: string
   version: string
   attrNames: string[]
-}
-
-export type SchemaMetadata = { created: BigNumberish }
-
-export type SchemaWithMetadata = {
-  schema: Schema
-  metadata: SchemaMetadata
 }
 
 @injectable()
@@ -37,7 +29,7 @@ export class SchemaRegistry extends BaseContract {
     return await this.signAndSubmit(transaction, signer)
   }
 
-  public async resolveSchema(id: string): Promise<SchemaWithMetadata> {
+  public async resolveSchema(id: string): Promise<Schema> {
     const transaction = await IndySchemaRegistry.buildResolveSchemaTransaction(this.client, id)
     const response = await this.client.submitTransaction(transaction)
     return IndySchemaRegistry.parseResolveSchemaResult(this.client, response)

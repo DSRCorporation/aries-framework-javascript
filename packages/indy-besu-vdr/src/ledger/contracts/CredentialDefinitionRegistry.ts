@@ -15,12 +15,6 @@ export type CredentialDefinition = {
   value: string
 }
 
-export type CredentialDefinitionMetadata = { created: BigNumberish }
-
-export type CredentialDefinitionWithMetadata = {
-  credDef: CredentialDefinition
-  metadata: CredentialDefinitionMetadata
-}
 @injectable()
 export class CredentialDefinitionRegistry extends BaseContract {
   public static readonly config = {
@@ -43,7 +37,7 @@ export class CredentialDefinitionRegistry extends BaseContract {
     return await this.signAndSubmit(transaction, signer)
   }
 
-  public async resolveCredentialDefinition(id: string): Promise<CredentialDefinitionWithMetadata> {
+  public async resolveCredentialDefinition(id: string): Promise<CredentialDefinition> {
     const transaction = await IndyCredentialDefinitionRegistry.buildResolveCredentialDefinitionTransaction(
       this.client,
       id

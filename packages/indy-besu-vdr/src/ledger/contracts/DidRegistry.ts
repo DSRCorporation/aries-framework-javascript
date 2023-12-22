@@ -5,13 +5,12 @@ import fs from 'fs'
 import path from 'path'
 import { IndyDidRegistry, LedgerClient } from 'indy2-vdr'
 import { IndyBesuSigner } from '../IndyBesuSigner'
-
 export type VerificationMethod = {
   id: string
   type: string
   controller: string
-  publicKeyJwk: string
-  publicKeyMultibase: string
+  publicKeyJwk?: string
+  publicKeyMultibase?: string
 }
 
 export type VerificationRelationship = string | VerificationMethod
@@ -19,9 +18,7 @@ export type VerificationRelationship = string | VerificationMethod
 export type Service = {
   id: string
   type: string
-  serviceEndpoint: string
-  accept: string[]
-  routingKeys: string[]
+  serviceEndpoint: { uri: string } | string
 }
 
 export type DidDocument = {
@@ -43,11 +40,6 @@ export type DidMetadata = {
   created: BigNumberish
   updated: BigNumberish
   deactivated: boolean
-}
-
-export type DidDocumentStorage = {
-  document: DidDocument
-  metadata: DidMetadata
 }
 
 @injectable()

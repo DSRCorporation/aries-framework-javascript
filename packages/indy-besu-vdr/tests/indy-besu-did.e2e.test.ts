@@ -1,4 +1,5 @@
-import { Agent, JsonTransformer, Key, KeyType, TypedArrayEncoder } from '@aries-framework/core'
+import { Agent, Buffer, JsonTransformer, Key, KeyType, TypedArrayEncoder } from '@aries-framework/core'
+import crypto from "crypto";
 import { getAgentOptions } from '../../core/tests/helpers'
 import { getBesuIndyModules, trusteePrivateKey } from './indy-bese-test-utils'
 import { IndyBesuDidCreateOptions } from '../src/dids'
@@ -24,7 +25,7 @@ describe('Indy-Besu DID', () => {
   })
 
   it('create and resolve a did:indy2 did', async () => {
-    const didPrivateKey = TypedArrayEncoder.fromHex('8f2a55949038a9610f50fb23b5883af3b4ecb3c3bb792cbcefbd1542c692be63')
+    const didPrivateKey = Buffer.from(crypto.randomBytes(32))
 
     const createdDid = await agent.dids.create<IndyBesuDidCreateOptions>({
       method: 'indy2',
@@ -45,7 +46,9 @@ describe('Indy-Besu DID', () => {
 
     expect(createdDid.didState).toMatchObject({ state: 'finished' })
 
-    const resolvedDid = await agent.dids.resolve(createdDid.didState.did!)
+    const id = createdDid.didState.did!
+
+    const resolvedDid = await agent.dids.resolve(id)
 
     console.log(JSON.stringify(resolvedDid))
 
@@ -53,20 +56,20 @@ describe('Indy-Besu DID', () => {
       '@context': ['https://w3id.org/did/v1', 'https://www.w3.org/ns/did/v1'],
       verificationMethod: [
         {
-          id: 'did:indy2:testnet:4JG9HccaMGUS4E5k2gYVne#KEY-1',
+          id: `${id}#KEY-1`,
           type: 'EcdsaSecp256k1VerificationKey2019',
-          controller: 'did:indy2:testnet:4JG9HccaMGUS4E5k2gYVne',
-          publicKeyMultibase: 'zQ3shN4cFC5oaCVKL37yh5Jn6mvpXMEb6wyjd29C25SuZkiL9',
+          controller: id,
+          publicKeyMultibase: createdDid.didState.didDocument!.verificationMethod![0].publicKeyMultibase,
         },
       ],
       service: [
         {
-          id: 'did:indy2:testnet:4JG9HccaMGUS4E5k2gYVne#endpoint',
+          id:  `${id}#endpoint`,
           serviceEndpoint: 'https://example.com/endpoint',
           type: 'endpoint',
         },
       ],
-      authentication: ['did:indy2:testnet:4JG9HccaMGUS4E5k2gYVne#KEY-1'],
+      authentication: [`${id}#KEY-1`],
     })
   })
 })

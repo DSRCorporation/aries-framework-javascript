@@ -164,7 +164,7 @@ function getAskarAnonCredsIndyModules() {
         ],
       })
     ),
-    indyBesu: new IndyBesuModule({ rpcUrl: 'http://localhost:8545' }),
+    indyBesu: new IndyBesuModule({ chainId: 1337, nodeAddress: 'http://localhost:8545' }),
     dids: new DidsModule({
       resolvers: [new IndyVdrIndyDidResolver(), new CheqdDidResolver(), new IndyBesuDidResolver()],
       registrars: [new CheqdDidRegistrar(), new IndyBesuDidRegistrar()],

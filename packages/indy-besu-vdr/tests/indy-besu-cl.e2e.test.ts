@@ -1,8 +1,9 @@
-import { getBesuIndyModules, trusteePrivateKey } from './indy-bese-test-utils'
-import { Agent, Key, KeyType, TypedArrayEncoder } from '@aries-framework/core'
+import { Agent, Buffer, Key, KeyType } from '@aries-framework/core'
+import crypto from "crypto";
+import { getAgentOptions } from '../../core/tests/helpers'
 import { IndyBesuDidCreateOptions } from '../src/dids'
 import { IndyBesuAnonCredsRegistry } from '../src/anoncreds/IndyBesuAnonCredsRegistry'
-import { getAgentOptions } from '../../core/tests/helpers'
+import { getBesuIndyModules, trusteePrivateKey } from './indy-bese-test-utils'
 
 const agentOptions = getAgentOptions('Faber', {}, getBesuIndyModules())
 const anonCredsRegistry = new IndyBesuAnonCredsRegistry()
@@ -26,7 +27,7 @@ describe('Indy-Besu CL', () => {
   })
 
   it('register and resolve a schema and credential definition', async () => {
-    const didPrivateKey = TypedArrayEncoder.fromHex('8f2a55949038a9610f50fb23b5883af3b4ecb3c3bb792cbcefbd1542c692be63')
+    const didPrivateKey = Buffer.from(crypto.randomBytes(32))
 
     const did = await agent.dids.create<IndyBesuDidCreateOptions>({
       method: 'indy2',

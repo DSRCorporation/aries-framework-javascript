@@ -62,7 +62,7 @@ export class Faber extends BaseAgent {
           network: 'testnet',
         },
         secret: {
-          privateKey,
+          accountKey,
         },
       })
 

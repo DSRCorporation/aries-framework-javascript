@@ -56,8 +56,8 @@ function toIndyBesuVerificationMethod(verificationMethod: VerificationMethod): I
     id: verificationMethod.id,
     type: verificationMethod.type,
     controller: verificationMethod.controller,
-    publicKeyJwk: verificationMethod.publicKeyJwk ? JSON.stringify(verificationMethod.publicKeyJwk) : '',
-    publicKeyMultibase: verificationMethod.publicKeyMultibase ?? '',
+    publicKeyJwk: verificationMethod.publicKeyJwk ? JSON.stringify(verificationMethod.publicKeyJwk) : undefined,
+    publicKeyMultibase: verificationMethod.publicKeyMultibase,
   }
 }
 
@@ -66,7 +66,7 @@ function fromIndyBesuVerificationMethod(verificationMethod: IndyBesuVerification
     id: verificationMethod.id,
     type: verificationMethod.type,
     controller: verificationMethod.controller,
-    publicKeyMultibase: verificationMethod.publicKeyMultibase || undefined,
+    publicKeyMultibase: verificationMethod.publicKeyMultibase,
     publicKeyJwk: verificationMethod.publicKeyJwk ? JSON.parse(verificationMethod.publicKeyJwk) : undefined,
   })
 }
@@ -76,13 +76,18 @@ function toIndyBesuService(service: DidDocumentService): Service {
     id: service.id,
     type: service.type,
     serviceEndpoint: service.serviceEndpoint,
-    accept: [],
-    routingKeys: [],
   }
 }
 
 function fromIndyBesuService(service: Service): DidDocumentService {
-  return new DidDocumentService({ id: service.id, serviceEndpoint: service.serviceEndpoint, type: service.type })
+  let serviceEndpoint: string
+  if (typeof service.serviceEndpoint == 'string') {
+    serviceEndpoint = service.serviceEndpoint
+  } else {
+    serviceEndpoint = service.serviceEndpoint.uri
+  }
+
+  return new DidDocumentService({ id: service.id, serviceEndpoint: serviceEndpoint, type: service.type })
 }
 
 function toVerificationRelationship(verificationMethod: string | VerificationMethod): VerificationRelationship {

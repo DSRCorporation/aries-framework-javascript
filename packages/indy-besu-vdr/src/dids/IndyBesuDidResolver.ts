@@ -11,8 +11,6 @@ export class IndyBesuDidResolver implements DidResolver {
     try {
       const didDicument = await didRegistry.resolveDid(did)
 
-      console.log(JSON.stringify(didDicument))
-
       return {
         didDocument: fromIndyBesuDidDocument(didDicument),
         didDocumentMetadata: {},
@@ -25,7 +23,7 @@ export class IndyBesuDidResolver implements DidResolver {
         didResolutionMetadata: {
           error: 'unknownError',
           message: `resolver_error: Unable to resolve did '${did}': ${error}`,
-        },
+        }, 
       }
     }
   }

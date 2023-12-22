@@ -72,20 +72,3 @@ export function validateSpecCompliantPayload(didDocument: DidDocument): string |
 
   return null
 }
-
-export async function verificationKeyForDid(agentContext: AgentContext, did: string) {
-  const reolver = agentContext.dependencyManager.resolve(IndyBesuDidResolver)
-
-  const { didDocument, didDocumentMetadata, didResolutionMetadata } = await reolver.resolve(agentContext, did)
-
-  if (didResolutionMetadata.error)
-    throw new AriesFrameworkError(`${didResolutionMetadata.error}: ${didResolutionMetadata.message}`)
-  if (didDocumentMetadata.deactivated) throw new AriesFrameworkError('DID has been deactivated')
-  if (!didDocument) throw new AriesFrameworkError('DID not found')
-
-  // did:indy dids MUST have a verificationMethod with #verkey
-  const verificationMethod = didDocument.dereferenceKey(`${did}#KEY-1`)
-  const key = getKeyFromVerificationMethod(verificationMethod)
-
-  return key
-}

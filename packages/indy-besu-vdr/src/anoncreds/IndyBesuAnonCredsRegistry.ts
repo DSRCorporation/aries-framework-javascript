@@ -23,13 +23,13 @@ export class IndyBesuAnonCredsRegistry implements AnonCredsRegistry {
     try {
       const schemaRegistry = agentContext.dependencyManager.resolve(SchemaRegistry)
 
-      const { schema, metadata } = await schemaRegistry.resolveSchema(schemaId)
+      const schema  = await schemaRegistry.resolveSchema(schemaId)
 
       return {
         schema: schema,
         schemaId,
         resolutionMetadata: {},
-        schemaMetadata: metadata,
+        schemaMetadata: {},
       }
     } catch (error) {
       return {
@@ -90,7 +90,7 @@ export class IndyBesuAnonCredsRegistry implements AnonCredsRegistry {
     try {
       const credentialDefinitionRegistry = agentContext.dependencyManager.resolve(CredentialDefinitionRegistry)
 
-      const { credDef, metadata } = await credentialDefinitionRegistry.resolveCredentialDefinition(
+      const credDef = await credentialDefinitionRegistry.resolveCredentialDefinition(
         credentialDefinitionId
       )
 
@@ -106,7 +106,7 @@ export class IndyBesuAnonCredsRegistry implements AnonCredsRegistry {
         },
         credentialDefinitionId,
         resolutionMetadata: {},
-        credentialDefinitionMetadata: metadata,
+        credentialDefinitionMetadata: {},
       }
     } catch (error) {
       return {
