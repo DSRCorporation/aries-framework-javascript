@@ -50,7 +50,7 @@ export class IndyBesuAnonCredsRegistry implements AnonCredsRegistry {
     try {
       const schemaRegistry = agentContext.dependencyManager.resolve(SchemaRegistry)
 
-      const signer = new IndyBesuSigner(options.secret.accountKey, agentContext.wallet)
+      const signer = new IndyBesuSigner(options.options.accountKey, agentContext.wallet)
 
       const schemaId = buildSchemaId(options.schema)
 
@@ -132,7 +132,7 @@ export class IndyBesuAnonCredsRegistry implements AnonCredsRegistry {
         throw new AriesFrameworkError(`Schema not found for schemaId: ${options.credentialDefinition.schemaId}`)
       }
 
-      const signer = new IndyBesuSigner(options.secret.accountKey, agentContext.wallet)
+      const signer = new IndyBesuSigner(options.options.accountKey, agentContext.wallet)
 
       const createCredentialDefinitionId = buildCredentialDefinitionId(options.credentialDefinition)
 
@@ -186,13 +186,13 @@ export class IndyBesuAnonCredsRegistry implements AnonCredsRegistry {
 }
 
 export interface IndyBesuRegisterSchemaOptions extends RegisterSchemaOptions {
-  secret: {
+  options: {
     accountKey: Key
   }
 }
 
 export interface IndyBesuRegisterCredentialDefinitionOptions extends RegisterCredentialDefinitionOptions {
-  secret: {
+  options: {
     accountKey: Key
   }
 }

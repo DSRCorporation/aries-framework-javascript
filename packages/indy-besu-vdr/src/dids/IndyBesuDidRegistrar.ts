@@ -62,7 +62,7 @@ export class IndyBesuDidRegistrar implements DidRegistrar {
       didDocument = didDocumentBuilder.build()
     }
     
-    const signer = new IndyBesuSigner(options.secret.accountKey, agentContext.wallet)
+    const signer = new IndyBesuSigner(options.options.accountKey, agentContext.wallet)
 
     try {
       await didRegistry.createDid(toIndyBesuDidDocument(didDocument), signer)
@@ -87,7 +87,7 @@ export class IndyBesuDidRegistrar implements DidRegistrar {
   public async update(agentContext: AgentContext, options: IndyBesuDidUpdateOptions): Promise<DidUpdateResult> {
     const didRegistry = agentContext.dependencyManager.resolve(DidRegistry)
 
-    const signer = new IndyBesuSigner(options.secret.accountKey, agentContext.wallet)
+    const signer = new IndyBesuSigner(options.options.accountKey, agentContext.wallet)
 
     try {
       const resolvedDocument = await didRegistry.resolveDid(options.did)
@@ -138,7 +138,7 @@ export class IndyBesuDidRegistrar implements DidRegistrar {
   ): Promise<DidDeactivateResult> {
     const didRegistry = agentContext.dependencyManager.resolve(DidRegistry)
 
-    const signer = new IndyBesuSigner(options.secret.accountKey, agentContext.wallet)
+    const signer = new IndyBesuSigner(options.options.accountKey, agentContext.wallet)
 
     try {
       const resolvedDocument = await didRegistry.resolveDid(options.did)
@@ -188,9 +188,9 @@ export interface IndyBesuDidCreateOptions extends DidCreateOptions {
   options: {
     network: string
     endpoints?: IndyBesuEndpoint[]
+    accountKey: Key
   }
   secret: {
-    accountKey: Key
     didPrivateKey?: Buffer
   }
 }
@@ -198,8 +198,6 @@ export interface IndyBesuDidCreateOptions extends DidCreateOptions {
 export interface IndyBesuDidUpdateOptions extends DidUpdateOptions {
   options: {
     network: string
-  }
-  secret: {
     accountKey: Key
   }
 }
@@ -207,8 +205,6 @@ export interface IndyBesuDidUpdateOptions extends DidUpdateOptions {
 export interface IndyBesuDidDeactivateOptions extends DidDeactivateOptions {
   options: {
     network: string
-  }
-  secret: {
     accountKey: Key
   }
 }

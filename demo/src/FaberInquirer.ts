@@ -1,3 +1,4 @@
+import { TypedArrayEncoder } from '@aries-framework/core'
 import { clear } from 'console'
 import { textSync } from 'figlet'
 import { prompt } from 'inquirer'
@@ -6,6 +7,7 @@ import { BaseInquirer, ConfirmOptions } from './BaseInquirer'
 import { Faber, RegistryOptions } from './Faber'
 import { Listener } from './Listener'
 import { Title } from './OutputClass'
+
 
 export const runFaber = async () => {
   clear()
@@ -93,7 +95,7 @@ export class FaberInquirer extends BaseInquirer {
       this.inquireOptions([RegistryOptions.indy, RegistryOptions.cheqd, RegistryOptions.indyBesu]),
     ])
     if (registry.options === RegistryOptions.indyBesu) {
-      await this.faber.createOrImportIndy2Did()
+      await this.faber.createIndy2Did()
     } else {
       await this.faber.importDid(registry.options)
     }

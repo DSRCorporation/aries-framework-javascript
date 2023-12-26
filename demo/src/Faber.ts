@@ -1,17 +1,24 @@
-import type { RegisterCredentialDefinitionReturnStateFinished } from '@aries-framework/anoncreds'
-import type { ConnectionRecord, ConnectionStateChangedEvent } from '@aries-framework/core'
-import { IndyBesuDidCreateOptions } from '@aries-framework/indy-besu-vdr'
+import type { RegisterCredentialDefinitionReturnStateFinished, RegisterSchemaOptions } from '@aries-framework/anoncreds'
+import { ConnectionRecord, ConnectionStateChangedEvent, Key } from '@aries-framework/core'
+import { IndyBesuDidCreateOptions, IndyBesuRegisterSchemaOptions } from '@aries-framework/indy-besu-vdr'
 import type {
   IndyVdrRegisterSchemaOptions,
   IndyVdrRegisterCredentialDefinitionOptions,
 } from '@aries-framework/indy-vdr'
 import type BottomBar from 'inquirer/lib/ui/bottom-bar'
 
-import { ConnectionEventTypes, KeyType, TypedArrayEncoder, utils } from '@aries-framework/core'
+import { ConnectionEventTypes, KeyType, TypedArrayEncoder, WalletKeyExistsError, utils } from '@aries-framework/core'
 import { ui } from 'inquirer'
 
 import { BaseAgent, indyNetworkConfig } from './BaseAgent'
 import { Color, Output, greenText, purpleText, redText } from './OutputClass'
+
+const faberPrivateKey = TypedArrayEncoder.fromHex(
+  'c87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3'
+)
+const faberPublicKey = TypedArrayEncoder.fromHex(
+  '03af80b90d25145da28c583359beb47b21796b2fe1a23c1511e443e7a64dfdb27d'
+)
 
 export enum RegistryOptions {
   indy = 'did:indy',
@@ -24,6 +31,7 @@ export class Faber extends BaseAgent {
   public credentialDefinition?: RegisterCredentialDefinitionReturnStateFinished
   public anonCredsIssuerId?: string
   public ui: BottomBar
+  public accountKey!: Key
 
   public constructor(port: number, name: string) {
     super({ port, name, useLegacyIndySdk: true })
@@ -33,47 +41,39 @@ export class Faber extends BaseAgent {
   public static async build(): Promise<Faber> {
     const faber = new Faber(9001, 'faber')
     await faber.initializeAgent()
+    await faber.initializeAccountKey()
     return faber
   }
 
-  public async createOrImportIndy2Did() {
-    const did = 'did:indy2:testnet:4JG9HccaMGUS4E5k2gYVne'
-    const privateKey = TypedArrayEncoder.fromHex('8f2a55949038a9610f50fb23b5883af3b4ecb3c3bb792cbcefbd1542c692be63')
-
-    const result = await this.agent.dids.resolve(did)
-
-    if (result.didDocument) {
-      await this.agent.dids.import({
-        did,
-        overwrite: true,
-        privateKeys: [
-          {
-            keyType: KeyType.K256,
-            privateKey,
-          },
-        ],
-      })
-
-      console.log(`Imported DID: ${JSON.stringify(result.didDocument)}`)
-    } else {
-      const createdDid = await this.agent.dids.create<IndyBesuDidCreateOptions>({
-        method: 'indy2',
-        options: {
-          network: 'testnet',
-        },
-        secret: {
-          accountKey,
-        },
-      })
-
-      if (createdDid.didState.state == 'failed') {
-        throw new Error(createdDid.didState.reason)
+  private async initializeAccountKey() {
+    try {
+      this.accountKey = await this.agent.wallet.createKey({ keyType: KeyType.K256, privateKey: faberPrivateKey })
+    } catch (error) {
+      if (error instanceof WalletKeyExistsError) {
+        this.accountKey = new Key(faberPublicKey, KeyType.K256)
+      } else {
+        throw error
       }
+    }
+  }
 
-      console.log(`Created DID: ${JSON.stringify(createdDid.didState.didDocument)}`)
+  public async createIndy2Did() {
+    const createdDid = await this.agent.dids.create<IndyBesuDidCreateOptions>({
+      method: 'indy2',
+      options: {
+        network: 'testnet',
+        accountKey: this.accountKey
+      },
+      secret: {},
+    })
+
+    if (createdDid.didState.state == 'failed') {
+      throw new Error(createdDid.didState.reason)
     }
 
-    this.anonCredsIssuerId = did
+    console.log(`Created DID: ${JSON.stringify(createdDid.didState.didDocument)}`)
+
+    this.anonCredsIssuerId = createdDid.didState.did
   }
 
   public async importDid(registry: string) {
@@ -188,11 +188,12 @@ export class Faber extends BaseAgent {
     this.printSchema(schemaTemplate.name, schemaTemplate.version, schemaTemplate.attrNames)
     console.log(greenText('\nRegistering schema...\n', false))
 
-    const { schemaState } = await this.agent.modules.anoncreds.registerSchema<IndyVdrRegisterSchemaOptions>({
+    const { schemaState } = await this.agent.modules.anoncreds.registerSchema({
       schema: schemaTemplate,
       options: {
         endorserMode: 'internal',
         endorserDid: this.anonCredsIssuerId,
+        accountKey: this.accountKey,
       },
     })
 
@@ -212,7 +213,7 @@ export class Faber extends BaseAgent {
 
     console.log('\nRegistering credential definition...\n')
     const { credentialDefinitionState } =
-      await this.agent.modules.anoncreds.registerCredentialDefinition<IndyVdrRegisterCredentialDefinitionOptions>({
+      await this.agent.modules.anoncreds.registerCredentialDefinition({
         credentialDefinition: {
           schemaId,
           issuerId: this.anonCredsIssuerId,
@@ -221,6 +222,7 @@ export class Faber extends BaseAgent {
         options: {
           endorserMode: 'internal',
           endorserDid: this.anonCredsIssuerId,
+          accountKey: this.accountKey,
         },
       })
 

@@ -25,6 +25,7 @@ export class IndyBesuSigner {
     })
   }
 
+  // Since the Askar library does not return a recovery ID, we have to use the Ethers library for signing.
   private async sign(data: BytesLike): Promise<Signature> {
     if (!(this.wallet instanceof AskarWallet)) {
       throw new AriesFrameworkError('Incorrect wallete type: Indy-Besu VDR currently only support the Askar wallet')
@@ -36,10 +37,6 @@ export class IndyBesuSigner {
       throw new WalletError('Key entry not found')
     }
 
-    /**
-     * For unforeseen reasons, we are unable to recovery the key from signatures that Askar makes. These are required for Ethereum transactions.
-     * Because if this, for our demo, we have decided to sign with k256 using the ethers library.
-     */
     const key = new SigningKey(keyEntry.key.secretBytes)
     const signature = key.sign(data)
 

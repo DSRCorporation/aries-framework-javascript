@@ -39,9 +39,9 @@ describe('Indy-Besu CL', () => {
             endpoint: 'https://example.com/endpoint',
           },
         ],
+        accountKey: trusteeKey,
       },
       secret: {
-        accountKey: trusteeKey,
         didPrivateKey,
       },
     })
@@ -57,8 +57,7 @@ describe('Indy-Besu CL', () => {
         name: 'test11',
         version: '1.0',
       },
-      options: {},
-      secret: {
+      options: {
         accountKey: trusteeKey,
       },
     })
@@ -104,8 +103,7 @@ describe('Indy-Besu CL', () => {
           },
         },
       },
-      options: {},
-      secret: {
+      options: {
         accountKey: trusteeKey,
       },
     })

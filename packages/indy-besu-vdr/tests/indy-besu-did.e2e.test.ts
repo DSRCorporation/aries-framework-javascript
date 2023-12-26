@@ -37,9 +37,9 @@ describe('Indy-Besu DID', () => {
             endpoint: 'https://example.com/endpoint',
           },
         ],
+        accountKey: trusteeKey,
       },
       secret: {
-        accountKey: trusteeKey,
         didPrivateKey,
       },
     })

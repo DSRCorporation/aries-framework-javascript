@@ -8,11 +8,7 @@ import {
   VERIFICATION_METHOD_TYPE_ECDSA_SECP256K1_VERIFICATION_KEY_2019,
   Hasher,
   TypedArrayEncoder,
-  AgentContext,
-  AriesFrameworkError,
-  getKeyFromVerificationMethod,
 } from '@aries-framework/core'
-import { IndyBesuDidResolver } from './IndyBesuDidResolver'
 
 export function buildDid(method: string, network: string, key: Buffer): string {
   const buffer = Hasher.hash(key, 'sha2-256')
