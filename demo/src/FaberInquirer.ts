@@ -100,14 +100,12 @@ export class FaberInquirer extends BaseInquirer {
       await this.faber.importDid(registry.options)
     }
     await this.faber.issueCredential()
-    const title = 'Is the credential offer accepted?'
-    await this.listener.newAcceptedPrompt(title, this)
+    await this.processAnswer()
   }
 
   public async proof() {
     await this.faber.sendProofRequest()
-    const title = 'Is the proof request accepted?'
-    await this.listener.newAcceptedPrompt(title, this)
+    await this.processAnswer()
   }
 
   public async message() {

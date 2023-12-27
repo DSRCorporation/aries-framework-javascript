@@ -1,5 +1,5 @@
 import type { RegisterCredentialDefinitionReturnStateFinished, RegisterSchemaOptions } from '@aries-framework/anoncreds'
-import { ConnectionRecord, ConnectionStateChangedEvent, Key } from '@aries-framework/core'
+import { ConnectionRecord, ConnectionStateChangedEvent, CredentialEventTypes, CredentialExchangeRecord, CredentialState, CredentialStateChangedEvent, Key, ProofEventTypes, ProofExchangeRecord, ProofState, ProofStateChangedEvent } from '@aries-framework/core'
 import { IndyBesuDidCreateOptions, IndyBesuRegisterSchemaOptions } from '@aries-framework/indy-besu-vdr'
 import type {
   IndyVdrRegisterSchemaOptions,
@@ -177,7 +177,7 @@ export class Faber extends BaseAgent {
       issuerId: this.anonCredsIssuerId,
     }
     this.printSchema(schemaTemplate.name, schemaTemplate.version, schemaTemplate.attrNames)
-    console.log(greenText('\nRegistering schema...\n', false))
+    console.log(greenText('Registering schema...\n', false))
 
     const { schemaState } = await this.agent.modules.anoncreds.registerSchema({
       schema: schemaTemplate,
@@ -193,7 +193,11 @@ export class Faber extends BaseAgent {
         `Error registering schema: ${schemaState.state === 'failed' ? schemaState.reason : 'Not Finished'}`
       )
     }
-    console.log(`\nSchema ${schemaState.schemaId} registered!\n`)
+
+    console.log(`Schema registered!\n${Color.Reset}`)
+
+    console.log(purpleText(`Schema ID:${Color.Reset} ${schemaState.schemaId}\n`))
+
     return schemaState
   }
 
@@ -202,7 +206,8 @@ export class Faber extends BaseAgent {
       throw new Error(redText('Missing anoncreds issuerId'))
     }
 
-    console.log('\nRegistering credential definition...\n')
+    console.log(greenText('Registering credential definition...\n', false))
+    
     const { credentialDefinitionState } =
       await this.agent.modules.anoncreds.registerCredentialDefinition({
         credentialDefinition: {
@@ -226,8 +231,47 @@ export class Faber extends BaseAgent {
     }
 
     this.credentialDefinition = credentialDefinitionState
-    console.log(`\nCredential definition ${this.credentialDefinition.credentialDefinitionId} registered!!\n`)
+
+    console.log(`Credential definition registered!\n${Color.Reset}`)
+
+    console.log(purpleText(`Credential definition ID:${Color.Reset} ${this.credentialDefinition.credentialDefinitionId}\n`))
+
     return this.credentialDefinition
+  }
+
+  private async waitForAcceptCredential(recordId: string) {
+    console.log('Waiting for Alice to accept credential...\n\n')
+
+    const getCredentialExchangeRecord = (recordId: string) =>
+      new Promise<CredentialExchangeRecord>((resolve, reject) => {
+        
+        this.agent.events.on(
+          CredentialEventTypes.CredentialStateChanged,
+          async ({ payload }: CredentialStateChangedEvent) => {
+            if (recordId !== payload.credentialRecord.id) return
+
+            const state = payload.credentialRecord.state
+            if (state === CredentialState.Done 
+                || state === CredentialState.Declined
+                || state === CredentialState.Abandoned) {
+              resolve(payload.credentialRecord)
+            }
+          }
+        )
+      })
+
+    const record = await getCredentialExchangeRecord(recordId)
+    
+    switch (record.state) {
+      case CredentialState.Done:
+        console.log(greenText('Credential accepted!\n'))
+        break
+      case CredentialState.Declined:
+        console.log(redText('Credential declined\n'))
+        break
+      case CredentialState.Abandoned:
+        console.log(redText('Abondened\n'))
+    }
   }
 
   public async issueCredential() {
@@ -235,7 +279,7 @@ export class Faber extends BaseAgent {
     const credentialDefinition = await this.registerCredentialDefinition(schema.schemaId)
     const connectionRecord = await this.getConnectionRecord()
 
-    this.ui.updateBottomBar('\nSending credential offer...\n')
+    this.ui.updateBottomBar(greenText('\nSending credential offer...\n', false))
 
     const record = await this.agent.credentials.offerCredential({
       connectionId: connectionRecord.id,
@@ -260,11 +304,14 @@ export class Faber extends BaseAgent {
         },
       },
     })
-    this.ui.updateBottomBar(
-      `\nCredential offer sent!\n\nGo to the Alice agent to accept the credential offer\n\n${Color.Reset}`
-    )
 
-    console.log(purpleText(`Credential Record${Color.Reset}\n ${JSON.stringify(record)}`))
+    this.ui.updateBottomBar(`\nCredential offer sent!\n\n${Color.Reset}`)
+
+    console.log(purpleText(`Credential Record${Color.Reset}: ${JSON.stringify(record, null, 2)}`))
+    
+    console.log('Go to the Alice agent to accept the credential offer\n')
+
+    await this.waitForAcceptCredential(record.id)
   }
 
   private async printProofFlow(print: string) {
@@ -288,12 +335,54 @@ export class Faber extends BaseAgent {
     return proofAttribute
   }
 
+  private async waitForProof(recordId: string) {
+    console.log('Waiting for Alice to present proof...\n\n')
+
+    const getCredentialExchangeRecord = (recordId: string) =>
+      new Promise<ProofExchangeRecord>((resolve, reject) => {
+        
+        this.agent.events.on(
+          ProofEventTypes.ProofStateChanged,
+          async ({ payload }: ProofStateChangedEvent) => {
+            if (recordId !== payload.proofRecord.id) return
+
+            const state = payload.proofRecord.state
+            if (state === ProofState.Done 
+                || state === ProofState.Declined
+                || state === ProofState.Abandoned) {
+              resolve(payload.proofRecord)
+            }
+          }
+        )
+      })
+
+    const record = await getCredentialExchangeRecord(recordId)
+    
+    switch (record.state) {
+      case ProofState.Done:
+        console.log(greenText('Proof presented!\n'))
+
+        const formatData = await this.agent.proofs.getFormatData(recordId)
+        const revealedAttrs = formatData.presentation?.anoncreds?.requested_proof.revealed_attrs
+
+        if (revealedAttrs) {
+          console.log(purpleText(`Revealed attributes:${Color.Reset} ${JSON.stringify(revealedAttrs, null, 2)}\n\n`))
+        }
+        break
+      case ProofState.Declined:
+        console.log(redText('Proof request declined\n'))
+        break
+      case ProofState.Abandoned:
+        console.log(redText('Abondened\n'))
+    }
+  }
+
   public async sendProofRequest() {
     const connectionRecord = await this.getConnectionRecord()
     const proofAttribute = await this.newProofAttribute()
     await this.printProofFlow(greenText('\nRequesting proof...\n', false))
 
-    await this.agent.proofs.requestProof({
+    const record = await this.agent.proofs.requestProof({
       protocolVersion: 'v2',
       connectionId: connectionRecord.id,
       proofFormats: {
@@ -304,9 +393,12 @@ export class Faber extends BaseAgent {
         },
       },
     })
+
     this.ui.updateBottomBar(
-      `\nProof request sent!\n\nGo to the Alice agent to accept the proof request\n\n${Color.Reset}`
+      `\nProof request sent!\n\n${Color.Reset}Go to the Alice agent to accept the proof request\n\n`
     )
+
+    await this.waitForProof(record.id)
   }
 
   public async sendMessage(message: string) {
