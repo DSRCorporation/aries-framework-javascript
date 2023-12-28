@@ -1,4 +1,4 @@
-import type { AnonCredsProofFormatService, RegisterCredentialDefinitionReturnStateFinished } from '@aries-framework/anoncreds'
+import type { AnonCredsProofFormatService, RegisterCredentialDefinitionReturnStateFinished, RegisterSchemaReturnStateFinished } from '@aries-framework/anoncreds'
 import { ConnectionRecord, ConnectionStateChangedEvent, CredentialEventTypes, CredentialExchangeRecord, CredentialState, CredentialStateChangedEvent, Key, ProofEventTypes, ProofExchangeRecord, ProofState, ProofStateChangedEvent, ProofsProtocolVersionType, RequestProofOptions, V2ProofProtocol } from '@aries-framework/core'
 import { IndyBesuDidCreateOptions } from '@aries-framework/indy-besu-vdr'
 import type BottomBar from 'inquirer/lib/ui/bottom-bar'
@@ -23,6 +23,7 @@ export enum RegistryOptions {
 
 export class Faber extends BaseAgent {
   public outOfBandId?: string
+  public schema?: RegisterSchemaReturnStateFinished
   public credentialDefinition?: RegisterCredentialDefinitionReturnStateFinished
   public anonCredsIssuerId?: string
   public ui: BottomBar
@@ -161,10 +162,11 @@ export class Faber extends BaseAgent {
     console.log(purpleText(`Attributes: ${Color.Reset}${attributes[0]}, ${attributes[1]}, ${attributes[2]}\n`))
   }
 
-  private async registerSchema() {
+  public async registerSchema() {
     if (!this.anonCredsIssuerId) {
       throw new Error(redText('Missing anoncreds issuerId'))
     }
+
     const schemaTemplate = {
       name: 'FaberCollege' + utils.uuid(),
       version: '1.0.0',
@@ -193,12 +195,18 @@ export class Faber extends BaseAgent {
 
     console.log(purpleText(`Schema ID:${Color.Reset} ${schemaState.schemaId}\n`))
 
+    this.schema = schemaState
+
     return schemaState
   }
 
-  private async registerCredentialDefinition(schemaId: string) {
+  public async registerCredentialDefinition() {
     if (!this.anonCredsIssuerId) {
       throw new Error(redText('Missing anoncreds issuerId'))
+    }
+
+    if (!this.schema) {
+      throw new Error(redText('Missing anoncreds schemaId'))
     }
 
     console.log(greenText('Registering credential definition...\n', false))
@@ -206,7 +214,7 @@ export class Faber extends BaseAgent {
     const { credentialDefinitionState } =
       await this.agent.modules.anoncreds.registerCredentialDefinition({
         credentialDefinition: {
-          schemaId,
+          schemaId: this.schema.schemaId,
           issuerId: this.anonCredsIssuerId,
           tag: 'latest',
         },
@@ -270,8 +278,10 @@ export class Faber extends BaseAgent {
   }
 
   public async issueCredential() {
-    const schema = await this.registerSchema()
-    const credentialDefinition = await this.registerCredentialDefinition(schema.schemaId)
+    if (!this.credentialDefinition) {
+      throw new Error(redText('Missing anoncreds credentialDefinitionId'))
+    }
+
     const connectionRecord = await this.getConnectionRecord()
 
     this.ui.updateBottomBar(greenText('\nSending credential offer...\n', false))
@@ -295,7 +305,7 @@ export class Faber extends BaseAgent {
               value: '01/01/2022',
             },
           ],
-          credentialDefinitionId: credentialDefinition.credentialDefinitionId,
+          credentialDefinitionId: this.credentialDefinition.credentialDefinitionId,
         },
       },
     })

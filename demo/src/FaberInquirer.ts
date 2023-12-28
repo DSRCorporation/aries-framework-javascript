@@ -1,4 +1,3 @@
-import { TypedArrayEncoder } from '@aries-framework/core'
 import { clear } from 'console'
 import { textSync } from 'figlet'
 import { prompt } from 'inquirer'
@@ -18,6 +17,9 @@ export const runFaber = async () => {
 
 enum PromptOptions {
   CreateConnection = 'Create connection invitation',
+  CreateDid = 'Create DID',
+  RegisterSchema = 'Register Schema',
+  RegisterCredentialDefinition = 'Register Credential Definition',
   OfferCredential = 'Offer credential',
   RequestProof = 'Request proof',
   SendMessage = 'Send message',
@@ -27,14 +29,12 @@ enum PromptOptions {
 
 export class FaberInquirer extends BaseInquirer {
   public faber: Faber
-  public promptOptionsString: string[]
   public listener: Listener
 
   public constructor(faber: Faber) {
     super()
     this.faber = faber
     this.listener = new Listener()
-    this.promptOptionsString = Object.values(PromptOptions)
     this.listener.messageListener(this.faber.agent, this.faber.name)
   }
 
@@ -44,10 +44,34 @@ export class FaberInquirer extends BaseInquirer {
   }
 
   private async getPromptChoice() {
-    if (this.faber.outOfBandId) return prompt([this.inquireOptions(this.promptOptionsString)])
+    let promtOptions = Object.values(PromptOptions)
 
-    const reducedOption = [PromptOptions.CreateConnection, PromptOptions.Exit, PromptOptions.Restart]
-    return prompt([this.inquireOptions(reducedOption)])
+    if (!this.faber.credentialDefinition) {
+      this.removeOption(promtOptions, PromptOptions.OfferCredential)
+      this.removeOption(promtOptions, PromptOptions.RequestProof)
+    }
+
+    if (!this.faber.schema) {
+      this.removeOption(promtOptions, PromptOptions.RegisterCredentialDefinition)
+    }
+
+    if (!this.faber.anonCredsIssuerId) {
+      this.removeOption(promtOptions, PromptOptions.RegisterSchema)
+    }
+
+    if (!this.faber.outOfBandId) {
+      this.removeOption(promtOptions, PromptOptions.CreateDid)
+      this.removeOption(promtOptions, PromptOptions.SendMessage)
+    }
+
+    return prompt([this.inquireOptions(promtOptions)])
+  }
+
+  private removeOption(options: Array<String>, option: string) {
+    const index = options.indexOf(option, 0);
+    if (index > -1) {
+      options.splice(index, 1);
+    }
   }
 
   public async processAnswer() {
@@ -58,12 +82,21 @@ export class FaberInquirer extends BaseInquirer {
       case PromptOptions.CreateConnection:
         await this.connection()
         break
+      case PromptOptions.CreateDid:
+        await this.did()
+        break
+      case PromptOptions.RegisterSchema:
+        await this.schema()
+        break
+      case PromptOptions.RegisterCredentialDefinition:
+        await this.credentialDefinition()
+        break
       case PromptOptions.OfferCredential:
         await this.credential()
-        return
+        break
       case PromptOptions.RequestProof:
         await this.proof()
-        return
+        break
       case PromptOptions.SendMessage:
         await this.message()
         break
@@ -90,7 +123,7 @@ export class FaberInquirer extends BaseInquirer {
     }
   }
 
-  public async credential() {
+  public async did() {
     const registry = await prompt([
       this.inquireOptions([RegistryOptions.indy, RegistryOptions.cheqd, RegistryOptions.indyBesu]),
     ])
@@ -99,13 +132,22 @@ export class FaberInquirer extends BaseInquirer {
     } else {
       await this.faber.importDid(registry.options)
     }
+  }
+
+  public async schema() {
+    await this.faber.registerSchema()
+  }
+
+  public async credentialDefinition() {
+    await this.faber.registerCredentialDefinition()
+  }
+
+  public async credential() {
     await this.faber.issueCredential()
-    await this.processAnswer()
   }
 
   public async proof() {
     await this.faber.sendProofRequest()
-    await this.processAnswer()
   }
 
   public async message() {
