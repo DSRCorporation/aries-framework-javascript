@@ -70,21 +70,17 @@ export class AliceInquirer extends BaseInquirer {
   }
 
   public async acceptCredentialOffer(credentialRecord: CredentialExchangeRecord) {
-    const confirm = await prompt([this.inquireConfirmation(Title.CredentialOfferTitle)])
-    if (confirm.options === ConfirmOptions.No) {
-      await this.alice.agent.credentials.declineOffer(credentialRecord.id)
-    } else if (confirm.options === ConfirmOptions.Yes) {
-      await this.alice.acceptCredentialOffer(credentialRecord)
-    }
+    this.optionsInquirer.message = Title.CredentialOfferTitle
+    this.optionsInquirer.choices = ['Accept Credential']
+    await prompt([this.optionsInquirer])
+    await this.alice.acceptCredentialOffer(credentialRecord)
   }
 
   public async acceptProofRequest(proofRecord: ProofExchangeRecord) {
-    const confirm = await prompt([this.inquireConfirmation(Title.ProofRequestTitle)])
-    if (confirm.options === ConfirmOptions.No) {
-      await this.alice.agent.proofs.declineRequest({ proofRecordId: proofRecord.id })
-    } else if (confirm.options === ConfirmOptions.Yes) {
-      await this.alice.acceptProofRequest(proofRecord)
-    }
+    this.optionsInquirer.message = Title.ProofRequestTitle
+    this.optionsInquirer.choices = ['Present Proof']
+    await prompt([this.optionsInquirer])
+    await this.alice.acceptProofRequest(proofRecord)
   }
 
   public async connection() {

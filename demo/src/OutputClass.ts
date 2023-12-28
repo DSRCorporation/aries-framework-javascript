@@ -18,8 +18,8 @@ export enum Title {
   InvitationTitle = '\n\nPaste the invitation url here:',
   MessageTitle = '\n\nWrite your message here:\n(Press enter to send or press q to exit)\n',
   ConfirmTitle = '\n\nAre you sure?',
-  CredentialOfferTitle = '\n\nCredential offer received, do you want to accept it?',
-  ProofRequestTitle = '\n\nProof request received, do you want to accept it?',
+  CredentialOfferTitle = '\n\nCredential offer received:',
+  ProofRequestTitle = '\n\nProof request received:',
 }
 
 export const greenText = (text: string, reset?: boolean) => {
