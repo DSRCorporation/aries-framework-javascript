@@ -1,12 +1,7 @@
-import type { RegisterCredentialDefinitionReturnStateFinished, RegisterSchemaOptions } from '@aries-framework/anoncreds'
-import { ConnectionRecord, ConnectionStateChangedEvent, CredentialEventTypes, CredentialExchangeRecord, CredentialState, CredentialStateChangedEvent, Key, ProofEventTypes, ProofExchangeRecord, ProofState, ProofStateChangedEvent } from '@aries-framework/core'
-import { IndyBesuDidCreateOptions, IndyBesuRegisterSchemaOptions } from '@aries-framework/indy-besu-vdr'
-import type {
-  IndyVdrRegisterSchemaOptions,
-  IndyVdrRegisterCredentialDefinitionOptions,
-} from '@aries-framework/indy-vdr'
+import type { AnonCredsProofFormatService, RegisterCredentialDefinitionReturnStateFinished } from '@aries-framework/anoncreds'
+import { ConnectionRecord, ConnectionStateChangedEvent, CredentialEventTypes, CredentialExchangeRecord, CredentialState, CredentialStateChangedEvent, Key, ProofEventTypes, ProofExchangeRecord, ProofState, ProofStateChangedEvent, ProofsProtocolVersionType, RequestProofOptions, V2ProofProtocol } from '@aries-framework/core'
+import { IndyBesuDidCreateOptions } from '@aries-framework/indy-besu-vdr'
 import type BottomBar from 'inquirer/lib/ui/bottom-bar'
-
 import { ConnectionEventTypes, KeyType, TypedArrayEncoder, WalletKeyExistsError, utils } from '@aries-framework/core'
 import { ui } from 'inquirer'
 
@@ -71,7 +66,7 @@ export class Faber extends BaseAgent {
       throw new Error(createdDid.didState.reason)
     }
 
-    console.log(`Created DID: ${JSON.stringify(createdDid.didState.didDocument)}`)
+    console.log( purpleText(`Created DID${Color.Reset}: ${JSON.stringify(createdDid.didState.didDocument, null, 2)}`))
 
     this.anonCredsIssuerId = createdDid.didState.did
   }
@@ -307,7 +302,7 @@ export class Faber extends BaseAgent {
 
     this.ui.updateBottomBar(`\nCredential offer sent!\n\n${Color.Reset}`)
 
-    console.log(purpleText(`Credential Record${Color.Reset}: ${JSON.stringify(record, null, 2)}`))
+    console.log(purpleText(`Credential Record:${Color.Reset} ${JSON.stringify(record, null, 2)}`))
     
     console.log('Go to the Alice agent to accept the credential offer\n')
 
@@ -382,7 +377,7 @@ export class Faber extends BaseAgent {
     const proofAttribute = await this.newProofAttribute()
     await this.printProofFlow(greenText('\nRequesting proof...\n', false))
 
-    const record = await this.agent.proofs.requestProof({
+    const request = {
       protocolVersion: 'v2',
       connectionId: connectionRecord.id,
       proofFormats: {
@@ -392,11 +387,15 @@ export class Faber extends BaseAgent {
           requested_attributes: proofAttribute,
         },
       },
-    })
+    } as RequestProofOptions<(V2ProofProtocol<(AnonCredsProofFormatService)[]>)[]>
 
-    this.ui.updateBottomBar(
-      `\nProof request sent!\n\n${Color.Reset}Go to the Alice agent to accept the proof request\n\n`
-    )
+    const record = await this.agent.proofs.requestProof(request)
+
+    this.ui.updateBottomBar(`\nProof request sent!\n\n${Color.Reset}`)
+
+    console.log(purpleText(`Proof request:${Color.Reset} ${JSON.stringify(request, null, 2)}`))
+
+    console.log(`Go to the Alice agent to accept the proof request\n`)
 
     await this.waitForProof(record.id)
   }
