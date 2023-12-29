@@ -46,9 +46,13 @@ export class FaberInquirer extends BaseInquirer {
   private async getPromptChoice() {
     let promtOptions = Object.values(PromptOptions)
 
-    if (!this.faber.credentialDefinition) {
+    if (!this.faber.credentialDefinition || !this.faber.outOfBandId) {
       this.removeOption(promtOptions, PromptOptions.OfferCredential)
       this.removeOption(promtOptions, PromptOptions.RequestProof)
+    }
+
+    if (!this.faber.outOfBandId) {
+      this.removeOption(promtOptions, PromptOptions.SendMessage)
     }
 
     if (!this.faber.schema) {
@@ -57,11 +61,6 @@ export class FaberInquirer extends BaseInquirer {
 
     if (!this.faber.anonCredsIssuerId) {
       this.removeOption(promtOptions, PromptOptions.RegisterSchema)
-    }
-
-    if (!this.faber.outOfBandId) {
-      this.removeOption(promtOptions, PromptOptions.CreateDid)
-      this.removeOption(promtOptions, PromptOptions.SendMessage)
     }
 
     return prompt([this.inquireOptions(promtOptions)])
