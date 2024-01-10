@@ -92,6 +92,8 @@ export class HolderInquirer extends BaseInquirer {
     for (const credential of resolvedCredentialOffer.offeredCredentials) {
       console.log(greenText(` Credential Format: ${credential.format}`))
       console.log(greenText(` Credential Type: ${credential.types.join(', ')}`))
+      console.log('\nCredential Preview:')
+      console.log(JSON.stringify(credential, null, 2))
     }
   }
 
@@ -118,14 +120,17 @@ export class HolderInquirer extends BaseInquirer {
       this.resolvedCredentialOffer.offeredCredentials
     )
 
-    console.log(greenText(`Received and stored the following credentials.`))
+    console.log(greenText(`\n\nReceived and stored the following credentials.`))
     for (const credential of credentials) {
       if (credential.type === 'W3cCredentialRecord') {
         console.log(greenText(` CredentialType: 'W3CVerifiableCredential'`))
-        console.log(greenText(` ${credential.credential.type.join(', ')}`))
+        console.log('\n')
+        // @ts-ignore
+        console.log(JSON.stringify(credential.credential._credential, null, 2))
       } else {
         console.log(greenText(` CredentialType: 'SdJwtVc'`))
-        console.log(greenText(` ${credential.sdJwtVc.payload.type}`))
+        console.log('\n')
+        console.log(JSON.stringify(credential.sdJwtVc, null, 2))
       }
     }
   }

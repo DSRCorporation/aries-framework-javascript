@@ -52,31 +52,6 @@ export class Alice extends BaseAgent {
     this.connectionRecordFaberId = await this.waitForConnection(connectionRecord)
   }
 
-  public async acceptOpenIdCredential(offerUrl: string) {
-    const holderDidCreateResult = await this.agent.dids.create<KeyDidCreateOptions>({
-      method: 'key',
-      options: { keyType: KeyType.Ed25519 },
-    })
-    if (!holderDidCreateResult.didState.didDocument?.verificationMethod) throw new Error('No verification method found')
-    const holderVerificationMethod = holderDidCreateResult.didState.didDocument.verificationMethod[0]
-
-    const resolved = await this.agent.modules.openId4VcHolder.resolveCredentialOffer(offerUrl)
-    const w3cCredentialRecords = await this.agent.modules.openId4VcHolder.acceptCredentialOfferUsingPreAuthorizedCode(
-      resolved,
-      {
-        allowedProofOfPossessionSignatureAlgorithms: [JwaSignatureAlgorithm.EdDSA],
-        proofOfPossessionVerificationMethodResolver: () => holderVerificationMethod,
-        verifyCredentialStatus: false,
-        credentialsToRequest: resolved.offeredCredentials,
-      }
-    )
-    console.log(greenText('Received Credential: '))
-    for (const record of w3cCredentialRecords) {
-      // @ts-ignore
-      console.log(purpleText(JSON.stringify(record.credential._credential, null, 2)))
-    }
-  }
-
   public async acceptCredentialOffer(credentialRecord: CredentialExchangeRecord) {
     await this.agent.credentials.acceptOffer({
       credentialRecordId: credentialRecord.id,

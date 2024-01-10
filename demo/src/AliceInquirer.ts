@@ -18,7 +18,6 @@ export const runAlice = async () => {
 
 enum PromptOptions {
   ReceiveConnectionUrl = 'Receive connection invitation',
-  ReceiveOpenIdCredential = 'Receive OpenID credential',
   SendMessage = 'Send message',
   Exit = 'Exit',
   Restart = 'Restart',
@@ -45,12 +44,7 @@ export class AliceInquirer extends BaseInquirer {
   private async getPromptChoice() {
     if (this.alice.connectionRecordFaberId) return prompt([this.inquireOptions(this.promptOptionsString)])
 
-    const reducedOption = [
-      PromptOptions.ReceiveConnectionUrl,
-      PromptOptions.ReceiveOpenIdCredential,
-      PromptOptions.Exit,
-      PromptOptions.Restart,
-    ]
+    const reducedOption = [PromptOptions.ReceiveConnectionUrl, PromptOptions.Exit, PromptOptions.Restart]
     return prompt([this.inquireOptions(reducedOption)])
   }
 
@@ -61,9 +55,6 @@ export class AliceInquirer extends BaseInquirer {
     switch (choice.options) {
       case PromptOptions.ReceiveConnectionUrl:
         await this.connection()
-        break
-      case PromptOptions.ReceiveOpenIdCredential:
-        await this.openIdCredential()
         break
       case PromptOptions.SendMessage:
         await this.message()
@@ -104,12 +95,6 @@ export class AliceInquirer extends BaseInquirer {
 
     this.listener.credentialOfferListener(this.alice, this)
     this.listener.proofRequestListener(this.alice, this)
-  }
-
-  public async openIdCredential() {
-    const title = Title.OpenIdCredentialTitle
-    const getUrl = await prompt([this.inquireInput(title)])
-    await this.alice.acceptOpenIdCredential(getUrl.input)
   }
 
   public async message() {

@@ -152,11 +152,11 @@ function getAskarAnonCredsIndyModules() {
       registries: [
         new IndyVdrAnonCredsRegistry(),
         new CheqdAnonCredsRegistry(),
-        new CardanoAnonCredsRegistry({
-          blockfrostProjectId: 'CHANGE',
-          cardanoNerwork: 'preview',
-          cardanoAddressCborHex: 'CHANGE',
-        }),
+        // new CardanoAnonCredsRegistry({
+        //   blockfrostProjectId: 'CHANGE',
+        //   cardanoNerwork: 'preview',
+        //   cardanoAddressCborHex: 'CHANGE',
+        // }),
       ],
     }),
     anoncredsRs: new AnonCredsRsModule({

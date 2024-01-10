@@ -70,10 +70,7 @@ export class Listener {
     }
     if (w3cOffer && isJsonObject(w3cOffer.credential.credentialSubject)) {
       console.log('\n\nCredential preview:')
-      Object.keys(w3cOffer.credential.credentialSubject).forEach((key) => {
-        // @ts-ignore
-        console.log(purpleText(`${key} ${Color.Reset}${JSON.stringify(w3cOffer.credential.credentialSubject[key])}`))
-      })
+      console.log(JSON.stringify(w3cOffer.credential, null, 2))
       console.log('\n\n')
     }
   }
