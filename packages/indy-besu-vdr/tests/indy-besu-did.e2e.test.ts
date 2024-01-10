@@ -1,5 +1,5 @@
 import { Agent, Buffer, JsonTransformer, Key, KeyType, TypedArrayEncoder } from '@aries-framework/core'
-import crypto from "crypto";
+import crypto from 'crypto'
 import { getAgentOptions } from '../../core/tests/helpers'
 import { getBesuIndyModules, trusteePrivateKey } from './indy-bese-test-utils'
 import { IndyBesuDidCreateOptions } from '../src/dids'
@@ -66,7 +66,7 @@ describe('Indy-Besu DID', () => {
       ],
       service: [
         {
-          id:  `${id}#endpoint`,
+          id: `${id}#endpoint`,
           serviceEndpoint: 'https://example.com/endpoint',
           type: 'endpoint',
         },

@@ -1,5 +1,6 @@
 import {
   AgentContext,
+  Buffer,
   DidCreateOptions,
   DidCreateResult,
   DidDeactivateOptions,
@@ -8,7 +9,6 @@ import {
   DidRegistrar,
   DidUpdateOptions,
   DidUpdateResult,
-  Buffer,
   DidDocumentService,
   Key,
   getEcdsaSecp256k1VerificationKey2019,
@@ -24,12 +24,6 @@ export class IndyBesuDidRegistrar implements DidRegistrar {
   public async create(agentContext: AgentContext, options: IndyBesuDidCreateOptions): Promise<DidCreateResult> {
     const didRegistry = agentContext.dependencyManager.resolve(DidRegistry)
 
-    const didKey = await agentContext.wallet.createKey({
-      keyType: KeyType.K256,
-      privateKey: options.secret.didPrivateKey,
-    })
-    const did = buildDid(options.method, options.options.network, didKey.publicKey)
-
     let didDocument: DidDocument
 
     if (options.didDocument) {
@@ -38,6 +32,12 @@ export class IndyBesuDidRegistrar implements DidRegistrar {
 
       didDocument = options.didDocument
     } else {
+      const didKey = await agentContext.wallet.createKey({
+        keyType: KeyType.K256,
+        privateKey: options.secret.didPrivateKey,
+      })
+      const did = buildDid(options.method, options.options.network, didKey.publicKey)
+
       const verificationMethod = getEcdsaSecp256k1VerificationKey2019({
         key: didKey,
         id: `${did}#KEY-1`,
@@ -61,7 +61,7 @@ export class IndyBesuDidRegistrar implements DidRegistrar {
 
       didDocument = didDocumentBuilder.build()
     }
-    
+
     const signer = new IndyBesuSigner(options.options.accountKey, agentContext.wallet)
 
     try {

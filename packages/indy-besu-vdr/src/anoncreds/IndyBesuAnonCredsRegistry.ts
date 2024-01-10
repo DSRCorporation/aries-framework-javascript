@@ -23,7 +23,7 @@ export class IndyBesuAnonCredsRegistry implements AnonCredsRegistry {
     try {
       const schemaRegistry = agentContext.dependencyManager.resolve(SchemaRegistry)
 
-      const schema  = await schemaRegistry.resolveSchema(schemaId)
+      const schema = await schemaRegistry.resolveSchema(schemaId)
 
       return {
         schema: schema,
@@ -90,9 +90,7 @@ export class IndyBesuAnonCredsRegistry implements AnonCredsRegistry {
     try {
       const credentialDefinitionRegistry = agentContext.dependencyManager.resolve(CredentialDefinitionRegistry)
 
-      const credDef = await credentialDefinitionRegistry.resolveCredentialDefinition(
-        credentialDefinitionId
-      )
+      const credDef = await credentialDefinitionRegistry.resolveCredentialDefinition(credentialDefinitionId)
 
       const value = JsonTransformer.deserialize(credDef.value, CredentialDefinitionValue)
 
@@ -139,7 +137,7 @@ export class IndyBesuAnonCredsRegistry implements AnonCredsRegistry {
       const credentialDefinition = {
         id: { value: createCredentialDefinitionId },
         issuerId: options.credentialDefinition.issuerId,
-        schemaId:  { value: options.credentialDefinition.schemaId },
+        schemaId: { value: options.credentialDefinition.schemaId },
         credDefType: options.credentialDefinition.type,
         tag: options.credentialDefinition.tag,
         value: JSON.stringify(options.credentialDefinition.value),

@@ -10,9 +10,7 @@ import { CredentialDefinition } from '../types/CredentialDefinition'
 export class CredentialDefinitionRegistry extends BaseContract {
   public static readonly config = {
     address: '0x0000000000000000000000000000000000004444',
-    spec: JSON.parse(
-      fs.readFileSync(path.resolve(__dirname, './abi/CredentialDefinitionRegistry.json'), 'utf8')
-    ),
+    spec: JSON.parse(fs.readFileSync(path.resolve(__dirname, './abi/CredentialDefinitionRegistry.json'), 'utf8')),
   }
 
   constructor(client: LedgerClient) {

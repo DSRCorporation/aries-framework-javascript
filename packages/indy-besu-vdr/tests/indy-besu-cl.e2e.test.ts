@@ -1,5 +1,5 @@
 import { Agent, Buffer, Key, KeyType } from '@aries-framework/core'
-import crypto from "crypto";
+import crypto from 'crypto'
 import { getAgentOptions } from '../../core/tests/helpers'
 import { IndyBesuDidCreateOptions } from '../src/dids'
 import { IndyBesuAnonCredsRegistry } from '../src/anoncreds/IndyBesuAnonCredsRegistry'

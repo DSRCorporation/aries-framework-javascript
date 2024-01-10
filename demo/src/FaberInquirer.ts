@@ -1,18 +1,23 @@
 import { clear } from 'console'
 import { textSync } from 'figlet'
-import { prompt } from 'inquirer'
+import { Answers, prompt } from 'inquirer'
 
 import { BaseInquirer, ConfirmOptions } from './BaseInquirer'
 import { Faber, RegistryOptions } from './Faber'
 import { Listener } from './Listener'
 import { Title } from './OutputClass'
 
-
 export const runFaber = async () => {
   clear()
   console.log(textSync('Faber', { horizontalLayout: 'full' }))
   const faber = await FaberInquirer.build()
+  await faber.requestCredentialType()
   await faber.processAnswer()
+}
+
+enum CredentialType {
+  AnonCreds = 'CL AnonCreds',
+  JsonLd = 'W3C JSON-LD',
 }
 
 enum PromptOptions {
@@ -30,6 +35,7 @@ enum PromptOptions {
 export class FaberInquirer extends BaseInquirer {
   public faber: Faber
   public listener: Listener
+  public credentialType: CredentialType = CredentialType.AnonCreds
 
   public constructor(faber: Faber) {
     super()
@@ -43,7 +49,25 @@ export class FaberInquirer extends BaseInquirer {
     return new FaberInquirer(faber)
   }
 
-  private async getPromptChoice() {
+  private async getJsonLdPromptChoice() {
+    let promtOptions = Object.values(PromptOptions)
+
+    this.removeOption(promtOptions, PromptOptions.RegisterCredentialDefinition)
+    this.removeOption(promtOptions, PromptOptions.RegisterSchema)
+
+    if (!this.faber.issuerId || !this.faber.outOfBandId) {
+      this.removeOption(promtOptions, PromptOptions.OfferCredential)
+      this.removeOption(promtOptions, PromptOptions.RequestProof)
+    }
+
+    if (!this.faber.outOfBandId) {
+      this.removeOption(promtOptions, PromptOptions.SendMessage)
+    }
+
+    return prompt([this.inquireOptions(promtOptions)])
+  }
+
+  private async getAnonCredsPromptChoice() {
     let promtOptions = Object.values(PromptOptions)
 
     if (!this.faber.credentialDefinition || !this.faber.outOfBandId) {
@@ -59,7 +83,7 @@ export class FaberInquirer extends BaseInquirer {
       this.removeOption(promtOptions, PromptOptions.RegisterCredentialDefinition)
     }
 
-    if (!this.faber.anonCredsIssuerId) {
+    if (!this.faber.issuerId) {
       this.removeOption(promtOptions, PromptOptions.RegisterSchema)
     }
 
@@ -67,14 +91,29 @@ export class FaberInquirer extends BaseInquirer {
   }
 
   private removeOption(options: Array<String>, option: string) {
-    const index = options.indexOf(option, 0);
+    const index = options.indexOf(option, 0)
     if (index > -1) {
-      options.splice(index, 1);
+      options.splice(index, 1)
     }
   }
 
+  public async requestCredentialType() {
+    let promtOptions = Object.values(CredentialType)
+
+    const choice = await prompt([this.inquireOptions(promtOptions)])
+
+    this.credentialType = choice.options
+  }
+
   public async processAnswer() {
-    const choice = await this.getPromptChoice()
+    let choice: Answers
+
+    if (this.credentialType === CredentialType.AnonCreds) {
+      choice = await this.getAnonCredsPromptChoice()
+    } else {
+      choice = await this.getJsonLdPromptChoice()
+    }
+
     if (this.listener.on) return
 
     switch (choice.options) {
@@ -127,7 +166,11 @@ export class FaberInquirer extends BaseInquirer {
       this.inquireOptions([RegistryOptions.indy, RegistryOptions.cheqd, RegistryOptions.indyBesu]),
     ])
     if (registry.options === RegistryOptions.indyBesu) {
-      await this.faber.createIndy2Did()
+      if (this.credentialType === CredentialType.AnonCreds) {
+        await this.faber.createIndy2Did()
+      } else {
+        await this.faber.createW3CIndy2Did()
+      }
     } else {
       await this.faber.importDid(registry.options)
     }
@@ -142,7 +185,11 @@ export class FaberInquirer extends BaseInquirer {
   }
 
   public async credential() {
-    await this.faber.issueCredential()
+    if (this.credentialType === CredentialType.AnonCreds) {
+      await this.faber.issueAnonCredsCredential()
+    } else {
+      await this.faber.issueJsonLdCredential()
+    }
   }
 
   public async proof() {

@@ -1,5 +1,28 @@
-import type { AnonCredsProofFormatService, RegisterCredentialDefinitionReturnStateFinished, RegisterSchemaReturnStateFinished } from '@aries-framework/anoncreds'
-import { ConnectionRecord, ConnectionStateChangedEvent, CredentialEventTypes, CredentialExchangeRecord, CredentialState, CredentialStateChangedEvent, Key, ProofEventTypes, ProofExchangeRecord, ProofState, ProofStateChangedEvent, ProofsProtocolVersionType, RequestProofOptions, V2ProofProtocol } from '@aries-framework/core'
+import type {
+  AnonCredsProofFormatService,
+  RegisterCredentialDefinitionReturnStateFinished,
+  RegisterSchemaReturnStateFinished,
+} from '@aries-framework/anoncreds'
+import {
+  Buffer,
+  CREDENTIALS_CONTEXT_V1_URL,
+  ConnectionRecord,
+  ConnectionStateChangedEvent,
+  CredentialEventTypes,
+  CredentialExchangeRecord,
+  CredentialState,
+  CredentialStateChangedEvent,
+  DidDocumentBuilder,
+  Hasher,
+  Key,
+  ProofEventTypes,
+  ProofExchangeRecord,
+  ProofState,
+  ProofStateChangedEvent,
+  RequestProofOptions,
+  V2ProofProtocol,
+  getEd25519VerificationKey2018,
+} from '@aries-framework/core'
 import { IndyBesuDidCreateOptions } from '@aries-framework/indy-besu-vdr'
 import type BottomBar from 'inquirer/lib/ui/bottom-bar'
 import { ConnectionEventTypes, KeyType, TypedArrayEncoder, WalletKeyExistsError, utils } from '@aries-framework/core'
@@ -8,12 +31,8 @@ import { ui } from 'inquirer'
 import { BaseAgent, indyNetworkConfig } from './BaseAgent'
 import { Color, Output, greenText, purpleText, redText } from './OutputClass'
 
-const faberPrivateKey = TypedArrayEncoder.fromHex(
-  'c87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3'
-)
-const faberPublicKey = TypedArrayEncoder.fromHex(
-  '03af80b90d25145da28c583359beb47b21796b2fe1a23c1511e443e7a64dfdb27d'
-)
+const faberPrivateKey = TypedArrayEncoder.fromHex('c87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3')
+const faberPublicKey = TypedArrayEncoder.fromHex('03af80b90d25145da28c583359beb47b21796b2fe1a23c1511e443e7a64dfdb27d')
 
 export enum RegistryOptions {
   indy = 'did:indy',
@@ -25,7 +44,7 @@ export class Faber extends BaseAgent {
   public outOfBandId?: string
   public schema?: RegisterSchemaReturnStateFinished
   public credentialDefinition?: RegisterCredentialDefinitionReturnStateFinished
-  public anonCredsIssuerId?: string
+  public issuerId?: string
   public ui: BottomBar
   public accountKey!: Key
 
@@ -58,7 +77,7 @@ export class Faber extends BaseAgent {
       method: 'indy2',
       options: {
         network: 'testnet',
-        accountKey: this.accountKey
+        accountKey: this.accountKey,
       },
       secret: {},
     })
@@ -67,9 +86,50 @@ export class Faber extends BaseAgent {
       throw new Error(createdDid.didState.reason)
     }
 
-    console.log( purpleText(`Created DID${Color.Reset}: ${JSON.stringify(createdDid.didState.didDocument, null, 2)}`))
+    console.log(purpleText(`Created DID${Color.Reset}: ${JSON.stringify(createdDid.didState.didDocument, null, 2)}`))
 
-    this.anonCredsIssuerId = createdDid.didState.did
+    this.issuerId = createdDid.didState.did
+  }
+
+  public async createW3CIndy2Did() {
+    const didKey = await this.agent.wallet.createKey({ keyType: KeyType.Ed25519 })
+
+    const did = this.buildDid('indy2', 'testnet', didKey.publicKey)
+
+    const verificationMethod = getEd25519VerificationKey2018({
+      key: didKey,
+      id: `${did}#KEY-1`,
+      controller: did,
+    })
+
+    const didDocument = new DidDocumentBuilder(did)
+      .addContext('https://www.w3.org/ns/did/v1')
+      .addContext('https://w3id.org/security/suites/ed25519-2018/v1')
+      .addVerificationMethod(verificationMethod)
+      .addAuthentication(verificationMethod.id)
+      .addAssertionMethod(verificationMethod.id)
+      .build()
+
+    const createdDid = await this.agent.dids.create<IndyBesuDidCreateOptions>({
+      method: 'indy2',
+      didDocument,
+      options: {
+        network: 'testnet',
+        accountKey: this.accountKey,
+      },
+      secret: {},
+    })
+
+    console.log(purpleText(`Created DID${Color.Reset}: ${JSON.stringify(createdDid.didState.didDocument, null, 2)}`))
+
+    this.issuerId = createdDid.didState.did
+  }
+
+  private buildDid(method: string, network: string, key: Buffer): string {
+    const buffer = Hasher.hash(key, 'sha2-256')
+    const namespaceIdentifier = TypedArrayEncoder.toBase58(buffer.slice(0, 16))
+
+    return `did:${method}:${network}:${namespaceIdentifier}`
   }
 
   public async importDid(registry: string) {
@@ -91,7 +151,7 @@ export class Faber extends BaseAgent {
         },
       ],
     })
-    this.anonCredsIssuerId = did
+    this.issuerId = did
   }
 
   private async getConnectionRecord() {
@@ -128,7 +188,6 @@ export class Faber extends BaseAgent {
 
     const getConnectionRecord = (outOfBandId: string) =>
       new Promise<ConnectionRecord>((resolve, reject) => {
-
         // Start listener
         this.agent.events.on<ConnectionStateChangedEvent>(ConnectionEventTypes.ConnectionStateChanged, (e) => {
           if (e.payload.connectionRecord.outOfBandId !== outOfBandId) return
@@ -163,7 +222,7 @@ export class Faber extends BaseAgent {
   }
 
   public async registerSchema() {
-    if (!this.anonCredsIssuerId) {
+    if (!this.issuerId) {
       throw new Error(redText('Missing anoncreds issuerId'))
     }
 
@@ -171,7 +230,7 @@ export class Faber extends BaseAgent {
       name: 'FaberCollege' + utils.uuid(),
       version: '1.0.0',
       attrNames: ['name', 'degree', 'date'],
-      issuerId: this.anonCredsIssuerId,
+      issuerId: this.issuerId,
     }
     this.printSchema(schemaTemplate.name, schemaTemplate.version, schemaTemplate.attrNames)
     console.log(greenText('Registering schema...\n', false))
@@ -180,7 +239,7 @@ export class Faber extends BaseAgent {
       schema: schemaTemplate,
       options: {
         endorserMode: 'internal',
-        endorserDid: this.anonCredsIssuerId,
+        endorserDid: this.issuerId,
         accountKey: this.accountKey,
       },
     })
@@ -201,7 +260,7 @@ export class Faber extends BaseAgent {
   }
 
   public async registerCredentialDefinition() {
-    if (!this.anonCredsIssuerId) {
+    if (!this.issuerId) {
       throw new Error(redText('Missing anoncreds issuerId'))
     }
 
@@ -210,20 +269,19 @@ export class Faber extends BaseAgent {
     }
 
     console.log(greenText('Registering credential definition...\n', false))
-    
-    const { credentialDefinitionState } =
-      await this.agent.modules.anoncreds.registerCredentialDefinition({
-        credentialDefinition: {
-          schemaId: this.schema.schemaId,
-          issuerId: this.anonCredsIssuerId,
-          tag: 'latest',
-        },
-        options: {
-          endorserMode: 'internal',
-          endorserDid: this.anonCredsIssuerId,
-          accountKey: this.accountKey,
-        },
-      })
+
+    const { credentialDefinitionState } = await this.agent.modules.anoncreds.registerCredentialDefinition({
+      credentialDefinition: {
+        schemaId: this.schema.schemaId,
+        issuerId: this.issuerId,
+        tag: 'latest',
+      },
+      options: {
+        endorserMode: 'internal',
+        endorserDid: this.issuerId,
+        accountKey: this.accountKey,
+      },
+    })
 
     if (credentialDefinitionState.state !== 'finished') {
       throw new Error(
@@ -237,7 +295,9 @@ export class Faber extends BaseAgent {
 
     console.log(`Credential definition registered!\n${Color.Reset}`)
 
-    console.log(purpleText(`Credential definition ID:${Color.Reset} ${this.credentialDefinition.credentialDefinitionId}\n`))
+    console.log(
+      purpleText(`Credential definition ID:${Color.Reset} ${this.credentialDefinition.credentialDefinitionId}\n`)
+    )
 
     return this.credentialDefinition
   }
@@ -247,16 +307,17 @@ export class Faber extends BaseAgent {
 
     const getCredentialExchangeRecord = (recordId: string) =>
       new Promise<CredentialExchangeRecord>((resolve, reject) => {
-        
         this.agent.events.on(
           CredentialEventTypes.CredentialStateChanged,
           async ({ payload }: CredentialStateChangedEvent) => {
             if (recordId !== payload.credentialRecord.id) return
 
             const state = payload.credentialRecord.state
-            if (state === CredentialState.Done 
-                || state === CredentialState.Declined
-                || state === CredentialState.Abandoned) {
+            if (
+              state === CredentialState.Done ||
+              state === CredentialState.Declined ||
+              state === CredentialState.Abandoned
+            ) {
               resolve(payload.credentialRecord)
             }
           }
@@ -264,7 +325,7 @@ export class Faber extends BaseAgent {
       })
 
     const record = await getCredentialExchangeRecord(recordId)
-    
+
     switch (record.state) {
       case CredentialState.Done:
         console.log(greenText('Credential accepted!\n'))
@@ -277,7 +338,7 @@ export class Faber extends BaseAgent {
     }
   }
 
-  public async issueCredential() {
+  public async issueAnonCredsCredential() {
     if (!this.credentialDefinition) {
       throw new Error(redText('Missing anoncreds credentialDefinitionId'))
     }
@@ -286,34 +347,79 @@ export class Faber extends BaseAgent {
 
     this.ui.updateBottomBar(greenText('\nSending credential offer...\n', false))
 
+    const credential = {
+      attributes: [
+        {
+          name: 'name',
+          value: 'Alice Smith',
+        },
+        {
+          name: 'degree',
+          value: 'Computer Science',
+        },
+        {
+          name: 'date',
+          value: '01/01/2022',
+        },
+      ],
+      credentialDefinitionId: this.credentialDefinition.credentialDefinitionId,
+    }
+
     const record = await this.agent.credentials.offerCredential({
       connectionId: connectionRecord.id,
       protocolVersion: 'v2',
       credentialFormats: {
-        anoncreds: {
-          attributes: [
-            {
-              name: 'name',
-              value: 'Alice Smith',
-            },
-            {
-              name: 'degree',
-              value: 'Computer Science',
-            },
-            {
-              name: 'date',
-              value: '01/01/2022',
-            },
-          ],
-          credentialDefinitionId: this.credentialDefinition.credentialDefinitionId,
+        anoncreds: credential,
+      },
+    })
+
+    this.ui.updateBottomBar(`\nCredential offer sent!\n\n${Color.Reset}`)
+
+    console.log(purpleText(`Credential:${Color.Reset} ${JSON.stringify(credential, null, 2)}`))
+
+    console.log('Go to the Alice agent to accept the credential offer\n')
+
+    await this.waitForAcceptCredential(record.id)
+  }
+
+  public async issueJsonLdCredential() {
+    if (!this.issuerId) {
+      throw new Error(redText('Missing issuerDid'))
+    }
+
+    const connectionRecord = await this.getConnectionRecord()
+
+    this.ui.updateBottomBar(greenText('\nSending credential offer...\n', false))
+
+    const credential = {
+      '@context': [CREDENTIALS_CONTEXT_V1_URL, 'https://www.w3.org/2018/credentials/examples/v1'],
+      type: ['VerifiableCredential', 'FaberCollege'],
+      issuer: this.issuerId,
+      issuanceDate: '2023-12-07T12:23:48Z',
+      credentialSubject: {
+        name: 'Alice Smith',
+        degree: 'Computer Science',
+      },
+    }
+
+    const record = await this.agent.credentials.offerCredential({
+      connectionId: connectionRecord.id,
+      protocolVersion: 'v2',
+      credentialFormats: {
+        jsonld: {
+          credential: credential,
+          options: {
+            proofType: 'Ed25519Signature2018',
+            proofPurpose: 'assertionMethod',
+          },
         },
       },
     })
 
     this.ui.updateBottomBar(`\nCredential offer sent!\n\n${Color.Reset}`)
 
-    console.log(purpleText(`Credential Record:${Color.Reset} ${JSON.stringify(record, null, 2)}`))
-    
+    console.log(purpleText(`Credential:${Color.Reset} ${JSON.stringify(credential, null, 2)}`))
+
     console.log('Go to the Alice agent to accept the credential offer\n')
 
     await this.waitForAcceptCredential(record.id)
@@ -345,24 +451,18 @@ export class Faber extends BaseAgent {
 
     const getCredentialExchangeRecord = (recordId: string) =>
       new Promise<ProofExchangeRecord>((resolve, reject) => {
-        
-        this.agent.events.on(
-          ProofEventTypes.ProofStateChanged,
-          async ({ payload }: ProofStateChangedEvent) => {
-            if (recordId !== payload.proofRecord.id) return
+        this.agent.events.on(ProofEventTypes.ProofStateChanged, async ({ payload }: ProofStateChangedEvent) => {
+          if (recordId !== payload.proofRecord.id) return
 
-            const state = payload.proofRecord.state
-            if (state === ProofState.Done 
-                || state === ProofState.Declined
-                || state === ProofState.Abandoned) {
-              resolve(payload.proofRecord)
-            }
+          const state = payload.proofRecord.state
+          if (state === ProofState.Done || state === ProofState.Declined || state === ProofState.Abandoned) {
+            resolve(payload.proofRecord)
           }
-        )
+        })
       })
 
     const record = await getCredentialExchangeRecord(recordId)
-    
+
     switch (record.state) {
       case ProofState.Done:
         console.log(greenText('Proof presented!\n'))
@@ -397,7 +497,7 @@ export class Faber extends BaseAgent {
           requested_attributes: proofAttribute,
         },
       },
-    } as RequestProofOptions<(V2ProofProtocol<(AnonCredsProofFormatService)[]>)[]>
+    } as RequestProofOptions<V2ProofProtocol<AnonCredsProofFormatService[]>[]>
 
     const record = await this.agent.proofs.requestProof(request)
 

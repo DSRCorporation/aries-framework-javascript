@@ -1,4 +1,9 @@
-import { DidDocument, VerificationMethod, DidDocumentService } from '@aries-framework/core'
+import {
+  DidDocument,
+  VerificationMethod,
+  DidDocumentService,
+  VERIFICATION_METHOD_TYPE_ED25519_VERIFICATION_KEY_2018,
+} from '@aries-framework/core'
 import {
   DidDocument as IndyBesuDidDocument,
   Service,
@@ -52,23 +57,41 @@ function mapOrUndefined<T, R>(array: T[], mapfunction: (item: T) => R): R[] | un
 }
 
 function toIndyBesuVerificationMethod(verificationMethod: VerificationMethod): IndyBesuVerificationMethod {
-  return {
-    id: verificationMethod.id,
-    type: verificationMethod.type,
-    controller: verificationMethod.controller,
-    publicKeyJwk: verificationMethod.publicKeyJwk ? JSON.stringify(verificationMethod.publicKeyJwk) : undefined,
-    publicKeyMultibase: verificationMethod.publicKeyMultibase,
+  if (verificationMethod.type === VERIFICATION_METHOD_TYPE_ED25519_VERIFICATION_KEY_2018) {
+    return {
+      id: verificationMethod.id,
+      type: verificationMethod.type,
+      controller: verificationMethod.controller,
+      publicKeyMultibase: verificationMethod.publicKeyBase58 ? `z${verificationMethod.publicKeyBase58}` : undefined,
+    }
+  } else {
+    return {
+      id: verificationMethod.id,
+      type: verificationMethod.type,
+      controller: verificationMethod.controller,
+      publicKeyJwk: verificationMethod.publicKeyJwk ? JSON.stringify(verificationMethod.publicKeyJwk) : undefined,
+      publicKeyMultibase: verificationMethod.publicKeyMultibase,
+    }
   }
 }
 
 function fromIndyBesuVerificationMethod(verificationMethod: IndyBesuVerificationMethod): VerificationMethod {
-  return new VerificationMethod({
-    id: verificationMethod.id,
-    type: verificationMethod.type,
-    controller: verificationMethod.controller,
-    publicKeyMultibase: verificationMethod.publicKeyMultibase,
-    publicKeyJwk: verificationMethod.publicKeyJwk ? JSON.parse(verificationMethod.publicKeyJwk) : undefined,
-  })
+  if (verificationMethod.type === VERIFICATION_METHOD_TYPE_ED25519_VERIFICATION_KEY_2018) {
+    return new VerificationMethod({
+      id: verificationMethod.id,
+      type: verificationMethod.type,
+      controller: verificationMethod.controller,
+      publicKeyBase58: verificationMethod.publicKeyMultibase?.substring(1),
+    })
+  } else {
+    return new VerificationMethod({
+      id: verificationMethod.id,
+      type: verificationMethod.type,
+      controller: verificationMethod.controller,
+      publicKeyMultibase: verificationMethod.publicKeyMultibase,
+      publicKeyJwk: verificationMethod.publicKeyJwk ? JSON.parse(verificationMethod.publicKeyJwk) : undefined,
+    })
+  }
 }
 
 function toIndyBesuService(service: DidDocumentService): Service {
