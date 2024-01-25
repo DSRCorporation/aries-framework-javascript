@@ -33,7 +33,7 @@ import {
 import { SHA256 } from 'crypto-js'
 
 import { decodeFromBase58 } from '../base58'
-import Cardano from '../ts/src/cardano/Cardano'
+import Cardano from '../ts/src/cardano/cardano'
 
 /**
  * Cardano Method implementation of the {@link AnonCredsRegistry} interface.

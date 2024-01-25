@@ -152,11 +152,11 @@ function getAskarAnonCredsIndyModules() {
       registries: [
         new IndyVdrAnonCredsRegistry(),
         new CheqdAnonCredsRegistry(),
-        // new CardanoAnonCredsRegistry({
-        //   blockfrostProjectId: 'CHANGE',
-        //   cardanoNerwork: 'preview',
-        //   cardanoAddressCborHex: 'CHANGE',
-        // }),
+        new CardanoAnonCredsRegistry({
+          blockfrostProjectId: 'previewvGSw69Qga1A9WJZs3MfN8Ak8MaNvS4lO',
+          cardanoNerwork: 'preview',
+          cardanoAddressCborHex: '5820c9cc2cea45f6e2b02e377a13b6da319d696e6538f8c4c66247561630fa0d3d89',
+        }),
       ],
     }),
     anoncredsRs: new AnonCredsRsModule({

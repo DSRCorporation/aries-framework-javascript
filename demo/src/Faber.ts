@@ -407,6 +407,7 @@ export class Faber extends BaseAgent {
 
     console.log('------------------')
     console.log(purpleText(`Credential Definition ID: ${credentialDefinition.credentialDefinitionId}`))
+    console.log(purpleText(`Issuer ID: ${credentialDefinition.credentialDefinition.issuerId}`))
 
     attributes.forEach((element) => {
       console.log(purpleText(`${element.name} ${Color.Reset}${element.value}`))
