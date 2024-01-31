@@ -37,7 +37,7 @@ const faberPublicKey = TypedArrayEncoder.fromHex('03af80b90d25145da28c583359beb4
 export enum RegistryOptions {
   indy = 'did:indy',
   cheqd = 'did:cheqd',
-  indyBesu = 'did:indy2',
+  indyBesu = 'did:ethr',
 }
 
 export class Faber extends BaseAgent {
@@ -74,7 +74,7 @@ export class Faber extends BaseAgent {
 
   public async createIndy2Did() {
     const createdDid = await this.agent.dids.create<IndyBesuDidCreateOptions>({
-      method: 'indy2',
+      method: 'ethr',
       options: {
         network: 'testnet',
         accountKey: this.accountKey,
@@ -111,7 +111,7 @@ export class Faber extends BaseAgent {
       .build()
 
     const createdDid = await this.agent.dids.create<IndyBesuDidCreateOptions>({
-      method: 'indy2',
+      method: 'ethr',
       didDocument,
       options: {
         network: 'testnet',

@@ -30,7 +30,7 @@ describe('Indy-Besu CL', () => {
     const didPrivateKey = Buffer.from(crypto.randomBytes(32))
 
     const did = await agent.dids.create<IndyBesuDidCreateOptions>({
-      method: 'indy2',
+      method: 'ethr',
       options: {
         network: 'testnet',
         endpoints: [

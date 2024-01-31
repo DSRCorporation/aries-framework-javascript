@@ -1,10 +1,11 @@
 import fs from 'fs'
-import { CredentialDefinitionRegistry as IndyCredentialDefinitionRegistry, LedgerClient } from 'indy2-vdr'
+import { CredentialDefinitionRegistry as IndyBesuCredentialDefinitionRegistry, LedgerClient } from 'indy2-vdr'
 import path from 'path'
 import { BaseContract } from './BaseContract'
 import { IndyBesuSigner } from '../IndyBesuSigner'
-import { injectable } from '@aries-framework/core'
-import { CredentialDefinition } from '../types/CredentialDefinition'
+import { JsonTransformer, injectable } from '@aries-framework/core'
+import { AnonCredsCredentialDefinition } from '@aries-framework/anoncreds'
+import { CredentialDefinition } from '../../types'
 
 @injectable()
 export class CredentialDefinitionRegistry extends BaseContract {
@@ -17,21 +18,20 @@ export class CredentialDefinitionRegistry extends BaseContract {
     super(client)
   }
 
-  public async createCredentialDefinition(credDef: CredentialDefinition, signer: IndyBesuSigner) {
-    const transaction = await IndyCredentialDefinitionRegistry.buildCreateCredentialDefinitionTransaction(
+  public async createCredentialDefinition(id: string, credDef: string, signer: IndyBesuSigner) {
+    const transaction = await IndyBesuCredentialDefinitionRegistry.buildCreateCredentialDefinitionTransaction(
       this.client,
       signer.address,
-      credDef
+      id,
+      credDef,
     )
-    return await this.signAndSubmit(transaction, signer)
+    return this.signAndSubmit(transaction, signer)
   }
 
-  public async resolveCredentialDefinition(id: string): Promise<CredentialDefinition> {
-    const transaction = await IndyCredentialDefinitionRegistry.buildResolveCredentialDefinitionTransaction(
+  public async resolveCredentialDefinition(id: string): Promise<string> {
+    return IndyBesuCredentialDefinitionRegistry.resolveCredentialDefinition(
       this.client,
       id
     )
-    const response = await this.client.submitTransaction(transaction)
-    return IndyCredentialDefinitionRegistry.parseResolveCredentialDefinitionResult(this.client, response)
   }
 }

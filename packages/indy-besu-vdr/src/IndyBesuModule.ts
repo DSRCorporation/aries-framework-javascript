@@ -11,11 +11,16 @@ export class IndyBesuModule implements Module {
   }
 
   public register(dependencyManager: DependencyManager) {
-    const client = new LedgerClient(this.config.chainId, this.config.nodeAddress, [
-      DidRegistry.config,
-      SchemaRegistry.config,
-      CredentialDefinitionRegistry.config,
-    ])
+    const client = new LedgerClient(
+      this.config.chainId, 
+      this.config.nodeAddress, 
+      [
+        DidRegistry.config,
+        SchemaRegistry.config,
+        CredentialDefinitionRegistry.config,
+      ],
+      null,
+    )
 
     dependencyManager.registerInstance(LedgerClient, client)
     dependencyManager.registerSingleton(DidRegistry)

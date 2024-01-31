@@ -4,7 +4,6 @@ import path from 'path'
 import { SchemaRegistry as IndySchemaRegistry, LedgerClient } from 'indy2-vdr'
 import { injectable } from '@aries-framework/core'
 import { IndyBesuSigner } from '../IndyBesuSigner'
-import { Schema } from '../types/Schema'
 
 @injectable()
 export class SchemaRegistry extends BaseContract {
@@ -17,14 +16,12 @@ export class SchemaRegistry extends BaseContract {
     super(client)
   }
 
-  public async createSchema(schema: Schema, signer: IndyBesuSigner) {
-    const transaction = await IndySchemaRegistry.buildCreateSchemaTransaction(this.client, signer.address, schema)
-    return await this.signAndSubmit(transaction, signer)
+  public async createSchema(id: string, schema: string, signer: IndyBesuSigner) {
+    const transaction = await IndySchemaRegistry.buildCreateSchemaTransaction(this.client, signer.address, id, schema)
+    return this.signAndSubmit(transaction, signer)
   }
 
-  public async resolveSchema(id: string): Promise<Schema> {
-    const transaction = await IndySchemaRegistry.buildResolveSchemaTransaction(this.client, id)
-    const response = await this.client.submitTransaction(transaction)
-    return IndySchemaRegistry.parseResolveSchemaResult(this.client, response)
+  public async resolveSchema(id: string): Promise<string> {
+    return IndySchemaRegistry.resolveSchema(this.client, id)
   }
 }

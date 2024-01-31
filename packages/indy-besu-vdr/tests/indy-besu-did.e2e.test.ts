@@ -27,8 +27,8 @@ describe('Indy-Besu DID', () => {
   it('create and resolve a did:indy2 did', async () => {
     const didPrivateKey = Buffer.from(crypto.randomBytes(32))
 
-    const createdDid = await agent.dids.create<IndyBesuDidCreateOptions>({
-      method: 'indy2',
+    const createResult = await agent.dids.create<IndyBesuDidCreateOptions>({
+      method: 'ethr',
       options: {
         network: 'testnet',
         endpoints: [
@@ -44,34 +44,39 @@ describe('Indy-Besu DID', () => {
       },
     })
 
-    console.log(JSON.stringify(createdDid))
+    console.log(JSON.stringify(createResult))
 
-    expect(createdDid.didState).toMatchObject({ state: 'finished' })
+    expect(createResult.didState).toMatchObject({ state: 'finished' })
 
-    const id = createdDid.didState.did!
+    const id = createResult.didState.did!
+    const namespaceIdentifier = id.split(':').pop()
+    const document = createResult.didState.didDocument!
+
+    expect(JsonTransformer.toJSON(document)).toMatchObject({
+      '@context': ['https://www.w3.org/ns/did/v1', 'https://w3id.org/security/suites/secp256k1recovery-2020/v2'],
+      verificationMethod: [
+        {
+          id: `${id}#controller`,
+          type: 'EcdsaSecp256k1RecoveryMethod2020',
+          controller: id,
+          blockchainAccountId: `eip155:1337:${namespaceIdentifier}`
+        },
+      ],
+      service: [
+        {
+          id: `${id}#service-1`,
+          serviceEndpoint: 'https://example.com/endpoint',
+          type: 'endpoint',
+        },
+      ],
+      authentication: [`${id}#controller`],
+    })
 
     const resolvedDid = await agent.dids.resolve(id)
 
     console.log(JSON.stringify(resolvedDid))
 
-    expect(JsonTransformer.toJSON(resolvedDid.didDocument)).toMatchObject({
-      '@context': ['https://w3id.org/did/v1', 'https://www.w3.org/ns/did/v1'],
-      verificationMethod: [
-        {
-          id: `${id}#KEY-1`,
-          type: 'EcdsaSecp256k1VerificationKey2019',
-          controller: id,
-          publicKeyMultibase: createdDid.didState.didDocument!.verificationMethod![0].publicKeyMultibase,
-        },
-      ],
-      service: [
-        {
-          id: `${id}#endpoint`,
-          serviceEndpoint: 'https://example.com/endpoint',
-          type: 'endpoint',
-        },
-      ],
-      authentication: [`${id}#KEY-1`],
-    })
+
+    expect(JsonTransformer.toJSON(resolvedDid.didDocument)).toMatchObject(JsonTransformer.toJSON(document))
   })
 })

@@ -12,7 +12,7 @@ import type {
 import { Key, JsonTransformer, type AgentContext, AriesFrameworkError } from '@aries-framework/core'
 import { CredentialDefinitionRegistry, IndyBesuSigner, SchemaRegistry } from '../ledger'
 import { buildCredentialDefinitionId, buildSchemaId } from './AnonCredsUtils'
-import { CredentialDefinitionValue } from './Trasformers'
+import { CredentialDefinition, Schema } from '../types'
 
 export class IndyBesuAnonCredsRegistry implements AnonCredsRegistry {
   public methodName = 'indy2'
@@ -23,10 +23,12 @@ export class IndyBesuAnonCredsRegistry implements AnonCredsRegistry {
     try {
       const schemaRegistry = agentContext.dependencyManager.resolve(SchemaRegistry)
 
-      const schema = await schemaRegistry.resolveSchema(schemaId)
+      const schemaJson = await schemaRegistry.resolveSchema(schemaId)
+
+      const schema = JsonTransformer.fromJSON(schemaJson, Schema)
 
       return {
-        schema: schema,
+        schema,
         schemaId,
         resolutionMetadata: {},
         schemaMetadata: {},
@@ -54,17 +56,14 @@ export class IndyBesuAnonCredsRegistry implements AnonCredsRegistry {
 
       const schemaId = buildSchemaId(options.schema)
 
-      const schema = {
-        id: { value: schemaId },
-        ...options.schema,
-      }
+      const schemaJson = JSON.stringify(options.schema)
 
-      await schemaRegistry.createSchema(schema, signer)
+      await schemaRegistry.createSchema(schemaId, schemaJson, signer)
 
       return {
         schemaState: {
           state: 'finished',
-          schema,
+          schema: options.schema,
           schemaId: schemaId,
         },
         registrationMetadata: {},
@@ -90,18 +89,12 @@ export class IndyBesuAnonCredsRegistry implements AnonCredsRegistry {
     try {
       const credentialDefinitionRegistry = agentContext.dependencyManager.resolve(CredentialDefinitionRegistry)
 
-      const credDef = await credentialDefinitionRegistry.resolveCredentialDefinition(credentialDefinitionId)
+      const credentialDefinitionJson = await credentialDefinitionRegistry.resolveCredentialDefinition(credentialDefinitionId)
 
-      const value = JsonTransformer.deserialize(credDef.value, CredentialDefinitionValue)
+      const credentialDefinition = JsonTransformer.fromJSON(credentialDefinitionJson, CredentialDefinition)
 
       return {
-        credentialDefinition: {
-          issuerId: credDef.issuerId,
-          schemaId: credDef.schemaId.value,
-          type: 'CL',
-          tag: credDef.tag,
-          value: value,
-        },
+        credentialDefinition,
         credentialDefinitionId,
         resolutionMetadata: {},
         credentialDefinitionMetadata: {},
@@ -131,19 +124,10 @@ export class IndyBesuAnonCredsRegistry implements AnonCredsRegistry {
       }
 
       const signer = new IndyBesuSigner(options.options.accountKey, agentContext.wallet)
-
       const createCredentialDefinitionId = buildCredentialDefinitionId(options.credentialDefinition)
+      const credentialDefinitionJson = JSON.stringify(options.credentialDefinition)
 
-      const credentialDefinition = {
-        id: { value: createCredentialDefinitionId },
-        issuerId: options.credentialDefinition.issuerId,
-        schemaId: { value: options.credentialDefinition.schemaId },
-        credDefType: options.credentialDefinition.type,
-        tag: options.credentialDefinition.tag,
-        value: JSON.stringify(options.credentialDefinition.value),
-      }
-
-      await credentialDefinitionRegistry.createCredentialDefinition(credentialDefinition, signer)
+      await credentialDefinitionRegistry.createCredentialDefinition(createCredentialDefinitionId, credentialDefinitionJson, signer)
 
       return {
         credentialDefinitionState: {

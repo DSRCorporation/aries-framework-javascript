@@ -6,15 +6,36 @@ import {
   VERIFICATION_METHOD_TYPE_ED25519_VERIFICATION_KEY_2020,
   DidCreateResult,
   VERIFICATION_METHOD_TYPE_ECDSA_SECP256K1_VERIFICATION_KEY_2019,
-  Hasher,
   TypedArrayEncoder,
+  VerificationMethod,
+  Key,
 } from '@aries-framework/core'
+import { computeAddress } from 'ethers'
 
-export function buildDid(method: string, network: string, key: Buffer): string {
-  const buffer = Hasher.hash(key, 'sha2-256')
-  const namespaceIdentifier = TypedArrayEncoder.toBase58(buffer.slice(0, 16))
+export function buildDid(method: string, key: Buffer): string {
+  const namespaceIdentifier = computeAddress(`0x${TypedArrayEncoder.toHex(key)}`)
+  
+  return `did:${method}:${namespaceIdentifier}`
+}
 
-  return `did:${method}:${network}:${namespaceIdentifier}`
+export function getEcdsaSecp256k1RecoveryMethod2020({
+  key,
+  id,
+  controller,
+}: {
+  id: string
+  key: Key
+  controller: string
+}) {
+  const namespaceIdentifier = computeAddress(`0x${TypedArrayEncoder.toHex(key.publicKey)}`)
+
+  //TODO: Replace hardcoded chain ID 1337, it should be extracted from configurations
+  return new VerificationMethod({
+    id,
+    type: 'EcdsaSecp256k1RecoveryMethod2020',
+    controller,
+    blockchainAccountId: `eip155:1337:${namespaceIdentifier}`
+  })
 }
 
 export function failedResult(reason: string): DidCreateResult {

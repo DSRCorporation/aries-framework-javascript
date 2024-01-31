@@ -11,15 +11,13 @@ import {
   DidUpdateResult,
   DidDocumentService,
   Key,
-  getEcdsaSecp256k1VerificationKey2019,
 } from '@aries-framework/core'
 import { DidDocumentBuilder, KeyType } from '@aries-framework/core'
-import { DidRegistry, DidDocument as IndyBesuDidDocument, IndyBesuSigner } from '../ledger'
-import { buildDid, failedResult, validateSpecCompliantPayload } from './DidUtils'
-import { fromIndyBesuDidDocument, toIndyBesuDidDocument } from './DidTypesMapping'
+import { DidRegistry, IndyBesuSigner } from '../ledger'
+import { buildDid, failedResult, getEcdsaSecp256k1RecoveryMethod2020, validateSpecCompliantPayload } from './DidUtils'
 
 export class IndyBesuDidRegistrar implements DidRegistrar {
-  public readonly supportedMethods = ['indy', 'sov', 'indy2']
+  public readonly supportedMethods = ['ethr']
 
   public async create(agentContext: AgentContext, options: IndyBesuDidCreateOptions): Promise<DidCreateResult> {
     const didRegistry = agentContext.dependencyManager.resolve(DidRegistry)
@@ -36,22 +34,22 @@ export class IndyBesuDidRegistrar implements DidRegistrar {
         keyType: KeyType.K256,
         privateKey: options.secret.didPrivateKey,
       })
-      const did = buildDid(options.method, options.options.network, didKey.publicKey)
+      const did = buildDid(options.method, options.options.accountKey.publicKey)
 
-      const verificationMethod = getEcdsaSecp256k1VerificationKey2019({
-        key: didKey,
-        id: `${did}#KEY-1`,
+      const verificationMethod = getEcdsaSecp256k1RecoveryMethod2020({
+        key: options.options.accountKey,
+        id: `${did}#controller`,
         controller: did,
       })
 
       const didDocumentBuilder = new DidDocumentBuilder(did)
-        .addContext('https://www.w3.org/ns/did/v1')
         .addVerificationMethod(verificationMethod)
         .addAuthentication(verificationMethod.id)
+        .addAssertionMethod(verificationMethod.id)
 
       options.options.endpoints?.forEach((endpoint) => {
         const service = new DidDocumentService({
-          id: `${did}#${endpoint.type}`,
+          id: `${did}#service-1`,
           serviceEndpoint: endpoint.endpoint,
           type: endpoint.type,
         })
@@ -60,12 +58,24 @@ export class IndyBesuDidRegistrar implements DidRegistrar {
       })
 
       didDocument = didDocumentBuilder.build()
+      didDocument.context = [
+        'https://www.w3.org/ns/did/v1', 
+        'https://w3id.org/security/suites/secp256k1recovery-2020/v2'
+      ]
     }
 
     const signer = new IndyBesuSigner(options.options.accountKey, agentContext.wallet)
 
     try {
-      await didRegistry.createDid(toIndyBesuDidDocument(didDocument), signer)
+      
+
+      didDocument.service?.forEach((service) => {
+        const serviceAttribute = {
+          "serviceEndpoint": service.serviceEndpoint,
+          "type": service.type
+        }
+        didRegistry.setAttribute(didDocument.id, serviceAttribute, BigInt(100000), signer)
+      })
 
       return {
         didDocumentMetadata: {},
@@ -85,95 +95,100 @@ export class IndyBesuDidRegistrar implements DidRegistrar {
   }
 
   public async update(agentContext: AgentContext, options: IndyBesuDidUpdateOptions): Promise<DidUpdateResult> {
-    const didRegistry = agentContext.dependencyManager.resolve(DidRegistry)
-
-    const signer = new IndyBesuSigner(options.options.accountKey, agentContext.wallet)
-
-    try {
-      const resolvedDocument = await didRegistry.resolveDid(options.did)
-
-      if (!resolvedDocument) return failedResult('DID not found')
-
-      let didDocument: DidDocument
-
-      switch (options.didDocumentOperation) {
-        case 'addToDidDocument':
-          didDocument = this.addToDidDocument(resolvedDocument, options.didDocument)
-          break
-        case 'removeFromDidDocument':
-          didDocument = this.removeFromDidDocument(resolvedDocument, options.didDocument)
-        default:
-          const providedDocument = options.didDocument as DidDocument
-
-          if (providedDocument) {
-            didDocument = providedDocument
-          } else {
-            return failedResult('Provide a valid didDocument')
-          }
-      }
-
-      const error = validateSpecCompliantPayload(didDocument)
-      if (error) return failedResult(error)
-
-      await didRegistry.updateDid(toIndyBesuDidDocument(didDocument), signer)
-
-      return {
-        didDocumentMetadata: {},
-        didRegistrationMetadata: {},
-        didState: {
-          state: 'finished',
-          did: didDocument.id,
-          didDocument: didDocument,
-          secret: options.secret,
-        },
-      }
-    } catch (error) {
-      return failedResult(`unknownError: ${error.message}`)
+    return {
+      didDocumentMetadata: {},
+      didRegistrationMetadata: {},
+      didState: {
+        state: 'failed',
+        reason: `notImplemented: updating did:indy not implemented yet`,
+      },
     }
+
+    // const didRegistry = agentContext.dependencyManager.resolve(DidRegistry)
+
+    // const signer = new IndyBesuSigner(options.options.accountKey, agentContext.wallet)
+
+    // try {
+    //   const resolvedDocument = await didRegistry.resolveDid(options.did)
+
+    //   if (!resolvedDocument) return failedResult('DID not found')
+
+    //   let didDocument: DidDocument
+
+    //   switch (options.didDocumentOperation) {
+    //     case 'addToDidDocument':
+    //       didDocument = this.addToDidDocument(resolvedDocument, options.didDocument)
+    //       break
+    //     case 'removeFromDidDocument':
+    //       didDocument = this.removeFromDidDocument(resolvedDocument, options.didDocument)
+    //     default:
+    //       const providedDocument = options.didDocument as DidDocument
+
+    //       if (providedDocument) {
+    //         didDocument = providedDocument
+    //       } else {
+    //         return failedResult('Provide a valid didDocument')
+    //       }
+    //   }
+
+    //   const error = validateSpecCompliantPayload(didDocument)
+    //   if (error) return failedResult(error)
+
+    //   await didRegistry.updateDid(toIndyBesuDidDocument(didDocument), signer)
+
+    //   return {
+    //     didDocumentMetadata: {},
+    //     didRegistrationMetadata: {},
+    //     didState: {
+    //       state: 'finished',
+    //       did: didDocument.id,
+    //       didDocument: didDocument,
+    //       secret: options.secret,
+    //     },
+    //   }
+    // } catch (error) {
+    //   return failedResult(`unknownError: ${error.message}`)
+    // }
   }
 
   public async deactivate(
     agentContext: AgentContext,
     options: IndyBesuDidDeactivateOptions
   ): Promise<DidDeactivateResult> {
-    const didRegistry = agentContext.dependencyManager.resolve(DidRegistry)
 
-    const signer = new IndyBesuSigner(options.options.accountKey, agentContext.wallet)
-
-    try {
-      const resolvedDocument = await didRegistry.resolveDid(options.did)
-
-      if (!resolvedDocument) return failedResult('DID not found')
-
-      await didRegistry.deactivateDid(options.did, signer)
-
-      return {
-        didDocumentMetadata: {},
-        didRegistrationMetadata: {},
-        didState: {
-          state: 'finished',
-          did: options.did,
-          didDocument: fromIndyBesuDidDocument(resolvedDocument),
-          secret: options.secret,
-        },
-      }
-    } catch (error) {
-      return failedResult(`unknownError: ${error.message}`)
+    return {
+      didDocumentMetadata: {},
+      didRegistrationMetadata: {},
+      didState: {
+        state: 'failed',
+        reason: `notImplemented: updating did:indy not implemented yet`,
+      },
     }
-  }
 
-  private addToDidDocument(
-    didDocument: IndyBesuDidDocument,
-    addedDocument: DidDocument | Partial<DidDocument>
-  ): DidDocument {
-    throw new Error('Method not implemented.')
-  }
+    // const didRegistry = agentContext.dependencyManager.resolve(DidRegistry)
 
-  private removeFromDidDocument(
-    didDocument: IndyBesuDidDocument,
-    addedDocument: DidDocument | Partial<DidDocument>
-  ): DidDocument {
-    throw new Error('Method not implemented.')
+    // const signer = new IndyBesuSigner(options.options.accountKey, agentContext.wallet)
+
+    // try {
+    //   const resolvedDocument = await didRegistry.resolveDid(options.did)
+
+    //   if (!resolvedDocument) return failedResult('DID not found')
+
+    //   await didRegistry.deactivateDid(options.did, signer)
+
+    //   return {
+    //     didDocumentMetadata: {},
+    //     didRegistrationMetadata: {},
+    //     didState: {
+    //       state: 'finished',
+    //       did: options.did,
+    //       didDocument: fromIndyBesuDidDocument(resolvedDocument),
+    //       secret: options.secret,
+    //     },
+    //   }
+    // } catch (error) {
+    //   return failedResult(`unknownError: ${error.message}`)
+    // }
   }
 }
 
@@ -183,7 +198,7 @@ export interface IndyBesuEndpoint {
 }
 
 export interface IndyBesuDidCreateOptions extends DidCreateOptions {
-  method: 'indy2'
+  method: 'ethr'
   did?: never
   options: {
     network: string
