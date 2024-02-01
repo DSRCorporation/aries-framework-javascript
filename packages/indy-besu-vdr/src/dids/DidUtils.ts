@@ -13,6 +13,7 @@ import {
 import { computeAddress } from 'ethers'
 
 export const VERIFICATION_METHOD_TYPE_ECDSA_SECP256K1_RECOVERY_2020 = 'EcdsaSecp256k1RecoveryMethod2020'
+export const CONTEXT_SECURITY_SUITES_ED25519_2018_V1 = 'https://w3id.org/security/suites/ed25519-2018/v1'
 
 export function buildDid(method: string, key: Buffer): string {
   const namespaceIdentifier = computeAddress(`0x${TypedArrayEncoder.toHex(key)}`)
@@ -100,7 +101,7 @@ export function getVerificationMethodPurpose(document: DidDocument, verification
     verificationMethodPurposes.push('sigAuth')
   }
 
-  if (document.authentication?.includes(verificationMethodId)) {
+  if (document.keyAgreement?.includes(verificationMethodId)) {
     verificationMethodPurposes.push('enc')
   }
 

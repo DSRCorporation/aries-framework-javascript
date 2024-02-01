@@ -15,6 +15,7 @@ import {
 import { DidDocumentBuilder, KeyType } from '@aries-framework/core'
 import { DidRegistry, IndyBesuSigner } from '../ledger'
 import { buildDid, failedResult, getEcdsaSecp256k1RecoveryMethod2020, getVerificationMaterialProperty, getVerificationMethodPurpose, validateSpecCompliantPayload } from './DidUtils'
+import { purposes } from 'packages/core/src/modules/vc/data-integrity/libraries/jsonld-signatures'
 
 export class IndyBesuDidRegistrar implements DidRegistrar {
   public readonly supportedMethods = ['ethr']
@@ -26,7 +27,7 @@ export class IndyBesuDidRegistrar implements DidRegistrar {
 
     const didKey = await agentContext.wallet.createKey({
       keyType: KeyType.K256,
-      privateKey: options.secret.didPrivateKey,
+      privateKey: options.secret?.didPrivateKey,
     })
 
     const did = buildDid(options.method, didKey.publicKey)
@@ -77,7 +78,8 @@ export class IndyBesuDidRegistrar implements DidRegistrar {
       didDocument = didDocumentBuilder.build()
       didDocument.context = [
         'https://www.w3.org/ns/did/v1', 
-        'https://w3id.org/security/suites/secp256k1recovery-2020/v2'
+        'https://w3id.org/security/suites/secp256k1recovery-2020/v2',
+        'https://w3id.org/security/v3-unstable',
       ]
     }
 
@@ -89,14 +91,17 @@ export class IndyBesuDidRegistrar implements DidRegistrar {
           if (method === verificationMethod) continue
 
           const verificationMaterialProperty = getVerificationMaterialProperty(method.type)
-          const verificationPurpose= getVerificationMethodPurpose(didDocument, method.id)
-          const keyAttribute = {
-            [`${verificationMaterialProperty}`]: method[verificationMaterialProperty],
-            purpose: verificationPurpose,
-            type: method.type
-          }
+          const verificationPurpose = getVerificationMethodPurpose(didDocument, method.id)
 
-          await didRegistry.setAttribute(didDocument.id, keyAttribute, BigInt(100000), signer)
+          for (const purpose of verificationPurpose) {
+            const keyAttribute = {
+              [`${verificationMaterialProperty}`]: method[verificationMaterialProperty],
+              purpose,
+              type: method.type
+            }
+  
+            await didRegistry.setAttribute(didDocument.id, keyAttribute, BigInt(100000), signer)
+          }
         }
       }
 
@@ -237,8 +242,8 @@ export interface IndyBesuDidCreateOptions extends DidCreateOptions {
     network: string
     endpoints?: IndyBesuEndpoint[]
   }
-  secret: {
-    didPrivateKey?: Buffer
+  secret?: {
+    didPrivateKey: Buffer
   }
 }
 

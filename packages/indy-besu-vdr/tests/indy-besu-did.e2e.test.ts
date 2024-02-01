@@ -47,7 +47,11 @@ describe('Indy-Besu DID', () => {
     const document = createResult.didState.didDocument!
 
     expect(JsonTransformer.toJSON(document)).toMatchObject({
-      '@context': ['https://www.w3.org/ns/did/v1', 'https://w3id.org/security/suites/secp256k1recovery-2020/v2'],
+      '@context': [
+        'https://www.w3.org/ns/did/v1', 
+        'https://w3id.org/security/suites/secp256k1recovery-2020/v2',
+        'https://w3id.org/security/v3-unstable',
+      ],
       verificationMethod: [
         {
           id: `${id}#controller`,

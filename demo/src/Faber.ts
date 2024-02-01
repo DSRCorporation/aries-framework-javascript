@@ -22,6 +22,7 @@ import {
   RequestProofOptions,
   V2ProofProtocol,
   getEd25519VerificationKey2018,
+  getEd25519VerificationKey2020,
 } from '@aries-framework/core'
 import { IndyBesuDidCreateOptions } from '@aries-framework/indy-besu-vdr'
 import type BottomBar from 'inquirer/lib/ui/bottom-bar'
@@ -30,9 +31,7 @@ import { ui } from 'inquirer'
 
 import { BaseAgent, indyNetworkConfig } from './BaseAgent'
 import { Color, Output, greenText, purpleText, redText } from './OutputClass'
-
-const faberPrivateKey = TypedArrayEncoder.fromHex('c87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3')
-const faberPublicKey = TypedArrayEncoder.fromHex('03af80b90d25145da28c583359beb47b21796b2fe1a23c1511e443e7a64dfdb27d')
+import { computeAddress } from 'ethers'
 
 export enum RegistryOptions {
   indy = 'did:indy',
@@ -46,7 +45,7 @@ export class Faber extends BaseAgent {
   public credentialDefinition?: RegisterCredentialDefinitionReturnStateFinished
   public issuerId?: string
   public ui: BottomBar
-  public accountKey!: Key
+  public didKey?: Key
 
   public constructor(port: number, name: string) {
     super({ port, name, useLegacyIndySdk: true })
@@ -56,20 +55,7 @@ export class Faber extends BaseAgent {
   public static async build(): Promise<Faber> {
     const faber = new Faber(9001, 'faber')
     await faber.initializeAgent()
-    await faber.initializeAccountKey()
     return faber
-  }
-
-  private async initializeAccountKey() {
-    try {
-      this.accountKey = await this.agent.wallet.createKey({ keyType: KeyType.K256, privateKey: faberPrivateKey })
-    } catch (error) {
-      if (error instanceof WalletKeyExistsError) {
-        this.accountKey = new Key(faberPublicKey, KeyType.K256)
-      } else {
-        throw error
-      }
-    }
   }
 
   public async createIndy2Did() {
@@ -77,9 +63,7 @@ export class Faber extends BaseAgent {
       method: 'ethr',
       options: {
         network: 'testnet',
-        accountKey: this.accountKey,
-      },
-      secret: {},
+      }
     })
 
     if (createdDid.didState.state == 'failed') {
@@ -89,6 +73,7 @@ export class Faber extends BaseAgent {
     console.log(purpleText(`Created DID${Color.Reset}: ${JSON.stringify(createdDid.didState.didDocument, null, 2)}`))
 
     this.issuerId = createdDid.didState.did
+    this.didKey = createdDid.didState.secret?.didKey as Key
   }
 
   public async createW3CIndy2Did() {
@@ -96,7 +81,7 @@ export class Faber extends BaseAgent {
 
     const did = this.buildDid('indy2', 'testnet', didKey.publicKey)
 
-    const verificationMethod = getEd25519VerificationKey2018({
+    const verificationMethod = getEd25519VerificationKey2020({
       key: didKey,
       id: `${did}#KEY-1`,
       controller: did,
@@ -115,19 +100,17 @@ export class Faber extends BaseAgent {
       didDocument,
       options: {
         network: 'testnet',
-        accountKey: this.accountKey,
       },
-      secret: {},
     })
 
     console.log(purpleText(`Created DID${Color.Reset}: ${JSON.stringify(createdDid.didState.didDocument, null, 2)}`))
 
     this.issuerId = createdDid.didState.did
+    this.didKey = createdDid.didState.secret?.didKey as Key
   }
 
   private buildDid(method: string, network: string, key: Buffer): string {
-    const buffer = Hasher.hash(key, 'sha2-256')
-    const namespaceIdentifier = TypedArrayEncoder.toBase58(buffer.slice(0, 16))
+    const namespaceIdentifier = computeAddress(`0x${TypedArrayEncoder.toHex(key)}`)
 
     return `did:${method}:${network}:${namespaceIdentifier}`
   }
@@ -240,7 +223,7 @@ export class Faber extends BaseAgent {
       options: {
         endorserMode: 'internal',
         endorserDid: this.issuerId,
-        accountKey: this.accountKey,
+        accountKey: this.didKey,
       },
     })
 
@@ -279,7 +262,7 @@ export class Faber extends BaseAgent {
       options: {
         endorserMode: 'internal',
         endorserDid: this.issuerId,
-        accountKey: this.accountKey,
+        accountKey: this.didKey,
       },
     })
 
