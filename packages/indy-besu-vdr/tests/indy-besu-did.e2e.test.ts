@@ -8,15 +8,10 @@ const agentOptions = getAgentOptions('Faber', {}, getBesuIndyModules())
 
 describe('Indy-Besu DID', () => {
   let agent: Agent<ReturnType<typeof getBesuIndyModules>>
-  let trusteeKey: Key
 
   beforeAll(async () => {
     agent = new Agent(agentOptions)
     await agent.initialize()
-    trusteeKey = await agent.wallet.createKey({
-      keyType: KeyType.K256,
-      privateKey: trusteePrivateKey,
-    })
   })
 
   afterAll(async () => {
@@ -37,7 +32,6 @@ describe('Indy-Besu DID', () => {
             endpoint: 'https://example.com/endpoint',
           },
         ],
-        accountKey: trusteeKey,
       },
       secret: {
         didPrivateKey,
@@ -75,8 +69,7 @@ describe('Indy-Besu DID', () => {
     const resolvedDid = await agent.dids.resolve(id)
 
     console.log(JSON.stringify(resolvedDid))
-
-
+    
     expect(JsonTransformer.toJSON(resolvedDid.didDocument)).toMatchObject(JsonTransformer.toJSON(document))
   })
 })

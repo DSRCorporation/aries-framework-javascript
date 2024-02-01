@@ -14,7 +14,7 @@ import {
 } from '@aries-framework/core'
 import { DidDocumentBuilder, KeyType } from '@aries-framework/core'
 import { DidRegistry, IndyBesuSigner } from '../ledger'
-import { buildDid, failedResult, getEcdsaSecp256k1RecoveryMethod2020, validateSpecCompliantPayload } from './DidUtils'
+import { buildDid, failedResult, getEcdsaSecp256k1RecoveryMethod2020, getVerificationMaterialProperty, getVerificationMethodPurpose, validateSpecCompliantPayload } from './DidUtils'
 
 export class IndyBesuDidRegistrar implements DidRegistrar {
   public readonly supportedMethods = ['ethr']
@@ -24,24 +24,41 @@ export class IndyBesuDidRegistrar implements DidRegistrar {
 
     let didDocument: DidDocument
 
+    const didKey = await agentContext.wallet.createKey({
+      keyType: KeyType.K256,
+      privateKey: options.secret.didPrivateKey,
+    })
+
+    const did = buildDid(options.method, didKey.publicKey)
+
+    const verificationMethod = getEcdsaSecp256k1RecoveryMethod2020({
+      key: didKey,
+      id: `${did}#controller`,
+      controller: did,
+    })
+
     if (options.didDocument) {
       const error = validateSpecCompliantPayload(options.didDocument)
       if (error) return failedResult(error)
 
       didDocument = options.didDocument
+
+      if (!didDocument.verificationMethod) {
+        didDocument.verificationMethod = []
+      }
+
+      if (!didDocument.authentication) {
+        didDocument.authentication = []
+      }
+
+      if (!didDocument.assertionMethod) {
+        didDocument.assertionMethod = []
+      }
+
+      didDocument.verificationMethod.push(verificationMethod)
+      didDocument.authentication.push(verificationMethod.id)
+      didDocument.assertionMethod.push(verificationMethod.id)
     } else {
-      const didKey = await agentContext.wallet.createKey({
-        keyType: KeyType.K256,
-        privateKey: options.secret.didPrivateKey,
-      })
-      const did = buildDid(options.method, options.options.accountKey.publicKey)
-
-      const verificationMethod = getEcdsaSecp256k1RecoveryMethod2020({
-        key: options.options.accountKey,
-        id: `${did}#controller`,
-        controller: did,
-      })
-
       const didDocumentBuilder = new DidDocumentBuilder(did)
         .addVerificationMethod(verificationMethod)
         .addAuthentication(verificationMethod.id)
@@ -64,18 +81,34 @@ export class IndyBesuDidRegistrar implements DidRegistrar {
       ]
     }
 
-    const signer = new IndyBesuSigner(options.options.accountKey, agentContext.wallet)
+    const signer = new IndyBesuSigner(didKey, agentContext.wallet)
 
     try {
-      
+      if (didDocument.verificationMethod) {
+        for (const method of didDocument.verificationMethod) {
+          if (method === verificationMethod) continue
 
-      didDocument.service?.forEach((service) => {
-        const serviceAttribute = {
-          "serviceEndpoint": service.serviceEndpoint,
-          "type": service.type
+          const verificationMaterialProperty = getVerificationMaterialProperty(method.type)
+          const verificationPurpose= getVerificationMethodPurpose(didDocument, method.id)
+          const keyAttribute = {
+            [`${verificationMaterialProperty}`]: method[verificationMaterialProperty],
+            purpose: verificationPurpose,
+            type: method.type
+          }
+
+          await didRegistry.setAttribute(didDocument.id, keyAttribute, BigInt(100000), signer)
         }
-        didRegistry.setAttribute(didDocument.id, serviceAttribute, BigInt(100000), signer)
-      })
+      }
+
+      if (didDocument.service) {
+        for (const service of didDocument.service) {
+          const serviceAttribute = {
+            serviceEndpoint: service.serviceEndpoint,
+            type: service.type
+          }
+          await didRegistry.setAttribute(didDocument.id, serviceAttribute, BigInt(100000), signer)
+        }
+      }
 
       return {
         didDocumentMetadata: {},
@@ -84,7 +117,7 @@ export class IndyBesuDidRegistrar implements DidRegistrar {
           state: 'finished',
           did: didDocument.id,
           didDocument: didDocument,
-          secret: options.secret,
+          secret: { didKey }
         },
       }
     } catch (error) {
@@ -203,7 +236,6 @@ export interface IndyBesuDidCreateOptions extends DidCreateOptions {
   options: {
     network: string
     endpoints?: IndyBesuEndpoint[]
-    accountKey: Key
   }
   secret: {
     didPrivateKey?: Buffer

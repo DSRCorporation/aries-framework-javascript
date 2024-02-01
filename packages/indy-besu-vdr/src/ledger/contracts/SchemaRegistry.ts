@@ -16,12 +16,12 @@ export class SchemaRegistry extends BaseContract {
     super(client)
   }
 
-  public async createSchema(id: string, schema: string, signer: IndyBesuSigner) {
+  public async createSchema(id: string, schema: any, signer: IndyBesuSigner) {
     const transaction = await IndySchemaRegistry.buildCreateSchemaTransaction(this.client, signer.address, id, schema)
     return this.signAndSubmit(transaction, signer)
   }
 
-  public async resolveSchema(id: string): Promise<string> {
+  public async resolveSchema(id: string): Promise<any> {
     return IndySchemaRegistry.resolveSchema(this.client, id)
   }
 }

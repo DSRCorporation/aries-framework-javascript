@@ -8,11 +8,13 @@ import type {
   RegisterCredentialDefinitionReturn,
   RegisterSchemaReturn,
   RegisterSchemaOptions,
+  AnonCredsSchema,
 } from '@aries-framework/anoncreds'
-import { Key, JsonTransformer, type AgentContext, AriesFrameworkError } from '@aries-framework/core'
+import type { AgentContext } from '@aries-framework/core'
+import { Key, AriesFrameworkError, JsonTransformer } from '@aries-framework/core'
 import { CredentialDefinitionRegistry, IndyBesuSigner, SchemaRegistry } from '../ledger'
 import { buildCredentialDefinitionId, buildSchemaId } from './AnonCredsUtils'
-import { CredentialDefinition, Schema } from '../types'
+import { CredentialDefinitionValue } from './Trasformers'
 
 export class IndyBesuAnonCredsRegistry implements AnonCredsRegistry {
   public methodName = 'indy2'
@@ -23,9 +25,7 @@ export class IndyBesuAnonCredsRegistry implements AnonCredsRegistry {
     try {
       const schemaRegistry = agentContext.dependencyManager.resolve(SchemaRegistry)
 
-      const schemaJson = await schemaRegistry.resolveSchema(schemaId)
-
-      const schema = JsonTransformer.fromJSON(schemaJson, Schema)
+      const schema = await schemaRegistry.resolveSchema(schemaId) as AnonCredsSchema
 
       return {
         schema,
@@ -53,12 +53,10 @@ export class IndyBesuAnonCredsRegistry implements AnonCredsRegistry {
       const schemaRegistry = agentContext.dependencyManager.resolve(SchemaRegistry)
 
       const signer = new IndyBesuSigner(options.options.accountKey, agentContext.wallet)
-
+      
       const schemaId = buildSchemaId(options.schema)
 
-      const schemaJson = JSON.stringify(options.schema)
-
-      await schemaRegistry.createSchema(schemaId, schemaJson, signer)
+      await schemaRegistry.createSchema(schemaId, options.schema, signer)
 
       return {
         schemaState: {
@@ -76,7 +74,7 @@ export class IndyBesuAnonCredsRegistry implements AnonCredsRegistry {
         schemaState: {
           state: 'failed',
           schema: options.schema,
-          reason: `unknownError: ${error.message}`,
+          reason: `Faield registering schema: ${error.message}`,
         },
       }
     }
@@ -89,12 +87,16 @@ export class IndyBesuAnonCredsRegistry implements AnonCredsRegistry {
     try {
       const credentialDefinitionRegistry = agentContext.dependencyManager.resolve(CredentialDefinitionRegistry)
 
-      const credentialDefinitionJson = await credentialDefinitionRegistry.resolveCredentialDefinition(credentialDefinitionId)
-
-      const credentialDefinition = JsonTransformer.fromJSON(credentialDefinitionJson, CredentialDefinition)
+      const credentialDefinition = await credentialDefinitionRegistry.resolveCredentialDefinition(credentialDefinitionId)
 
       return {
-        credentialDefinition,
+        credentialDefinition: {
+          issuerId: credentialDefinition.issuerId,
+          schemaId: credentialDefinition.schemaId,
+          type: 'CL',
+          tag: credentialDefinition.tag,
+          value: JsonTransformer.deserialize(credentialDefinition.value, CredentialDefinitionValue)
+        },
         credentialDefinitionId,
         resolutionMetadata: {},
         credentialDefinitionMetadata: {},
@@ -118,16 +120,27 @@ export class IndyBesuAnonCredsRegistry implements AnonCredsRegistry {
     try {
       const credentialDefinitionRegistry = agentContext.dependencyManager.resolve(CredentialDefinitionRegistry)
 
-      const schema = await this.getSchema(agentContext, options.credentialDefinition.schemaId)
+      const createCredentialDefinition = options.credentialDefinition
+
+      const schema = await this.getSchema(agentContext, createCredentialDefinition.schemaId)
       if (!schema.schema) {
-        throw new AriesFrameworkError(`Schema not found for schemaId: ${options.credentialDefinition.schemaId}`)
+        throw new AriesFrameworkError(`Schema not found for schemaId: ${createCredentialDefinition.schemaId}`)
       }
 
       const signer = new IndyBesuSigner(options.options.accountKey, agentContext.wallet)
-      const createCredentialDefinitionId = buildCredentialDefinitionId(options.credentialDefinition)
-      const credentialDefinitionJson = JSON.stringify(options.credentialDefinition)
-
-      await credentialDefinitionRegistry.createCredentialDefinition(createCredentialDefinitionId, credentialDefinitionJson, signer)
+      const createCredentialDefinitionId = buildCredentialDefinitionId(createCredentialDefinition)
+      
+      await credentialDefinitionRegistry.createCredentialDefinition(
+        createCredentialDefinitionId, 
+        {
+          issuerId: createCredentialDefinition.issuerId,
+          schemaId: createCredentialDefinition.schemaId,
+          credDefType: 'CL',
+          tag: createCredentialDefinition.tag,
+          value: JsonTransformer.serialize(createCredentialDefinition.value),
+        }, 
+        signer
+      )
 
       return {
         credentialDefinitionState: {

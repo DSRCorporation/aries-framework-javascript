@@ -12,6 +12,6 @@ export class BaseContract {
   public async signAndSubmit(transaction: Transaction, signer: IndyBesuSigner) {
     await signer.signTransaction(transaction)
     const transactionHash = await this.client.submitTransaction(transaction)
-    return await this.client.getReceipt(transactionHash)
+    return this.client.getReceipt(transactionHash)
   }
 }

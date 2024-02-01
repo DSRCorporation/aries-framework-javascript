@@ -3,9 +3,7 @@ import { CredentialDefinitionRegistry as IndyBesuCredentialDefinitionRegistry, L
 import path from 'path'
 import { BaseContract } from './BaseContract'
 import { IndyBesuSigner } from '../IndyBesuSigner'
-import { JsonTransformer, injectable } from '@aries-framework/core'
-import { AnonCredsCredentialDefinition } from '@aries-framework/anoncreds'
-import { CredentialDefinition } from '../../types'
+import { injectable } from '@aries-framework/core'
 
 @injectable()
 export class CredentialDefinitionRegistry extends BaseContract {
@@ -18,7 +16,7 @@ export class CredentialDefinitionRegistry extends BaseContract {
     super(client)
   }
 
-  public async createCredentialDefinition(id: string, credDef: string, signer: IndyBesuSigner) {
+  public async createCredentialDefinition(id: string, credDef: any, signer: IndyBesuSigner) {
     const transaction = await IndyBesuCredentialDefinitionRegistry.buildCreateCredentialDefinitionTransaction(
       this.client,
       signer.address,
@@ -28,7 +26,7 @@ export class CredentialDefinitionRegistry extends BaseContract {
     return this.signAndSubmit(transaction, signer)
   }
 
-  public async resolveCredentialDefinition(id: string): Promise<string> {
+  public async resolveCredentialDefinition(id: string): Promise<any> {
     return IndyBesuCredentialDefinitionRegistry.resolveCredentialDefinition(
       this.client,
       id

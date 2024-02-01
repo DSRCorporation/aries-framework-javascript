@@ -10,15 +10,10 @@ const anonCredsRegistry = new IndyBesuAnonCredsRegistry()
 
 describe('Indy-Besu CL', () => {
   let agent: Agent<ReturnType<typeof getBesuIndyModules>>
-  let trusteeKey: Key
 
   beforeAll(async () => {
     agent = new Agent(agentOptions)
     await agent.initialize()
-    trusteeKey = await agent.wallet.createKey({
-      keyType: KeyType.K256,
-      privateKey: trusteePrivateKey,
-    })
   })
 
   afterAll(async () => {
@@ -39,7 +34,6 @@ describe('Indy-Besu CL', () => {
             endpoint: 'https://example.com/endpoint',
           },
         ],
-        accountKey: trusteeKey,
       },
       secret: {
         didPrivateKey,
@@ -48,8 +42,9 @@ describe('Indy-Besu CL', () => {
 
     expect(did.didState).toMatchObject({ state: 'finished' })
 
-    const issuerId = did.didState.did as string
-
+    const issuerId = did.didState.did!
+    const didKey = did.didState.secret!.didKey as Key
+    
     const schemaResult = await anonCredsRegistry.registerSchema(agent.context, {
       schema: {
         attrNames: ['name'],
@@ -58,7 +53,7 @@ describe('Indy-Besu CL', () => {
         version: '1.0',
       },
       options: {
-        accountKey: trusteeKey,
+        accountKey: didKey
       },
     })
 
@@ -104,7 +99,7 @@ describe('Indy-Besu CL', () => {
         },
       },
       options: {
-        accountKey: trusteeKey,
+        accountKey: didKey,
       },
     })
 

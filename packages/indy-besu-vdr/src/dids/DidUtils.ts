@@ -12,6 +12,8 @@ import {
 } from '@aries-framework/core'
 import { computeAddress } from 'ethers'
 
+export const VERIFICATION_METHOD_TYPE_ECDSA_SECP256K1_RECOVERY_2020 = 'EcdsaSecp256k1RecoveryMethod2020'
+
 export function buildDid(method: string, key: Buffer): string {
   const namespaceIdentifier = computeAddress(`0x${TypedArrayEncoder.toHex(key)}`)
   
@@ -53,28 +55,10 @@ export function validateSpecCompliantPayload(didDocument: DidDocument): string |
   // id is required, validated on both compile and runtime
   if (!didDocument.id && !didDocument.id.startsWith('did:')) return 'id is required'
 
-  // verificationMethod is required
-  if (!didDocument.verificationMethod) return 'verificationMethod is required'
-
-  // verificationMethod must be an array
-  if (!Array.isArray(didDocument.verificationMethod)) return 'verificationMethod must be an array'
-
-  // verificationMethod must be not be empty
-  if (!didDocument.verificationMethod.length) return 'verificationMethod must be not be empty'
-
   // verificationMethod types must be supported
-  const isValidVerificationMethod = didDocument.verificationMethod.every((vm) => {
-    switch (vm.type) {
-      case VERIFICATION_METHOD_TYPE_ECDSA_SECP256K1_VERIFICATION_KEY_2019:
-      case VERIFICATION_METHOD_TYPE_ED25519_VERIFICATION_KEY_2020:
-        return vm.publicKeyMultibase != null
-      case VERIFICATION_METHOD_TYPE_JSON_WEB_KEY_2020:
-        return vm.publicKeyJwk != null
-      case VERIFICATION_METHOD_TYPE_ED25519_VERIFICATION_KEY_2018:
-        return vm.publicKeyBase58 != null
-      default:
-        return false
-    }
+  const isValidVerificationMethod = didDocument.verificationMethod?.every((vm) => {
+    const verificationMaterialPropertyName = getVerificationMaterialProperty(vm.type)
+    return vm[verificationMaterialPropertyName] != null
   })
 
   if (!isValidVerificationMethod) return 'verificationMethod publicKey is Invalid'
@@ -88,4 +72,37 @@ export function validateSpecCompliantPayload(didDocument: DidDocument): string |
   if (!isValidService) return 'Service is Invalid'
 
   return null
+}
+
+export function getVerificationMaterialProperty(verificationMethodType: string): keyof VerificationMethod {
+  switch (verificationMethodType) {
+    case VERIFICATION_METHOD_TYPE_ECDSA_SECP256K1_VERIFICATION_KEY_2019:
+    case VERIFICATION_METHOD_TYPE_ED25519_VERIFICATION_KEY_2020:
+      return 'publicKeyMultibase'
+    case VERIFICATION_METHOD_TYPE_JSON_WEB_KEY_2020:
+      return 'publicKeyJwk'
+    case VERIFICATION_METHOD_TYPE_ECDSA_SECP256K1_RECOVERY_2020:
+      return 'blockchainAccountId'
+    case VERIFICATION_METHOD_TYPE_ED25519_VERIFICATION_KEY_2018:
+    default:
+      return 'publicKeyBase58'
+  }
+}
+
+export function getVerificationMethodPurpose(document: DidDocument, verificationMethodId: string): string[] {
+  const verificationMethodPurposes: Array<string> = []
+
+  if (document.assertionMethod?.includes(verificationMethodId)) {
+    verificationMethodPurposes.push('veriKey')
+  }
+
+  if (document.authentication?.includes(verificationMethodId)) {
+    verificationMethodPurposes.push('sigAuth')
+  }
+
+  if (document.authentication?.includes(verificationMethodId)) {
+    verificationMethodPurposes.push('enc')
+  }
+
+  return verificationMethodPurposes
 }
