@@ -44,7 +44,7 @@ describe('Indy-Besu CL', () => {
 
     const issuerId = did.didState.did!
     const didKey = did.didState.secret!.didKey as Key
-    
+
     const schemaResult = await anonCredsRegistry.registerSchema(agent.context, {
       schema: {
         attrNames: ['name'],
@@ -53,7 +53,7 @@ describe('Indy-Besu CL', () => {
         version: '1.0',
       },
       options: {
-        accountKey: didKey
+        accountKey: didKey,
       },
     })
 

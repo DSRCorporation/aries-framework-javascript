@@ -5,8 +5,8 @@ export {
   IndyBesuDidUpdateOptions,
 } from './IndyBesuDidRegistrar'
 export { IndyBesuDidResolver } from './IndyBesuDidResolver'
-export { 
-  buildDid, 
+export {
+  buildDid,
   getEcdsaSecp256k1RecoveryMethod2020,
   IndyBesuEndpoint,
   VerificationKey,

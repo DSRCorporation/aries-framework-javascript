@@ -33,6 +33,8 @@ import {
   HttpOutboundTransport,
   JsonLdCredentialFormatService,
   W3cCredentialsModule,
+  ConsoleLogger,
+  LogLevel,
 } from '@aries-framework/core'
 import {
   IndyBesuAnonCredsRegistry,
@@ -94,7 +96,7 @@ export class BaseAgent {
         key: name,
       },
       endpoints: [`http://localhost:${this.port}`],
-      // logger: new ConsoleLogger(LogLevel.info),
+      logger: new ConsoleLogger(LogLevel.info),
     } satisfies InitConfig
 
     this.config = config

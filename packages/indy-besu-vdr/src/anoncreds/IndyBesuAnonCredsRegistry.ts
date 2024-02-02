@@ -25,7 +25,7 @@ export class IndyBesuAnonCredsRegistry implements AnonCredsRegistry {
     try {
       const schemaRegistry = agentContext.dependencyManager.resolve(SchemaRegistry)
 
-      const schema = await schemaRegistry.resolveSchema(schemaId) as AnonCredsSchema
+      const schema = (await schemaRegistry.resolveSchema(schemaId)) as AnonCredsSchema
 
       return {
         schema,
@@ -53,7 +53,7 @@ export class IndyBesuAnonCredsRegistry implements AnonCredsRegistry {
       const schemaRegistry = agentContext.dependencyManager.resolve(SchemaRegistry)
 
       const signer = new IndyBesuSigner(options.options.accountKey, agentContext.wallet)
-      
+
       const schemaId = buildSchemaId(options.schema)
 
       await schemaRegistry.createSchema(schemaId, options.schema, signer)
@@ -87,7 +87,9 @@ export class IndyBesuAnonCredsRegistry implements AnonCredsRegistry {
     try {
       const credentialDefinitionRegistry = agentContext.dependencyManager.resolve(CredentialDefinitionRegistry)
 
-      const credentialDefinition = await credentialDefinitionRegistry.resolveCredentialDefinition(credentialDefinitionId)
+      const credentialDefinition = await credentialDefinitionRegistry.resolveCredentialDefinition(
+        credentialDefinitionId
+      )
 
       return {
         credentialDefinition: {
@@ -95,7 +97,7 @@ export class IndyBesuAnonCredsRegistry implements AnonCredsRegistry {
           schemaId: credentialDefinition.schemaId,
           type: 'CL',
           tag: credentialDefinition.tag,
-          value: JsonTransformer.deserialize(credentialDefinition.value, CredentialDefinitionValue)
+          value: JsonTransformer.deserialize(credentialDefinition.value, CredentialDefinitionValue),
         },
         credentialDefinitionId,
         resolutionMetadata: {},
@@ -129,16 +131,16 @@ export class IndyBesuAnonCredsRegistry implements AnonCredsRegistry {
 
       const signer = new IndyBesuSigner(options.options.accountKey, agentContext.wallet)
       const createCredentialDefinitionId = buildCredentialDefinitionId(createCredentialDefinition)
-      
+
       await credentialDefinitionRegistry.createCredentialDefinition(
-        createCredentialDefinitionId, 
+        createCredentialDefinitionId,
         {
           issuerId: createCredentialDefinition.issuerId,
           schemaId: createCredentialDefinition.schemaId,
           credDefType: 'CL',
           tag: createCredentialDefinition.tag,
           value: JsonTransformer.serialize(createCredentialDefinition.value),
-        }, 
+        },
         signer
       )
 

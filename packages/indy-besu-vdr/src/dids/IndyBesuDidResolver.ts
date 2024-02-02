@@ -1,6 +1,13 @@
-import { AgentContext, DidDocument, DidDocumentService, DidResolutionResult, DidResolver, VERIFICATION_METHOD_TYPE_ED25519_VERIFICATION_KEY_2018, VERIFICATION_METHOD_TYPE_ED25519_VERIFICATION_KEY_2020, VERIFICATION_METHOD_TYPE_X25519_KEY_AGREEMENT_KEY_2019, VerificationMethod } from '@aries-framework/core'
+import {
+  AgentContext,
+  DidDocument,
+  DidDocumentService,
+  DidResolutionResult,
+  DidResolver,
+  VerificationMethod,
+} from '@aries-framework/core'
 import { DidRegistry } from '../ledger'
-import { CONTEXT_SECURITY_SUITES_ED25519_2018_V1, VERIFICATION_METHOD_TYPE_ECDSA_SECP256K1_RECOVERY_2020, VerificationKeyType, getKeyContext } from './DidUtils'
+import { VerificationKeyType, getKeyContext } from './DidUtils'
 
 export class IndyBesuDidResolver implements DidResolver {
   public readonly supportedMethods = ['ethr']
@@ -13,10 +20,14 @@ export class IndyBesuDidResolver implements DidResolver {
 
       agentContext.config.logger.trace(`Resolved DID: ${JSON.stringify(result)}`)
 
-      console.log(JSON.stringify(result))
-
       const didDocument = new DidDocument(result.didDocument)
-      didDocument.context = result.didDocument['@context']
+
+      // JSON-LD credential issuance won't work if 'https://w3id.org/security/v3-unstable' context is added
+      const context = result.didDocument['@context'].filter(
+        (value: any) => value !== 'https://w3id.org/security/v3-unstable'
+      )
+
+      didDocument.context = context
 
       didDocument.verificationMethod = didDocument.verificationMethod?.map((method: any) => {
         return new VerificationMethod(method)
@@ -24,7 +35,7 @@ export class IndyBesuDidResolver implements DidResolver {
 
       didDocument.verificationMethod?.forEach((method: any) => {
         this.updateContext(didDocument, method)
-      }) 
+      })
 
       didDocument.service = didDocument.service?.map((service: any) => {
         return new DidDocumentService(service)
@@ -52,11 +63,10 @@ export class IndyBesuDidResolver implements DidResolver {
 
     if (!didDocument.context.includes(keyContext)) {
       if (Array.isArray(didDocument.context)) {
-        console.log("Push called")
-        didDocument.context.push(CONTEXT_SECURITY_SUITES_ED25519_2018_V1)
+        didDocument.context.push(keyContext)
       } else {
-        didDocument.context = [didDocument.context, CONTEXT_SECURITY_SUITES_ED25519_2018_V1]
+        didDocument.context = [didDocument.context, keyContext]
       }
     }
-  } 
+  }
 }

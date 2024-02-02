@@ -27,7 +27,12 @@ import {
 import { ui } from 'inquirer'
 
 import { Color, purpleText } from './OutputClass'
-import { AnonCredsCredentialOffer, AnonCredsProofRequest, V1OfferCredentialMessage, V1RequestPresentationMessage } from '@aries-framework/anoncreds'
+import {
+  AnonCredsCredentialOffer,
+  AnonCredsProofRequest,
+  V1OfferCredentialMessage,
+  V1RequestPresentationMessage,
+} from '@aries-framework/anoncreds'
 
 export class Listener {
   public on: boolean
@@ -118,7 +123,6 @@ export class Listener {
     this.turnListenerOff()
     await aliceInquirer.processAnswer()
   }
-
 
   public proofRequestListener(alice: Alice, aliceInquirer: AliceInquirer) {
     alice.agent.events.on(ProofEventTypes.ProofStateChanged, async ({ payload }: ProofStateChangedEvent) => {

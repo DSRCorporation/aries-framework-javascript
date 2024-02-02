@@ -2,8 +2,8 @@
 
 ### Requirements
 
-* Rust of version 1.65.0 or higher.
-* Wasm-pack: https://rustwasm.github.io/wasm-pack/installer/
+- Rust of version 1.65.0 or higher.
+- Wasm-pack: https://rustwasm.github.io/wasm-pack/installer/
 
 ### Build
 
@@ -29,16 +29,16 @@ wasm-pack build
 
 #### NodeJS demo
 
-* Build NodeJS bindings from `wasm` directory
+- Build NodeJS bindings from `wasm` directory
   ```
   wasm-pack build --target=nodejs
   ```
-* Install dependencies
+- Install dependencies
   ```
   cd demo/node
   yarn install
   ```
-* Run demo
+- Run demo
   ```
   yarn start
   ```

@@ -26,4 +26,3 @@ export function buildDid(method: string, network: string, key: Buffer): string {
 
   return `did:${method}:${network}:${namespaceIdentifier}`
 }
-

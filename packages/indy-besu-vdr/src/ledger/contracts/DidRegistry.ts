@@ -1,4 +1,4 @@
-import { DidDocument, injectable } from '@aries-framework/core'
+import { injectable } from '@aries-framework/core'
 import { BaseContract } from './BaseContract'
 import fs from 'fs'
 import path from 'path'
@@ -16,13 +16,32 @@ export class DidRegistry extends BaseContract {
     super(client)
   }
 
-  public async addDelegate(id: string, delegateType: string, delegate: string, validity: bigint, signer: IndyBesuSigner) {
-    const transaction = await EthrDidRegistry.buildDidAddDelegateTransaction(this.client, signer.address, id, delegateType, delegate, validity)
+  public async addDelegate(
+    id: string,
+    delegateType: string,
+    delegate: string,
+    validity: bigint,
+    signer: IndyBesuSigner
+  ) {
+    const transaction = await EthrDidRegistry.buildDidAddDelegateTransaction(
+      this.client,
+      signer.address,
+      id,
+      delegateType,
+      delegate,
+      validity
+    )
     return this.signAndSubmit(transaction, signer)
   }
 
   public async setAttribute(id: string, attribute: any, validity: bigint, signer: IndyBesuSigner) {
-    const transaction = await EthrDidRegistry.buildDidSetAttributeTransaction(this.client, signer.address, id, attribute, validity)
+    const transaction = await EthrDidRegistry.buildDidSetAttributeTransaction(
+      this.client,
+      signer.address,
+      id,
+      attribute,
+      validity
+    )
     return this.signAndSubmit(transaction, signer)
   }
 

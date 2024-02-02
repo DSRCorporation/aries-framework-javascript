@@ -1,17 +1,10 @@
 import {
   type Buffer,
-  DidDocument,
-  VERIFICATION_METHOD_TYPE_ED25519_VERIFICATION_KEY_2018,
-  VERIFICATION_METHOD_TYPE_JSON_WEB_KEY_2020,
-  VERIFICATION_METHOD_TYPE_ED25519_VERIFICATION_KEY_2020,
   DidCreateResult,
   TypedArrayEncoder,
   VerificationMethod,
   Key,
   DidDocumentBuilder,
-  DidCreateOptions,
-  DidUpdateOptions,
-  DidDeactivateOptions,
   getEd25519VerificationKey2018,
   getX25519KeyAgreementKey2019,
   DidDocumentService,
@@ -24,7 +17,7 @@ export const CONTEXT_SECURITY_SUITES_ED25519_2018_V1 = 'https://w3id.org/securit
 export enum VerificationKeyType {
   Ed25519VerificationKey2018,
   X25519KeyAgreementKey2020,
-  EcdsaSecp256k1RecoveryMethod2020
+  EcdsaSecp256k1RecoveryMethod2020,
 }
 
 export enum VerificationKeyPurpose {
@@ -46,7 +39,7 @@ export interface IndyBesuEndpoint {
 
 export function buildDid(method: string, key: Buffer): string {
   const namespaceIdentifier = computeAddress(`0x${TypedArrayEncoder.toHex(key)}`)
-  
+
   return `did:${method}:${namespaceIdentifier}`
 }
 
@@ -66,7 +59,7 @@ export function getEcdsaSecp256k1RecoveryMethod2020({
     id,
     type: 'EcdsaSecp256k1RecoveryMethod2020',
     controller,
-    blockchainAccountId: `eip155:1337:${address}`
+    blockchainAccountId: `eip155:1337:${address}`,
   })
 }
 
@@ -115,9 +108,9 @@ export function getVerificationPurpose(purpose: VerificationKeyPurpose): string 
 }
 
 export function getVerificationMethod(
-  id: string, 
-  type: VerificationKeyType, 
-  key: Key, 
+  id: string,
+  type: VerificationKeyType,
+  key: Key,
   controller: string
 ): VerificationMethod {
   switch (type) {
@@ -133,7 +126,7 @@ export function getVerificationMethod(
 export function getKeyContext(type: VerificationKeyType) {
   switch (type) {
     case VerificationKeyType.Ed25519VerificationKey2018:
-      return 'https://w3id.org/security/suites/ed25519-2018/v1' 
+      return 'https://w3id.org/security/suites/ed25519-2018/v1'
     case VerificationKeyType.X25519KeyAgreementKey2020:
       return 'https://w3id.org/security/suites/x25519-2020/v1'
     case VerificationKeyType.EcdsaSecp256k1RecoveryMethod2020:
@@ -142,15 +135,15 @@ export function getKeyContext(type: VerificationKeyType) {
 }
 
 export function buildDidDocument(
-  did: string, 
-  key: Key, 
+  did: string,
+  key: Key,
   endpoints?: IndyBesuEndpoint[],
   verificationKeys?: VerificationKey[]
 ) {
   const context = [
-    'https://www.w3.org/ns/did/v1', 
+    'https://www.w3.org/ns/did/v1',
     'https://w3id.org/security/suites/secp256k1recovery-2020/v2',
-    'https://w3id.org/security/v3-unstable',
+    // 'https://w3id.org/security/v3-unstable',
   ]
 
   const verificationMethod = getEcdsaSecp256k1RecoveryMethod2020({
@@ -160,30 +153,25 @@ export function buildDidDocument(
   })
 
   const didDocumentBuilder = new DidDocumentBuilder(did)
-      .addVerificationMethod(verificationMethod)
-      .addAuthentication(verificationMethod.id)
-      .addAssertionMethod(verificationMethod.id)
+    .addVerificationMethod(verificationMethod)
+    .addAuthentication(verificationMethod.id)
+    .addAssertionMethod(verificationMethod.id)
 
-  // add key security context 
+  // add key security context
   verificationKeys
-    ?.map(value => value.type)
-    .map(value => getKeyContext(value))
-    .forEach((value => {
+    ?.map((value) => value.type)
+    .map((value) => getKeyContext(value))
+    .forEach((value) => {
       if (!context.includes(value)) {
         context.push(value)
       }
-    }))
+    })
 
   // add verification methods
   verificationKeys?.forEach((value, index) => {
     const id = `${did}#delegate-${index + 1}`
 
-    const verificationMethod = getVerificationMethod(
-      id, 
-      value.type, 
-      value.key, 
-      did
-    )
+    const verificationMethod = getVerificationMethod(id, value.type, value.key, did)
     didDocumentBuilder.addVerificationMethod(verificationMethod)
 
     switch (value.purpose) {

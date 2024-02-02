@@ -4,7 +4,6 @@ import type {
   RegisterSchemaReturnStateFinished,
 } from '@aries-framework/anoncreds'
 import {
-  Buffer,
   CREDENTIALS_CONTEXT_V1_URL,
   ConnectionRecord,
   ConnectionStateChangedEvent,
@@ -12,7 +11,6 @@ import {
   CredentialExchangeRecord,
   CredentialState,
   CredentialStateChangedEvent,
-  DidDocumentBuilder,
   Key,
   ProofEventTypes,
   ProofExchangeRecord,
@@ -20,9 +18,8 @@ import {
   ProofStateChangedEvent,
   RequestProofOptions,
   V2ProofProtocol,
-  getEd25519VerificationKey2018,
 } from '@aries-framework/core'
-import { IndyBesuDidCreateOptions, VerificationKeyPurpose, VerificationKeyType, buildDid, getEcdsaSecp256k1RecoveryMethod2020 } from '@aries-framework/indy-besu-vdr'
+import { IndyBesuDidCreateOptions, VerificationKeyPurpose, VerificationKeyType } from '@aries-framework/indy-besu-vdr'
 import type BottomBar from 'inquirer/lib/ui/bottom-bar'
 import { ConnectionEventTypes, KeyType, TypedArrayEncoder, utils } from '@aries-framework/core'
 import { ui } from 'inquirer'
@@ -80,8 +77,8 @@ export class Faber extends BaseAgent {
             type: VerificationKeyType.Ed25519VerificationKey2018,
             key: assertKey,
             purpose: VerificationKeyPurpose.AssertionMethod,
-          }
-        ]
+          },
+        ],
       },
     })
 

@@ -13,4 +13,3 @@ export class CredentialDefinitionValue {
     this.revocation = revocation
   }
 }
-  

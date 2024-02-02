@@ -1,4 +1,11 @@
-import { Agent, Buffer, DidDocumentBuilder, JsonTransformer, KeyType, getEd25519VerificationKey2018 } from '@aries-framework/core'
+import {
+  Agent,
+  Buffer,
+  DidDocumentBuilder,
+  JsonTransformer,
+  KeyType,
+  getEd25519VerificationKey2018,
+} from '@aries-framework/core'
 import crypto from 'crypto'
 import { getAgentOptions } from '../../core/tests/helpers'
 import { buildDid, getBesuIndyModules } from './indy-bese-test-utils'
@@ -37,9 +44,9 @@ describe('Indy-Besu DID', () => {
           {
             type: VerificationKeyType.Ed25519VerificationKey2018,
             key: assertKey,
-            purpose: VerificationKeyPurpose.AssertionMethod
-          }
-        ]
+            purpose: VerificationKeyPurpose.AssertionMethod,
+          },
+        ],
       },
       secret: {
         didPrivateKey,
@@ -56,9 +63,9 @@ describe('Indy-Besu DID', () => {
 
     expect(JsonTransformer.toJSON(document)).toMatchObject({
       '@context': [
-        'https://www.w3.org/ns/did/v1', 
+        'https://www.w3.org/ns/did/v1',
         'https://w3id.org/security/suites/secp256k1recovery-2020/v2',
-        'https://w3id.org/security/v3-unstable',
+        // 'https://w3id.org/security/v3-unstable',
         'https://w3id.org/security/suites/ed25519-2018/v1',
       ],
       verificationMethod: [
@@ -66,13 +73,13 @@ describe('Indy-Besu DID', () => {
           id: `${id}#controller`,
           type: 'EcdsaSecp256k1RecoveryMethod2020',
           controller: id,
-          blockchainAccountId: `eip155:1337:${namespaceIdentifier}`
+          blockchainAccountId: `eip155:1337:${namespaceIdentifier}`,
         },
         {
           id: `${id}#delegate-1`,
           type: 'Ed25519VerificationKey2018',
           controller: id,
-          publicKeyBase58: assertKey.publicKeyBase58
+          publicKeyBase58: assertKey.publicKeyBase58,
         },
       ],
       service: [
@@ -83,16 +90,13 @@ describe('Indy-Besu DID', () => {
         },
       ],
       authentication: [`${id}#controller`],
-      assertionMethod: [
-        `${id}#controller`,
-        `${id}#delegate-1`,
-      ],
+      assertionMethod: [`${id}#controller`, `${id}#delegate-1`],
     })
 
     const resolvedDid = await agent.dids.resolve(id)
 
     console.log(JSON.stringify(resolvedDid))
-    
+
     expect(JsonTransformer.toJSON(resolvedDid.didDocument)).toMatchObject(JsonTransformer.toJSON(document))
   })
 })

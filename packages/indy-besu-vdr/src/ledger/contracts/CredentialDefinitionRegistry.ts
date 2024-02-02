@@ -21,15 +21,12 @@ export class CredentialDefinitionRegistry extends BaseContract {
       this.client,
       signer.address,
       id,
-      credDef,
+      credDef
     )
     return this.signAndSubmit(transaction, signer)
   }
 
   public async resolveCredentialDefinition(id: string): Promise<any> {
-    return IndyBesuCredentialDefinitionRegistry.resolveCredentialDefinition(
-      this.client,
-      id
-    )
+    return IndyBesuCredentialDefinitionRegistry.resolveCredentialDefinition(this.client, id)
   }
 }

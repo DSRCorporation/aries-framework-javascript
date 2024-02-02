@@ -5,7 +5,6 @@ import {
   DidCreateResult,
   DidDeactivateOptions,
   DidDeactivateResult,
-  DidDocument,
   DidRegistrar,
   DidUpdateOptions,
   DidUpdateResult,
@@ -13,7 +12,17 @@ import {
 } from '@aries-framework/core'
 import { KeyType } from '@aries-framework/core'
 import { DidRegistry, IndyBesuSigner } from '../ledger'
-import { buildDid, failedResult, getVerificationMaterial, getVerificationPurpose, IndyBesuEndpoint, VerificationKey, getVerificationMaterialPropertyName, buildDidDocument, VerificationKeyType } from './DidUtils'
+import {
+  buildDid,
+  failedResult,
+  getVerificationMaterial,
+  getVerificationPurpose,
+  IndyBesuEndpoint,
+  VerificationKey,
+  getVerificationMaterialPropertyName,
+  buildDidDocument,
+  VerificationKeyType,
+} from './DidUtils'
 
 export class IndyBesuDidRegistrar implements DidRegistrar {
   public readonly supportedMethods = ['ethr']
@@ -40,7 +49,7 @@ export class IndyBesuDidRegistrar implements DidRegistrar {
           const keyAttribute = {
             [`${materialPropertyName}`]: material,
             purpose,
-            type: VerificationKeyType[verificationKey.type]
+            type: VerificationKeyType[verificationKey.type],
           }
 
           await didRegistry.setAttribute(did, keyAttribute, BigInt(100000), signer)
@@ -51,7 +60,7 @@ export class IndyBesuDidRegistrar implements DidRegistrar {
         for (const endpoint of options.options.endpoints) {
           const serviceAttribute = {
             serviceEndpoint: endpoint.endpoint,
-            type: endpoint.type
+            type: endpoint.type,
           }
           await didRegistry.setAttribute(did, serviceAttribute, BigInt(100000), signer)
         }
@@ -66,7 +75,7 @@ export class IndyBesuDidRegistrar implements DidRegistrar {
           state: 'finished',
           did: didDocument.id,
           didDocument: didDocument,
-          secret: { didKey }
+          secret: { didKey },
         },
       }
     } catch (error) {
@@ -137,7 +146,6 @@ export class IndyBesuDidRegistrar implements DidRegistrar {
     agentContext: AgentContext,
     options: IndyBesuDidDeactivateOptions
   ): Promise<DidDeactivateResult> {
-
     return {
       didDocumentMetadata: {},
       didRegistrationMetadata: {},
