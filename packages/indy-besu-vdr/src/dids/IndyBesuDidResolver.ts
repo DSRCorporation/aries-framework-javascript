@@ -1,6 +1,6 @@
 import { AgentContext, DidDocument, DidDocumentService, DidResolutionResult, DidResolver, VERIFICATION_METHOD_TYPE_ED25519_VERIFICATION_KEY_2018, VERIFICATION_METHOD_TYPE_ED25519_VERIFICATION_KEY_2020, VERIFICATION_METHOD_TYPE_X25519_KEY_AGREEMENT_KEY_2019, VerificationMethod } from '@aries-framework/core'
 import { DidRegistry } from '../ledger'
-import { CONTEXT_SECURITY_SUITES_ED25519_2018_V1, VERIFICATION_METHOD_TYPE_ECDSA_SECP256K1_RECOVERY_2020 } from './DidUtils'
+import { CONTEXT_SECURITY_SUITES_ED25519_2018_V1, VERIFICATION_METHOD_TYPE_ECDSA_SECP256K1_RECOVERY_2020, VerificationKeyType, getKeyContext } from './DidUtils'
 
 export class IndyBesuDidResolver implements DidResolver {
   public readonly supportedMethods = ['ethr']
@@ -19,22 +19,12 @@ export class IndyBesuDidResolver implements DidResolver {
       didDocument.context = result.didDocument['@context']
 
       didDocument.verificationMethod = didDocument.verificationMethod?.map((method: any) => {
-        switch (method.type) {
-          case 'EcdsaSecp256k1VerificationKey2020':
-            method.type = VERIFICATION_METHOD_TYPE_ECDSA_SECP256K1_RECOVERY_2020
-            break
-          case VERIFICATION_METHOD_TYPE_ED25519_VERIFICATION_KEY_2018:
-            if (didDocument.context.includes(CONTEXT_SECURITY_SUITES_ED25519_2018_V1)) break
-
-            if (Array.isArray(didDocument.context)) {
-              didDocument.context.push(CONTEXT_SECURITY_SUITES_ED25519_2018_V1)
-            } else {
-              didDocument.context = [didDocument.context, CONTEXT_SECURITY_SUITES_ED25519_2018_V1]
-            }
-        }
-
         return new VerificationMethod(method)
       })
+
+      didDocument.verificationMethod?.forEach((method: any) => {
+        this.updateContext(didDocument, method)
+      }) 
 
       didDocument.service = didDocument.service?.map((service: any) => {
         return new DidDocumentService(service)
@@ -56,4 +46,17 @@ export class IndyBesuDidResolver implements DidResolver {
       }
     }
   }
+
+  private updateContext(didDocument: DidDocument, method: VerificationMethod) {
+    const keyContext = getKeyContext(VerificationKeyType[method.type as keyof typeof VerificationKeyType])
+
+    if (!didDocument.context.includes(keyContext)) {
+      if (Array.isArray(didDocument.context)) {
+        console.log("Push called")
+        didDocument.context.push(CONTEXT_SECURITY_SUITES_ED25519_2018_V1)
+      } else {
+        didDocument.context = [didDocument.context, CONTEXT_SECURITY_SUITES_ED25519_2018_V1]
+      }
+    }
+  } 
 }

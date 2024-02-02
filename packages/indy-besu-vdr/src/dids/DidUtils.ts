@@ -5,15 +5,44 @@ import {
   VERIFICATION_METHOD_TYPE_JSON_WEB_KEY_2020,
   VERIFICATION_METHOD_TYPE_ED25519_VERIFICATION_KEY_2020,
   DidCreateResult,
-  VERIFICATION_METHOD_TYPE_ECDSA_SECP256K1_VERIFICATION_KEY_2019,
   TypedArrayEncoder,
   VerificationMethod,
   Key,
+  DidDocumentBuilder,
+  DidCreateOptions,
+  DidUpdateOptions,
+  DidDeactivateOptions,
+  getEd25519VerificationKey2018,
+  getX25519KeyAgreementKey2019,
+  DidDocumentService,
 } from '@aries-framework/core'
 import { computeAddress } from 'ethers'
 
 export const VERIFICATION_METHOD_TYPE_ECDSA_SECP256K1_RECOVERY_2020 = 'EcdsaSecp256k1RecoveryMethod2020'
 export const CONTEXT_SECURITY_SUITES_ED25519_2018_V1 = 'https://w3id.org/security/suites/ed25519-2018/v1'
+
+export enum VerificationKeyType {
+  Ed25519VerificationKey2018,
+  X25519KeyAgreementKey2020,
+  EcdsaSecp256k1RecoveryMethod2020
+}
+
+export enum VerificationKeyPurpose {
+  AssertionMethod,
+  Authentication,
+  keyAgreement,
+}
+
+export interface VerificationKey {
+  type: VerificationKeyType
+  key: Key
+  purpose: VerificationKeyPurpose
+}
+
+export interface IndyBesuEndpoint {
+  type: string
+  endpoint: string
+}
 
 export function buildDid(method: string, key: Buffer): string {
   const namespaceIdentifier = computeAddress(`0x${TypedArrayEncoder.toHex(key)}`)
@@ -22,22 +51,22 @@ export function buildDid(method: string, key: Buffer): string {
 }
 
 export function getEcdsaSecp256k1RecoveryMethod2020({
-  key,
   id,
+  key,
   controller,
 }: {
   id: string
   key: Key
   controller: string
 }) {
-  const namespaceIdentifier = computeAddress(`0x${TypedArrayEncoder.toHex(key.publicKey)}`)
+  const address = computeAddress(`0x${TypedArrayEncoder.toHex(key.publicKey)}`)
 
   //TODO: Replace hardcoded chain ID 1337, it should be extracted from configurations
   return new VerificationMethod({
     id,
     type: 'EcdsaSecp256k1RecoveryMethod2020',
     controller,
-    blockchainAccountId: `eip155:1337:${namespaceIdentifier}`
+    blockchainAccountId: `eip155:1337:${address}`
   })
 }
 
@@ -52,58 +81,137 @@ export function failedResult(reason: string): DidCreateResult {
   }
 }
 
-export function validateSpecCompliantPayload(didDocument: DidDocument): string | null {
-  // id is required, validated on both compile and runtime
-  if (!didDocument.id && !didDocument.id.startsWith('did:')) return 'id is required'
+export function getVerificationMaterialPropertyName(type: VerificationKeyType): string {
+  switch (type) {
+    case VerificationKeyType.Ed25519VerificationKey2018:
+    case VerificationKeyType.X25519KeyAgreementKey2020:
+      return 'publicKeyBase58'
+    case VerificationKeyType.EcdsaSecp256k1RecoveryMethod2020:
+      return 'blockchainAccountId'
+  }
+}
 
-  // verificationMethod types must be supported
-  const isValidVerificationMethod = didDocument.verificationMethod?.every((vm) => {
-    const verificationMaterialPropertyName = getVerificationMaterialProperty(vm.type)
-    return vm[verificationMaterialPropertyName] != null
+export function getVerificationMaterial(type: VerificationKeyType, key: Key): string {
+  switch (type) {
+    case VerificationKeyType.Ed25519VerificationKey2018:
+    case VerificationKeyType.X25519KeyAgreementKey2020:
+      return key.publicKeyBase58
+    case VerificationKeyType.EcdsaSecp256k1RecoveryMethod2020:
+      const address = computeAddress(`0x${TypedArrayEncoder.toHex(key.publicKey)}`)
+      //TODO: Replace hardcoded chain ID 1337, it should be extracted from configurations
+      return `eip155:1337:${address}`
+  }
+}
+
+export function getVerificationPurpose(purpose: VerificationKeyPurpose): string {
+  switch (purpose) {
+    case VerificationKeyPurpose.AssertionMethod:
+      return 'veriKey'
+    case VerificationKeyPurpose.Authentication:
+      return 'sigAuth'
+    case VerificationKeyPurpose.keyAgreement:
+      return 'enc'
+  }
+}
+
+export function getVerificationMethod(
+  id: string, 
+  type: VerificationKeyType, 
+  key: Key, 
+  controller: string
+): VerificationMethod {
+  switch (type) {
+    case VerificationKeyType.Ed25519VerificationKey2018:
+      return getEd25519VerificationKey2018({ id, key, controller })
+    case VerificationKeyType.X25519KeyAgreementKey2020:
+      return getX25519KeyAgreementKey2019({ id, key, controller })
+    case VerificationKeyType.EcdsaSecp256k1RecoveryMethod2020:
+      return getEcdsaSecp256k1RecoveryMethod2020({ id, key, controller })
+  }
+}
+
+export function getKeyContext(type: VerificationKeyType) {
+  switch (type) {
+    case VerificationKeyType.Ed25519VerificationKey2018:
+      return 'https://w3id.org/security/suites/ed25519-2018/v1' 
+    case VerificationKeyType.X25519KeyAgreementKey2020:
+      return 'https://w3id.org/security/suites/x25519-2020/v1'
+    case VerificationKeyType.EcdsaSecp256k1RecoveryMethod2020:
+      return 'https://w3id.org/security/suites/secp256k1recovery-2020/v2'
+  }
+}
+
+export function buildDidDocument(
+  did: string, 
+  key: Key, 
+  endpoints?: IndyBesuEndpoint[],
+  verificationKeys?: VerificationKey[]
+) {
+  const context = [
+    'https://www.w3.org/ns/did/v1', 
+    'https://w3id.org/security/suites/secp256k1recovery-2020/v2',
+    'https://w3id.org/security/v3-unstable',
+  ]
+
+  const verificationMethod = getEcdsaSecp256k1RecoveryMethod2020({
+    key: key,
+    id: `${did}#controller`,
+    controller: did,
   })
 
-  if (!isValidVerificationMethod) return 'verificationMethod publicKey is Invalid'
+  const didDocumentBuilder = new DidDocumentBuilder(did)
+      .addVerificationMethod(verificationMethod)
+      .addAuthentication(verificationMethod.id)
+      .addAssertionMethod(verificationMethod.id)
 
-  const isValidService = didDocument.service
-    ? didDocument?.service?.every((s) => {
-        return s?.serviceEndpoint && s?.id && s?.type
-      })
-    : true
+  // add key security context 
+  verificationKeys
+    ?.map(value => value.type)
+    .map(value => getKeyContext(value))
+    .forEach((value => {
+      if (!context.includes(value)) {
+        context.push(value)
+      }
+    }))
 
-  if (!isValidService) return 'Service is Invalid'
+  // add verification methods
+  verificationKeys?.forEach((value, index) => {
+    const id = `${did}#delegate-${index + 1}`
 
-  return null
-}
+    const verificationMethod = getVerificationMethod(
+      id, 
+      value.type, 
+      value.key, 
+      did
+    )
+    didDocumentBuilder.addVerificationMethod(verificationMethod)
 
-export function getVerificationMaterialProperty(verificationMethodType: string): keyof VerificationMethod {
-  switch (verificationMethodType) {
-    case VERIFICATION_METHOD_TYPE_ECDSA_SECP256K1_VERIFICATION_KEY_2019:
-    case VERIFICATION_METHOD_TYPE_ED25519_VERIFICATION_KEY_2020:
-      return 'publicKeyMultibase'
-    case VERIFICATION_METHOD_TYPE_JSON_WEB_KEY_2020:
-      return 'publicKeyJwk'
-    case VERIFICATION_METHOD_TYPE_ECDSA_SECP256K1_RECOVERY_2020:
-      return 'blockchainAccountId'
-    case VERIFICATION_METHOD_TYPE_ED25519_VERIFICATION_KEY_2018:
-    default:
-      return 'publicKeyBase58'
-  }
-}
+    switch (value.purpose) {
+      case VerificationKeyPurpose.AssertionMethod:
+        didDocumentBuilder.addAssertionMethod(id)
+        break
+      case VerificationKeyPurpose.Authentication:
+        didDocumentBuilder.addAuthentication(id)
+        break
+      case VerificationKeyPurpose.keyAgreement:
+        didDocumentBuilder.addKeyAgreement(id)
+    }
+  })
 
-export function getVerificationMethodPurpose(document: DidDocument, verificationMethodId: string): string[] {
-  const verificationMethodPurposes: Array<string> = []
+  // add services
+  endpoints?.forEach((value, index) => {
+    const service = new DidDocumentService({
+      id: `${did}#service-${index + 1}`,
+      serviceEndpoint: value.endpoint,
+      type: value.type,
+    })
 
-  if (document.assertionMethod?.includes(verificationMethodId)) {
-    verificationMethodPurposes.push('veriKey')
-  }
+    didDocumentBuilder.addService(service)
+  })
 
-  if (document.authentication?.includes(verificationMethodId)) {
-    verificationMethodPurposes.push('sigAuth')
-  }
+  const didDocument = didDocumentBuilder.build()
 
-  if (document.keyAgreement?.includes(verificationMethodId)) {
-    verificationMethodPurposes.push('enc')
-  }
+  didDocument.context = context
 
-  return verificationMethodPurposes
+  return didDocument
 }

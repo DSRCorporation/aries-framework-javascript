@@ -9,21 +9,17 @@ import {
   DidRegistrar,
   DidUpdateOptions,
   DidUpdateResult,
-  DidDocumentService,
   Key,
 } from '@aries-framework/core'
-import { DidDocumentBuilder, KeyType } from '@aries-framework/core'
+import { KeyType } from '@aries-framework/core'
 import { DidRegistry, IndyBesuSigner } from '../ledger'
-import { buildDid, failedResult, getEcdsaSecp256k1RecoveryMethod2020, getVerificationMaterialProperty, getVerificationMethodPurpose, validateSpecCompliantPayload } from './DidUtils'
-import { purposes } from 'packages/core/src/modules/vc/data-integrity/libraries/jsonld-signatures'
+import { buildDid, failedResult, getVerificationMaterial, getVerificationPurpose, IndyBesuEndpoint, VerificationKey, getVerificationMaterialPropertyName, buildDidDocument, VerificationKeyType } from './DidUtils'
 
 export class IndyBesuDidRegistrar implements DidRegistrar {
   public readonly supportedMethods = ['ethr']
 
   public async create(agentContext: AgentContext, options: IndyBesuDidCreateOptions): Promise<DidCreateResult> {
     const didRegistry = agentContext.dependencyManager.resolve(DidRegistry)
-
-    let didDocument: DidDocument
 
     const didKey = await agentContext.wallet.createKey({
       keyType: KeyType.K256,
@@ -32,88 +28,36 @@ export class IndyBesuDidRegistrar implements DidRegistrar {
 
     const did = buildDid(options.method, didKey.publicKey)
 
-    const verificationMethod = getEcdsaSecp256k1RecoveryMethod2020({
-      key: didKey,
-      id: `${did}#controller`,
-      controller: did,
-    })
-
-    if (options.didDocument) {
-      const error = validateSpecCompliantPayload(options.didDocument)
-      if (error) return failedResult(error)
-
-      didDocument = options.didDocument
-
-      if (!didDocument.verificationMethod) {
-        didDocument.verificationMethod = []
-      }
-
-      if (!didDocument.authentication) {
-        didDocument.authentication = []
-      }
-
-      if (!didDocument.assertionMethod) {
-        didDocument.assertionMethod = []
-      }
-
-      didDocument.verificationMethod.push(verificationMethod)
-      didDocument.authentication.push(verificationMethod.id)
-      didDocument.assertionMethod.push(verificationMethod.id)
-    } else {
-      const didDocumentBuilder = new DidDocumentBuilder(did)
-        .addVerificationMethod(verificationMethod)
-        .addAuthentication(verificationMethod.id)
-        .addAssertionMethod(verificationMethod.id)
-
-      options.options.endpoints?.forEach((endpoint) => {
-        const service = new DidDocumentService({
-          id: `${did}#service-1`,
-          serviceEndpoint: endpoint.endpoint,
-          type: endpoint.type,
-        })
-
-        didDocumentBuilder.addService(service)
-      })
-
-      didDocument = didDocumentBuilder.build()
-      didDocument.context = [
-        'https://www.w3.org/ns/did/v1', 
-        'https://w3id.org/security/suites/secp256k1recovery-2020/v2',
-        'https://w3id.org/security/v3-unstable',
-      ]
-    }
-
     const signer = new IndyBesuSigner(didKey, agentContext.wallet)
 
     try {
-      if (didDocument.verificationMethod) {
-        for (const method of didDocument.verificationMethod) {
-          if (method === verificationMethod) continue
+      if (options?.options?.verificationKeys) {
+        for (const verificationKey of options.options.verificationKeys) {
+          const materialPropertyName = getVerificationMaterialPropertyName(verificationKey.type)
+          const material = getVerificationMaterial(verificationKey.type, verificationKey.key)
+          const purpose = getVerificationPurpose(verificationKey.purpose)
 
-          const verificationMaterialProperty = getVerificationMaterialProperty(method.type)
-          const verificationPurpose = getVerificationMethodPurpose(didDocument, method.id)
-
-          for (const purpose of verificationPurpose) {
-            const keyAttribute = {
-              [`${verificationMaterialProperty}`]: method[verificationMaterialProperty],
-              purpose,
-              type: method.type
-            }
-  
-            await didRegistry.setAttribute(didDocument.id, keyAttribute, BigInt(100000), signer)
+          const keyAttribute = {
+            [`${materialPropertyName}`]: material,
+            purpose,
+            type: VerificationKeyType[verificationKey.type]
           }
+
+          await didRegistry.setAttribute(did, keyAttribute, BigInt(100000), signer)
         }
       }
 
-      if (didDocument.service) {
-        for (const service of didDocument.service) {
+      if (options?.options?.endpoints) {
+        for (const endpoint of options.options.endpoints) {
           const serviceAttribute = {
-            serviceEndpoint: service.serviceEndpoint,
-            type: service.type
+            serviceEndpoint: endpoint.endpoint,
+            type: endpoint.type
           }
-          await didRegistry.setAttribute(didDocument.id, serviceAttribute, BigInt(100000), signer)
+          await didRegistry.setAttribute(did, serviceAttribute, BigInt(100000), signer)
         }
       }
+
+      const didDocument = buildDidDocument(did, didKey, options?.options?.endpoints, options?.options?.verificationKeys)
 
       return {
         didDocumentMetadata: {},
@@ -230,17 +174,13 @@ export class IndyBesuDidRegistrar implements DidRegistrar {
   }
 }
 
-export interface IndyBesuEndpoint {
-  type: string
-  endpoint: string
-}
-
 export interface IndyBesuDidCreateOptions extends DidCreateOptions {
   method: 'ethr'
   did?: never
-  options: {
-    network: string
+  didDocument?: never
+  options?: {
     endpoints?: IndyBesuEndpoint[]
+    verificationKeys?: VerificationKey[]
   }
   secret?: {
     didPrivateKey: Buffer
@@ -249,14 +189,12 @@ export interface IndyBesuDidCreateOptions extends DidCreateOptions {
 
 export interface IndyBesuDidUpdateOptions extends DidUpdateOptions {
   options: {
-    network: string
     accountKey: Key
   }
 }
 
 export interface IndyBesuDidDeactivateOptions extends DidDeactivateOptions {
   options: {
-    network: string
     accountKey: Key
   }
 }

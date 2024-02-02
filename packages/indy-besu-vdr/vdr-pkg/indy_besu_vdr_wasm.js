@@ -1489,13 +1489,13 @@ module.exports.__wbindgen_object_drop_ref = function(arg0) {
     takeObject(arg0);
 };
 
-module.exports.__wbg_eventquery_new = function(arg0) {
-    const ret = EventQuery.__wrap(arg0);
+module.exports.__wbg_transactionendorsingdata_new = function(arg0) {
+    const ret = TransactionEndorsingData.__wrap(arg0);
     return addHeapObject(ret);
 };
 
-module.exports.__wbg_transactionendorsingdata_new = function(arg0) {
-    const ret = TransactionEndorsingData.__wrap(arg0);
+module.exports.__wbg_eventquery_new = function(arg0) {
+    const ret = EventQuery.__wrap(arg0);
     return addHeapObject(ret);
 };
 
@@ -1631,7 +1631,7 @@ module.exports.__wbg_error_f851667af71bcfc6 = function(arg0, arg1) {
     }
 };
 
-module.exports.__wbg_fetch_6a2624d7f767e331 = function(arg0) {
+module.exports.__wbg_fetch_27eb4c0a08a9ca04 = function(arg0) {
     const ret = fetch(getObject(arg0));
     return addHeapObject(ret);
 };
@@ -1975,13 +1975,13 @@ module.exports.__wbindgen_memory = function() {
     return addHeapObject(ret);
 };
 
-module.exports.__wbindgen_closure_wrapper2581 = function(arg0, arg1, arg2) {
-    const ret = makeMutClosure(arg0, arg1, 908, __wbg_adapter_48);
+module.exports.__wbindgen_closure_wrapper2662 = function(arg0, arg1, arg2) {
+    const ret = makeMutClosure(arg0, arg1, 950, __wbg_adapter_48);
     return addHeapObject(ret);
 };
 
-module.exports.__wbindgen_closure_wrapper3029 = function(arg0, arg1, arg2) {
-    const ret = makeMutClosure(arg0, arg1, 1054, __wbg_adapter_51);
+module.exports.__wbindgen_closure_wrapper3111 = function(arg0, arg1, arg2) {
+    const ret = makeMutClosure(arg0, arg1, 1096, __wbg_adapter_51);
     return addHeapObject(ret);
 };
 

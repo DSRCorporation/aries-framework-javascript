@@ -167,9 +167,9 @@ export class FaberInquirer extends BaseInquirer {
     ])
     if (registry.options === RegistryOptions.indyBesu) {
       if (this.credentialType === CredentialType.AnonCreds) {
-        await this.faber.createIndy2Did()
+        await this.faber.createIndyBesuDid()
       } else {
-        await this.faber.createW3CIndy2Did()
+        await this.faber.createW3cIndyBesuDid()
       }
     } else {
       await this.faber.importDid(registry.options)

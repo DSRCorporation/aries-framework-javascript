@@ -13,7 +13,6 @@ import {
   CredentialState,
   CredentialStateChangedEvent,
   DidDocumentBuilder,
-  Hasher,
   Key,
   ProofEventTypes,
   ProofExchangeRecord,
@@ -22,11 +21,10 @@ import {
   RequestProofOptions,
   V2ProofProtocol,
   getEd25519VerificationKey2018,
-  getEd25519VerificationKey2020,
 } from '@aries-framework/core'
-import { IndyBesuDidCreateOptions } from '@aries-framework/indy-besu-vdr'
+import { IndyBesuDidCreateOptions, VerificationKeyPurpose, VerificationKeyType, buildDid, getEcdsaSecp256k1RecoveryMethod2020 } from '@aries-framework/indy-besu-vdr'
 import type BottomBar from 'inquirer/lib/ui/bottom-bar'
-import { ConnectionEventTypes, KeyType, TypedArrayEncoder, WalletKeyExistsError, utils } from '@aries-framework/core'
+import { ConnectionEventTypes, KeyType, TypedArrayEncoder, utils } from '@aries-framework/core'
 import { ui } from 'inquirer'
 
 import { BaseAgent, indyNetworkConfig } from './BaseAgent'
@@ -58,13 +56,8 @@ export class Faber extends BaseAgent {
     return faber
   }
 
-  public async createIndy2Did() {
-    const createdDid = await this.agent.dids.create<IndyBesuDidCreateOptions>({
-      method: 'ethr',
-      options: {
-        network: 'testnet',
-      }
-    })
+  public async createIndyBesuDid() {
+    const createdDid = await this.agent.dids.create<IndyBesuDidCreateOptions>({ method: 'ethr' })
 
     if (createdDid.didState.state == 'failed') {
       throw new Error(createdDid.didState.reason)
@@ -76,30 +69,19 @@ export class Faber extends BaseAgent {
     this.didKey = createdDid.didState.secret?.didKey as Key
   }
 
-  public async createW3CIndy2Did() {
-    const didKey = await this.agent.wallet.createKey({ keyType: KeyType.Ed25519 })
-
-    const did = this.buildDid('indy2', 'testnet', didKey.publicKey)
-
-    const verificationMethod = getEd25519VerificationKey2020({
-      key: didKey,
-      id: `${did}#KEY-1`,
-      controller: did,
-    })
-
-    const didDocument = new DidDocumentBuilder(did)
-      .addContext('https://www.w3.org/ns/did/v1')
-      .addContext('https://w3id.org/security/suites/ed25519-2018/v1')
-      .addVerificationMethod(verificationMethod)
-      .addAuthentication(verificationMethod.id)
-      .addAssertionMethod(verificationMethod.id)
-      .build()
+  public async createW3cIndyBesuDid() {
+    const assertKey = await this.agent.wallet.createKey({ keyType: KeyType.Ed25519 })
 
     const createdDid = await this.agent.dids.create<IndyBesuDidCreateOptions>({
       method: 'ethr',
-      didDocument,
       options: {
-        network: 'testnet',
+        verificationKeys: [
+          {
+            type: VerificationKeyType.Ed25519VerificationKey2018,
+            key: assertKey,
+            purpose: VerificationKeyPurpose.AssertionMethod,
+          }
+        ]
       },
     })
 
@@ -107,12 +89,6 @@ export class Faber extends BaseAgent {
 
     this.issuerId = createdDid.didState.did
     this.didKey = createdDid.didState.secret?.didKey as Key
-  }
-
-  private buildDid(method: string, network: string, key: Buffer): string {
-    const namespaceIdentifier = computeAddress(`0x${TypedArrayEncoder.toHex(key)}`)
-
-    return `did:${method}:${network}:${namespaceIdentifier}`
   }
 
   public async importDid(registry: string) {
