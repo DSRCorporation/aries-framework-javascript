@@ -67,7 +67,20 @@ export class Faber extends BaseAgent {
   }
 
   public async createW3cIndyBesuDid() {
-    // Store Indy-Besu DID Document
+    const assertKey = await this.agent.wallet.createKey({ keyType: KeyType.Ed25519 })
+
+    const createdDid = await this.agent.dids.create<IndyBesuDidCreateOptions>({
+      method: 'ethr',
+      options: {
+        verificationKeys: [
+          {
+            type: VerificationKeyType.Ed25519VerificationKey2018,
+            key: assertKey,
+            purpose: VerificationKeyPurpose.AssertionMethod,
+          },
+        ],
+      },
+    })
 
     console.log(purpleText(`Created DID${Color.Reset}: ${JSON.stringify(createdDid.didState.didDocument, null, 2)}`))
 
@@ -290,9 +303,31 @@ export class Faber extends BaseAgent {
 
     this.ui.updateBottomBar(greenText('\nSending credential offer...\n', false))
 
-    // Create credential
+    const credential = {
+      attributes: [
+        {
+          name: 'name',
+          value: 'Alice Smith',
+        },
+        {
+          name: 'degree',
+          value: 'Computer Science',
+        },
+        {
+          name: 'date',
+          value: '01/01/2022',
+        },
+      ],
+      credentialDefinitionId: this.credentialDefinition.credentialDefinitionId,
+    }
 
-    // Sent a credential offer
+    const record = await this.agent.credentials.offerCredential({
+      connectionId: connectionRecord.id,
+      protocolVersion: 'v2',
+      credentialFormats: {
+        anoncreds: credential,
+      },
+    })
 
     this.ui.updateBottomBar(`\nCredential offer sent!\n\n${Color.Reset}`)
 
@@ -300,7 +335,7 @@ export class Faber extends BaseAgent {
 
     console.log('Go to the Alice agent to accept the credential offer\n')
 
-    // Wait for accept
+    await this.waitForAcceptCredential(record.id)
   }
 
   public async issueJsonLdCredential() {
@@ -312,9 +347,30 @@ export class Faber extends BaseAgent {
 
     this.ui.updateBottomBar(greenText('\nSending credential offer...\n', false))
 
-    // Create credential
+    const credential = {
+      '@context': [CREDENTIALS_CONTEXT_V1_URL, 'https://www.w3.org/2018/credentials/examples/v1'],
+      type: ['VerifiableCredential', 'FaberCollege'],
+      issuer: this.issuerId,
+      issuanceDate: '2023-12-07T12:23:48Z',
+      credentialSubject: {
+        name: 'Alice Smith',
+        degree: 'Computer Science',
+      },
+    }
 
-    // Sent a credential offer
+    const record = await this.agent.credentials.offerCredential({
+      connectionId: connectionRecord.id,
+      protocolVersion: 'v2',
+      credentialFormats: {
+        jsonld: {
+          credential: credential,
+          options: {
+            proofType: 'Ed25519Signature2018',
+            proofPurpose: 'assertionMethod',
+          },
+        },
+      },
+    })
 
     this.ui.updateBottomBar(`\nCredential offer sent!\n\n${Color.Reset}`)
 
@@ -322,7 +378,7 @@ export class Faber extends BaseAgent {
 
     console.log('Go to the Alice agent to accept the credential offer\n')
 
-     // Wait for accept
+    await this.waitForAcceptCredential(record.id)
   }
 
   private async printProofFlow(print: string) {
