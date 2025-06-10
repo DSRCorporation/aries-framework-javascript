@@ -3,7 +3,9 @@
   "main": "src/index",
   "types": "src/index",
   "version": "0.5.13",
-  "files": ["build"],
+  "files": [
+    "build"
+  ],
   "license": "Apache-2.0",
   "publishConfig": {
     "main": "build/index",
@@ -24,7 +26,7 @@
     "test": "jest"
   },
   "dependencies": {
-    "@cheqd/sdk": "^5.2.1",
+    "@cheqd/sdk": "^5.3.1",
     "@cheqd/ts-proto": "~2.4.1",
     "@cosmjs/crypto": "~0.30.1",
     "@cosmjs/proto-signing": "~0.30.1",
@@ -34,11 +36,11 @@
     "@stablelib/ed25519": "^1.0.3",
     "class-transformer": "^0.5.1",
     "class-validator": "0.14.1",
-    "rxjs": "^7.8.0",
-    "tsyringe": "^4.8.0"
+    "rxjs": "^7.8.2",
+    "tsyringe": "^4.10.0"
   },
   "devDependencies": {
-    "rimraf": "^4.0.7",
-    "typescript": "~5.5.2"
+    "rimraf": "^4.4.1",
+    "typescript": "~5.5.4"
   }
 }

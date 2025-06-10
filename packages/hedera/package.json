@@ -25,10 +25,10 @@
     "@credo-ts/anoncreds": "workspace:*",
     "@credo-ts/core": "workspace:*",
     "@hiero-did-sdk-js/anoncreds": "npm:@hiero-did-sdk-js/anoncreds@0.0.1",
-    "@swiss-digital-assets-institute/registrar": "0.3.0"
+    "@hiero-did-sdk-js/did": "npm:@hiero-did-sdk-js/did@0.0.1"
   },
   "devDependencies": {
-    "rimraf": "^4.0.7",
-    "typescript": "~5.5.2"
+    "@credo-ts/node": "workspace:*",
+    "@hyperledger/anoncreds-nodejs": "^0.3.1"
   }
 }
