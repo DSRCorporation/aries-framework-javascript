@@ -17,7 +17,7 @@ export class InMemoryTailsFileService extends BasicTailsFileService {
     this.tailsFilePaths[options.revocationRegistryDefinition.value.tailsHash] =
       options.revocationRegistryDefinition.value.tailsLocation
 
-    return { tailsFileUrl: options.revocationRegistryDefinition.value.tailsHash }
+    return { tailsFileUrl: options.revocationRegistryDefinition.value.tailsLocation.replace(/\\/g, '/') }
   }
 
   public async getTailsFile(

@@ -15,8 +15,7 @@ const config: Config.InitialOptions = {
       {
         isolatedModules: true,
       },
-    ],
-    '^.+\\.[t|j]sx?$': 'babel-jest',
+    ]
   },
 }
 

@@ -25,7 +25,7 @@
     "@credo-ts/anoncreds": "workspace:*",
     "@credo-ts/core": "workspace:*",
     "@hiero-did-sdk-js/anoncreds": "npm:@hiero-did-sdk-js/anoncreds@0.0.1",
-    "@hiero-did-sdk-js/did": "npm:@hiero-did-sdk-js/did@0.0.1"
+    "@hiero-did-sdk-js/did": "npm:@hiero-did-sdk-js/did@0.0.3"
   },
   "devDependencies": {
     "@credo-ts/node": "workspace:*",

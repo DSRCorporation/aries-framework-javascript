@@ -13,7 +13,7 @@ import {
   DidUpdateOptions,
   DidUpdateResult,
 } from '@credo-ts/core'
-import { HederaLedgerService } from '../ledger'
+import {HederaLedgerService} from "../ledger/HederaLedgerService";
 
 export class HederaDidRegistrar implements DidRegistrar {
   public readonly supportedMethods = ['hedera']
@@ -31,6 +31,7 @@ export class HederaDidRegistrar implements DidRegistrar {
         ...didDocument,
         service: didDocument.service?.map((s) => new DidDocumentService(s)),
       })
+
       await didRepository.save(
         agentContext,
         new DidRecord({
