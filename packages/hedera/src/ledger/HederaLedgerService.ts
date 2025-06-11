@@ -1,22 +1,21 @@
 import { type AgentContext, injectable } from '@credo-ts/core'
 import { HederaAnoncredsRegistry } from '@hiero-did-sdk-js/anoncreds'
 import { HederaDidService } from '@hiero-did-sdk-js/did'
-import { HederaLedgerServiceCache, HederaModuleConfig } from '../.'
+import { HederaModuleConfig } from '../HederaModuleConfig'
+import { HederaLedgerServiceCache } from './HederaLedgerServiceCache'
 
 @injectable()
 export class HederaLedgerService {
-  private readonly config: HederaModuleConfig
-
-  public constructor(config: HederaModuleConfig) {
-    this.config = config
+  public constructor(private readonly hederaModuleConfig: HederaModuleConfig) {
+    console.log('HederaLedgerService', hederaModuleConfig)
   }
 
   public getHederaAnonCredsSdk(agentContext: AgentContext): HederaAnoncredsRegistry {
-    const cache = this.config.options.cache ?? new HederaLedgerServiceCache(agentContext)
-    return new HederaAnoncredsRegistry({ ...this.config.options, cache })
+    const cache = this.hederaModuleConfig.options.cache ?? new HederaLedgerServiceCache(agentContext)
+    return new HederaAnoncredsRegistry({ ...this.hederaModuleConfig.options, cache })
   }
 
   public getHederaDidSdk(_agentContext: AgentContext): HederaDidService {
-    return new HederaDidService({ ...this.config.options })
+    return new HederaDidService({ ...this.hederaModuleConfig.options })
   }
 }

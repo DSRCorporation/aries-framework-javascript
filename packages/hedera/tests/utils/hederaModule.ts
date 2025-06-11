@@ -43,7 +43,6 @@ export const getHederaAgent = (props: {
   modules = {
     ...modules,
     askar: new AskarModule({ askar, store: { id: label, key: label } }),
-    hedera: new HederaModule(getHederaModuleConfig(props)),
     anoncreds: new AnonCredsModule({
       anoncreds,
       registries: [new HederaAnonCredsRegistry()],
@@ -53,6 +52,7 @@ export const getHederaAgent = (props: {
       resolvers: [new HederaDidResolver()],
       registrars: [new HederaDidRegistrar()],
     }),
+    hedera: new HederaModule(getHederaModuleConfig(props)),
   }
   if (cache) {
     modules = { ...modules, cache: new CacheModule({ cache }) }

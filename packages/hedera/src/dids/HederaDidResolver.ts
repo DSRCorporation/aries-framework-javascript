@@ -7,7 +7,7 @@ import {
   JsonTransformer,
   type ParsedDid,
 } from '@credo-ts/core'
-import { HederaLedgerService } from '../ledger'
+import {HederaLedgerService} from "../ledger/HederaLedgerService";
 
 export class HederaDidResolver implements DidResolver {
   public readonly supportedMethods = ['hedera']
@@ -24,7 +24,7 @@ export class HederaDidResolver implements DidResolver {
       const hederaLedgerService = agentContext.dependencyManager.resolve(HederaLedgerService)
       const sdk = hederaLedgerService.getHederaDidSdk(agentContext)
 
-      const resolveDidResult = await sdk.resolveDid(did, 'did+json')
+      const resolveDidResult = await sdk.resolveDid(did)
 
       const updatedContextDidJson = {
         ...resolveDidResult,
