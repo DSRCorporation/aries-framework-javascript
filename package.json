@@ -58,5 +58,12 @@
   },
   "engines": {
     "node": ">=18"
+  },
+  "pnpm": {
+    "patchedDependencies": {
+      "@2060.io/ffi-napi@4.0.9": "patches/@2060.io__ffi-napi@4.0.9.patch",
+      "@hashgraph/did-sdk-js@1.0.0": "patches/@hashgraph__did-sdk-js@1.0.0.patch",
+      "didwebvh-ts@2.1.0": "patches/didwebvh-ts@2.1.0.patch"
+    }
   }
 }

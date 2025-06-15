@@ -1,0 +1,5 @@
+export { DidScidModule } from './DidScidModule'
+export { DidScidModuleConfig, DidScidModuleConfigOptions } from './DidScidModuleConfig'
+export { DidScidResolver, DidScidRegistrar, DidScidCreateOptions, DidScidUpdateOptions, DidHostService, DidScidMethodType } from './dids'
+export { HederaDidHostService, HederaDidHostConfig } from './dids/hosts'
+export { DidScidAnonCredsRegistry } from './anoncreds'

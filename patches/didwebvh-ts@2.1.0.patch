@@ -1,0 +1,59 @@
+diff --git a/dist/cjs/index.cjs b/dist/cjs/index.cjs
+index 7d5f9b402a9b3a295fdb2719f3d8d8e771c26dcf..c52c67a3adc5b78a82745f466630fa8ee7ae7ed6 100644
+--- a/dist/cjs/index.cjs
++++ b/dist/cjs/index.cjs
+@@ -681,9 +681,8 @@ var createDID = async (options) => {
+   if (options.witness && options.witness.witnesses.length > 0) {
+     validateWitnessParameter(options.witness);
+   }
+-  const controller = `did:${METHOD}:${PLACEHOLDER}:${options.domain}`;
+   const createdDate = createDate(options.created);
+-  let { doc } = await createDIDDoc({ ...options, controller });
++  let { doc } = await createDIDDoc({ ...options });
+   const params = {
+     scid: PLACEHOLDER,
+     updateKeys: options.updateKeys,
+@@ -858,23 +857,27 @@ var resolveDIDFromLog = async (log, options = {}) => {
+     }
+     doc = clone(newDoc);
+     did = doc.id;
+-    doc.service = doc.service || [];
+-    const baseUrl = getBaseUrl(did);
+-    if (!doc.service.some((s) => s.id === "#files")) {
+-      doc.service.push({
+-        id: "#files",
+-        type: "relativeRef",
+-        serviceEndpoint: baseUrl
+-      });
+-    }
+-    if (!doc.service.some((s) => s.id === "#whois")) {
+-      doc.service.push({
+-        "@context": "https://identity.foundation/linked-vp/contexts/v1",
+-        id: "#whois",
+-        type: "LinkedVerifiablePresentation",
+-        serviceEndpoint: `${baseUrl}/whois.vp`
+-      });
++
++    const baseUrl = did.startsWith('did:webvh:') ? getBaseUrl(did) : null;
++    if(baseUrl) {
++      doc.service = doc.service || [];
++      if (!doc.service.some((s) => s.id === "#files")) {
++        doc.service.push({
++          id: "#files",
++          type: "relativeRef",
++          serviceEndpoint: baseUrl
++        });
++      }
++      if (!doc.service.some((s) => s.id === "#whois")) {
++        doc.service.push({
++          "@context": "https://identity.foundation/linked-vp/contexts/v1",
++          id: "#whois",
++          type: "LinkedVerifiablePresentation",
++          serviceEndpoint: `${baseUrl}/whois.vp`
++        });
++      }
+     }
++
+     if (options.verificationMethod && findVerificationMethod(doc, options.verificationMethod)) {
+       return { did, doc, meta };
+     }

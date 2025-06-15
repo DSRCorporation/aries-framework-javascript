@@ -1,0 +1,58 @@
+diff --git a/dist/identity/hcs/did/hcs-did-event-message-resolver.js b/dist/identity/hcs/did/hcs-did-event-message-resolver.js
+index 527924c51204048de0a3d8d56b3a6e8edb6dfca7..a1d4f98030d1c9ec75410593312748469f893fc3 100644
+--- a/dist/identity/hcs/did/hcs-did-event-message-resolver.js
++++ b/dist/identity/hcs/did/hcs-did-event-message-resolver.js
+@@ -59,10 +59,15 @@ class HcsDidEventMessageResolver {
+         if (!this.matchesSearchCriteria(envelope.open())) {
+             return;
+         }
+-        if (this.existingSignatures.indexOf(envelope.getSignature()) != -1) {
+-            return;
++        
++        const signature = envelope.getSignature()
++        if(signature) {
++            if (this.existingSignatures.indexOf(signature) != -1) {
++                return;
++            }
++            this.existingSignatures.push(signature);
+         }
+-        this.existingSignatures.push(envelope.getSignature());
++        
+         this.messages.push(envelope);
+     }
+     /**
+diff --git a/dist/identity/hcs/did/hcs-did-topic-listener.js b/dist/identity/hcs/did/hcs-did-topic-listener.js
+index f1e131b324959428122a3b34ebf70f7ae4eb4e32..7fc7f95978098f83dcec7b6aca94de7c009d4304 100644
+--- a/dist/identity/hcs/did/hcs-did-topic-listener.js
++++ b/dist/identity/hcs/did/hcs-did-topic-listener.js
+@@ -116,10 +116,10 @@ class HcsDidTopicListener {
+                 this.reportInvalidMessage(response, "Empty message received when opening envelope");
+                 return false;
+             }
+-            if (!message.isValid(this.topicId)) {
+-                this.reportInvalidMessage(response, "Message content validation failed.");
+-                return false;
+-            }
++            // if (!message.isValid(this.topicId)) {
++            //     this.reportInvalidMessage(response, "Message content validation failed.");
++            //     return false;
++            // }
+             return true;
+         }
+         catch (err) {
+diff --git a/dist/identity/hcs/message-envelope.js b/dist/identity/hcs/message-envelope.js
+index d52aa80bf20453444908dfe36393c6763a07c368..83297800994797fb359bb7e0f41093b7e7e84822 100644
+--- a/dist/identity/hcs/message-envelope.js
++++ b/dist/identity/hcs/message-envelope.js
+@@ -78,6 +78,11 @@ class MessageEnvelope {
+     static fromMirrorResponse(response, messageClass) {
+         const msgJson = arrays_utils_1.ArraysUtils.toString(response.contents);
+         const result = MessageEnvelope.fromJson(msgJson, messageClass);
++
++        if(!result.message) {
++            result.message = JSON.parse(msgJson)
++        }
++
+         // console.log(result);
+         result.mirrorResponse = new serializable_mirror_consensus_response_1.SerializableMirrorConsensusResponse(response);
+         return result;

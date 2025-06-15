@@ -1,0 +1,39 @@
+{
+  "name": "@dsr-credo-ts/did-scid",
+  "main": "src/index",
+  "types": "src/index",
+  "version": "0.0.11",
+  "files": ["build"],
+  "license": "Apache-2.0",
+  "publishConfig": {
+    "main": "build/index",
+    "types": "build/index",
+    "access": "public"
+  },
+  "homepage": "https://github.com/openwallet-foundation/credo-ts/tree/main/packages/did-scid",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/openwallet-foundation/credo-ts",
+    "directory": "packages/did-scid"
+  },
+  "scripts": {
+    "build": "pnpm run clean && pnpm run compile",
+    "clean": "rimraf ./build",
+    "compile": "tsc -p tsconfig.build.json",
+    "prepublishOnly": "pnpm run build",
+    "test": "jest"
+  },
+  "dependencies": {
+    "@credo-ts/anoncreds": "workspace:*",
+    "@credo-ts/askar": "workspace:*",
+    "@credo-ts/core": "workspace:*",
+    "@hashgraph/did-sdk-js": "https://github.com/AlexanderShenshin/hedera-did-sdk-js",
+    "@hashgraph/sdk": "^2.53.0",
+    "didwebvh-ts": "^2.1.0",
+    "cross-fetch": "^4.1.0"
+  },
+  "devDependencies": {
+    "typescript": "~5.5.2",
+    "zstd-napi": "0.0.10"
+  }
+}
