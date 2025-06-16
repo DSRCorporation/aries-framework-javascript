@@ -22,9 +22,11 @@ const { purposes } = jsonldSignatures
 
 const logger = new ConsoleLogger(LogLevel.error)
 
-// const did = 'did:hedera:testnet:zQDui45JN8tAZyc8aNcgcDp26wPJgVyQnw1wupqaqexKGWgsuMVfgzKmGfyg8fWPt_0.0.5139447'
+//let did: string
+//const did = 'did:hedera:testnet:zQDui45JN8tAZyc8aNcgcDp26wPJgVyQnw1wupqaqexKGWgsuMVfgzKmGfyg8fWPt_0.0.5139447'
 const did = 'did:hedera:testnet:zGdjMu1hPkjbJXSPPp6RgTptnpYYM9uEkPeNbPhSkXTon_0.0.5139753'
-// const seed = '11011000010000111011001100010100'
+
+const seed = '11011000010000111011001100010100'
 // const holderSeed = '00000000000000000000000000holder'
 
 describe('Hedera Module did resolver', () => {
@@ -45,6 +47,19 @@ describe('Hedera Module did resolver', () => {
       label: 'faber',
     })
     await faberAgent.initialize()
+
+    // // Making the test did
+    // const didRegistrarResult = await faberAgent.dids.create({
+    //   method: 'hedera',
+    //   secret: {
+    //     seed,
+    //   },
+    // })
+    // if (!didRegistrarResult.didState?.didDocument?.id) throw new Error('DidRegistrarError')
+    //
+    // did = didRegistrarResult.didState.didDocument.id
+
+
   })
 
   afterAll(async () => {

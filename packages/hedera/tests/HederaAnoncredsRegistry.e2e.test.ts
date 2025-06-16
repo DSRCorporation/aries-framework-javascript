@@ -123,7 +123,7 @@ describe('Hedera AnonCreds support', () => {
       // Resolve the revocation status list
       const revocationStatusListResponse = await agent.modules.anoncreds.getRevocationStatusList(
         revocationRegistryDefinitionId,
-        Date.now()
+        Date.now() / 1000
       )
       logger.debug('revocationStatusListResponse', [revocationStatusListResponse])
 
@@ -152,7 +152,7 @@ describe('Hedera AnonCreds support', () => {
       // Resolve the revocation status list
       const revokeRevocationStatusListResponse = await agent.modules.anoncreds.getRevocationStatusList(
         revocationRegistryDefinitionId,
-        Date.now()
+        Date.now() / 1000
       )
       logger.debug('revokeRevocationStatusListResponse', [revokeRevocationStatusListResponse])
       expect(revokeRevocationStatusListResponse?.revocationStatusList?.revRegDefId).toEqual(
@@ -182,7 +182,7 @@ describe('Hedera AnonCreds support', () => {
       // Resolve the revocation status list
       const issueRevocationStatusListResponse = await agent.modules.anoncreds.getRevocationStatusList(
         revocationRegistryDefinitionId,
-        Date.now()
+        Date.now() / 1000
       )
       logger.debug('issueRevocationStatusListResponse', [issueRevocationStatusListResponse])
       expect(issueRevocationStatusListResponse?.revocationStatusList?.revRegDefId).toEqual(
