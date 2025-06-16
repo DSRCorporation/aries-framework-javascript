@@ -1,3 +1,3 @@
 export * from './hederaModule'
-export * from './InMemoryTailsFileService'
+export * from './testTailsFileService'
 export * from './utils'

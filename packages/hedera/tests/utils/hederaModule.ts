@@ -11,7 +11,7 @@ import {
 import { agentDependencies } from '@credo-ts/node'
 import { anoncreds } from '@hyperledger/anoncreds-nodejs'
 import { askar } from '@openwallet-foundation/askar-nodejs'
-import { InMemoryTailsFileService } from './InMemoryTailsFileService'
+import { TestTailsFileService } from './testTailsFileService'
 
 export const getHederaModuleConfig = (props: { operatorId?: string; operatorKey?: string }) => {
   const operatorId = props.operatorId ?? process.env.HEDERA_TEST_OPERATOR_ID ?? ''
@@ -46,7 +46,7 @@ export const getHederaAgent = (props: {
     anoncreds: new AnonCredsModule({
       anoncreds,
       registries: [new HederaAnonCredsRegistry()],
-      tailsFileService: new InMemoryTailsFileService(),
+      tailsFileService: new TestTailsFileService(),
     }),
     dids: new DidsModule({
       resolvers: [new HederaDidResolver()],

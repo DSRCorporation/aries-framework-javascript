@@ -612,8 +612,8 @@ importers:
         specifier: workspace:*
         version: link:../core
       '@hiero-did-sdk-js/anoncreds':
-        specifier: npm:@hiero-did-sdk-js/anoncreds@0.0.1
-        version: 0.0.1(bn.js@5.2.2)(react-native@0.78.2(@babel/core@7.27.4)(@babel/preset-env@7.27.2(@babel/core@7.27.4))(@react-native-community/cli@10.2.7(@babel/core@7.27.4))(react@18.3.1))(react@18.3.1)
+        specifier: npm:@hiero-did-sdk-js/anoncreds@0.0.5
+        version: 0.0.5(bn.js@5.2.2)(react-native@0.78.2(@babel/core@7.27.4)(@babel/preset-env@7.27.2(@babel/core@7.27.4))(@react-native-community/cli@10.2.7(@babel/core@7.27.4))(react@18.3.1))(react@18.3.1)
       '@hiero-did-sdk-js/did':
         specifier: npm:@hiero-did-sdk-js/did@0.0.3
         version: 0.0.3(bn.js@5.2.2)(react-native@0.78.2(@babel/core@7.27.4)(@babel/preset-env@7.27.2(@babel/core@7.27.4))(@react-native-community/cli@10.2.7(@babel/core@7.27.4))(react@18.3.1))(react@18.3.1)
@@ -2385,8 +2385,8 @@ packages:
     peerDependencies:
       bn.js: ^5.2.1
 
-  '@hiero-did-sdk-js/anoncreds@0.0.1':
-    resolution: {integrity: sha1-utLHS/EFt+g6Dr6/ji293NG/rxI=, tarball: https://gitlab.dsr-corporation.com/api/v4/projects/1420/packages/npm/@hiero-did-sdk-js/anoncreds/-/@hiero-did-sdk-js/anoncreds-0.0.1.tgz}
+  '@hiero-did-sdk-js/anoncreds@0.0.5':
+    resolution: {integrity: sha1-ImYF1ykjItS9wP9g0ktASEV4Ikw=, tarball: https://gitlab.dsr-corporation.com/api/v4/projects/1420/packages/npm/@hiero-did-sdk-js/anoncreds/-/@hiero-did-sdk-js/anoncreds-0.0.5.tgz}
 
   '@hiero-did-sdk-js/client@0.0.1':
     resolution: {integrity: sha1-/oGgr/tiFidqMYdCFaFGHaIa8s0=, tarball: https://gitlab.dsr-corporation.com/api/v4/projects/1420/packages/npm/@hiero-did-sdk-js/client/-/@hiero-did-sdk-js/client-0.0.1.tgz}
@@ -10088,7 +10088,7 @@ snapshots:
       - expo-crypto
       - react-native
 
-  '@hiero-did-sdk-js/anoncreds@0.0.1(bn.js@5.2.2)(react-native@0.78.2(@babel/core@7.27.4)(@babel/preset-env@7.27.2(@babel/core@7.27.4))(@react-native-community/cli@10.2.7(@babel/core@7.27.4))(react@18.3.1))(react@18.3.1)':
+  '@hiero-did-sdk-js/anoncreds@0.0.5(bn.js@5.2.2)(react-native@0.78.2(@babel/core@7.27.4)(@babel/preset-env@7.27.2(@babel/core@7.27.4))(@react-native-community/cli@10.2.7(@babel/core@7.27.4))(react@18.3.1))(react@18.3.1)':
     dependencies:
       '@hiero-did-sdk-js/hcs': 0.0.1(bn.js@5.2.2)(react-native@0.78.2(@babel/core@7.27.4)(@babel/preset-env@7.27.2(@babel/core@7.27.4))(@react-native-community/cli@10.2.7(@babel/core@7.27.4))(react@18.3.1))(react@18.3.1)
       '@hiero-did-sdk-js/zstd': 0.0.1(react-native@0.78.2(@babel/core@7.27.4)(@babel/preset-env@7.27.2(@babel/core@7.27.4))(@react-native-community/cli@10.2.7(@babel/core@7.27.4))(react@18.3.1))(react@18.3.1)
