@@ -1,4 +1,5 @@
 import { AgentContext, CacheModuleConfig, CredoError } from '@credo-ts/core'
+import {Cache} from "@hiero-did-sdk-js/core";
 
 export interface CredoCache {
   get<CacheValue>(agentContext: AgentContext, key: string): Promise<CacheValue | null>
@@ -6,13 +7,7 @@ export interface CredoCache {
   remove(agentContext: AgentContext, key: string): Promise<void>
 }
 
-interface SdkCache {
-  get<CacheValue>(key: string): Promise<CacheValue | null>
-  set<CacheValue>(key: string, value: CacheValue, expiresInSeconds?: number): Promise<void>
-  remove(key: string): Promise<void>
-}
-
-export class HederaLedgerServiceCache implements SdkCache {
+export class HederaLedgerServiceCache implements Cache {
   private readonly credoCache: CredoCache
 
   constructor(private readonly agentContext: AgentContext) {
@@ -38,5 +33,13 @@ export class HederaLedgerServiceCache implements SdkCache {
       throw new CredoError('Error initializing cache')
     }
     await this.credoCache.remove(this.agentContext, key)
+  }
+
+  cleanup(): Promise<void> {
+    throw new Error('Method not implemented.');
+  }
+
+  cleanupExpired(): Promise<void> {
+    throw new Error('Method not implemented.');
   }
 }
