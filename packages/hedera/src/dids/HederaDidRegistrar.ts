@@ -13,7 +13,7 @@ import {
   DidUpdateOptions,
   DidUpdateResult,
 } from '@credo-ts/core'
-import {HederaLedgerService} from "../ledger/HederaLedgerService";
+import { HederaLedgerService } from '../ledger/HederaLedgerService'
 
 export class HederaDidRegistrar implements DidRegistrar {
   public readonly supportedMethods = ['hedera']

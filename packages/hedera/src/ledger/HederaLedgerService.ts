@@ -6,9 +6,7 @@ import { HederaLedgerServiceCache } from './HederaLedgerServiceCache'
 
 @injectable()
 export class HederaLedgerService {
-  public constructor(private readonly hederaModuleConfig: HederaModuleConfig) {
-    console.log('HederaLedgerService', hederaModuleConfig)
-  }
+  public constructor(private readonly hederaModuleConfig: HederaModuleConfig) {}
 
   public getHederaAnonCredsSdk(agentContext: AgentContext): HederaAnoncredsRegistry {
     const cache = this.hederaModuleConfig.options.cache ?? new HederaLedgerServiceCache(agentContext)

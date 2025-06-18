@@ -26,7 +26,7 @@ const logger = new ConsoleLogger(LogLevel.error)
 //const did = 'did:hedera:testnet:zQDui45JN8tAZyc8aNcgcDp26wPJgVyQnw1wupqaqexKGWgsuMVfgzKmGfyg8fWPt_0.0.5139447'
 const did = 'did:hedera:testnet:zGdjMu1hPkjbJXSPPp6RgTptnpYYM9uEkPeNbPhSkXTon_0.0.5139753'
 
-const seed = '11011000010000111011001100010100'
+const _seed = '11011000010000111011001100010100'
 // const holderSeed = '00000000000000000000000000holder'
 
 describe('Hedera Module did resolver', () => {
@@ -58,8 +58,6 @@ describe('Hedera Module did resolver', () => {
     // if (!didRegistrarResult.didState?.didDocument?.id) throw new Error('DidRegistrarError')
     //
     // did = didRegistrarResult.didState.didDocument.id
-
-
   })
 
   afterAll(async () => {
