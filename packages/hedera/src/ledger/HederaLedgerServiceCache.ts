@@ -1,5 +1,5 @@
 import { AgentContext, CacheModuleConfig, CredoError } from '@credo-ts/core'
-import {Cache} from "@hiero-did-sdk-js/core";
+import { Cache } from '@hiero-did-sdk-js/core'
 
 export interface CredoCache {
   get<CacheValue>(agentContext: AgentContext, key: string): Promise<CacheValue | null>
@@ -36,10 +36,10 @@ export class HederaLedgerServiceCache implements Cache {
   }
 
   cleanup(): Promise<void> {
-    throw new Error('Method not implemented.');
+    throw new Error('Method not implemented.')
   }
 
   cleanupExpired(): Promise<void> {
-    throw new Error('Method not implemented.');
+    throw new Error('Method not implemented.')
   }
 }

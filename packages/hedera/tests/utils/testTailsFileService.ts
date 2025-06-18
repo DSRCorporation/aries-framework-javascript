@@ -18,7 +18,7 @@ export class TestTailsFileService extends BasicTailsFileService {
       options.revocationRegistryDefinition.value.tailsLocation
 
     return {
-      tailsFileUrl: options.revocationRegistryDefinition.value.tailsLocation
+      tailsFileUrl: options.revocationRegistryDefinition.value.tailsLocation,
     }
     // tailsFileUrl: options.revocationRegistryDefinition.value.tailsLocation.replace(/\\/g, '/')
   }

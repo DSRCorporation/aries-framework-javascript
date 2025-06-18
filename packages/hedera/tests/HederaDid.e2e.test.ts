@@ -27,12 +27,10 @@ describe('Hedera Module did resolver', () => {
 
   describe('HederaDidResolver', () => {
     it('should creaste and resolve a hedera did', async () => {
-      const didResult = await agent.dids.create({method: 'hedera'})
+      const didResult = await agent.dids.create({ method: 'hedera' })
       await waitTimeout(2000)
       const resolvedDIDDoc = await agent.dids.resolve(didResult.didState.did ?? '')
       expect(resolvedDIDDoc.didDocument?.id).toEqual(didResult.didState.did)
     })
   })
 })
-
-
