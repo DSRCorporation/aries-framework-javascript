@@ -611,15 +611,27 @@ importers:
       '@credo-ts/core':
         specifier: workspace:*
         version: link:../core
-      '@hiero-did-sdk-js/anoncreds':
-        specifier: npm:@hiero-did-sdk-js/anoncreds@0.0.7
-        version: 0.0.7(bn.js@5.2.2)(react-native@0.78.2(@babel/core@7.27.4)(@babel/preset-env@7.27.2(@babel/core@7.27.4))(@react-native-community/cli@10.2.7(@babel/core@7.27.4))(react@18.3.1))(react@18.3.1)
-      '@hiero-did-sdk-js/core':
-        specifier: npm:@hiero-did-sdk-js/core@0.0.1
-        version: 0.0.1
-      '@hiero-did-sdk-js/did':
-        specifier: npm:@hiero-did-sdk-js/did@0.0.4
-        version: 0.0.4(bn.js@5.2.2)(react-native@0.78.2(@babel/core@7.27.4)(@babel/preset-env@7.27.2(@babel/core@7.27.4))(@react-native-community/cli@10.2.7(@babel/core@7.27.4))(react@18.3.1))(react@18.3.1)
+      '@hashgraph/sdk':
+        specifier: ^2.66.0
+        version: 2.66.0(bn.js@5.2.2)(react-native@0.78.2(@babel/core@7.27.4)(@babel/preset-env@7.27.2(@babel/core@7.27.4))(@react-native-community/cli@10.2.7(@babel/core@7.27.4))(react@18.3.1))
+      '@hiero-did-sdk/anoncreds':
+        specifier: npm:@hiero-did-sdk/anoncreds@0.0.3
+        version: 0.0.3(bn.js@5.2.2)(react-native@0.78.2(@babel/core@7.27.4)(@babel/preset-env@7.27.2(@babel/core@7.27.4))(@react-native-community/cli@10.2.7(@babel/core@7.27.4))(react@18.3.1))(react@18.3.1)
+      '@hiero-did-sdk/client':
+        specifier: npm:@hiero-did-sdk/client@0.0.1
+        version: 0.0.1(bn.js@5.2.2)(react-native@0.78.2(@babel/core@7.27.4)(@babel/preset-env@7.27.2(@babel/core@7.27.4))(@react-native-community/cli@10.2.7(@babel/core@7.27.4))(react@18.3.1))
+      '@hiero-did-sdk/core':
+        specifier: npm:@hiero-did-sdk/core@0.0.1
+        version: 0.0.1(bn.js@5.2.2)(react-native@0.78.2(@babel/core@7.27.4)(@babel/preset-env@7.27.2(@babel/core@7.27.4))(@react-native-community/cli@10.2.7(@babel/core@7.27.4))(react@18.3.1))
+      '@hiero-did-sdk/hcs':
+        specifier: npm:@hiero-did-sdk/hcs@0.0.3
+        version: 0.0.3(bn.js@5.2.2)(react-native@0.78.2(@babel/core@7.27.4)(@babel/preset-env@7.27.2(@babel/core@7.27.4))(@react-native-community/cli@10.2.7(@babel/core@7.27.4))(react@18.3.1))(react@18.3.1)
+      '@hiero-did-sdk/registrar':
+        specifier: npm:@hiero-did-sdk/registrar@0.0.1
+        version: 0.0.1(bn.js@5.2.2)(react-native@0.78.2(@babel/core@7.27.4)(@babel/preset-env@7.27.2(@babel/core@7.27.4))(@react-native-community/cli@10.2.7(@babel/core@7.27.4))(react@18.3.1))
+      '@hiero-did-sdk/resolver':
+        specifier: npm:@hiero-did-sdk/resolver@0.0.5
+        version: 0.0.5(bn.js@5.2.2)(react-native@0.78.2(@babel/core@7.27.4)(@babel/preset-env@7.27.2(@babel/core@7.27.4))(@react-native-community/cli@10.2.7(@babel/core@7.27.4))(react@18.3.1))(react@18.3.1)
     devDependencies:
       '@credo-ts/node':
         specifier: workspace:*
@@ -2388,32 +2400,59 @@ packages:
     peerDependencies:
       bn.js: ^5.2.1
 
-  '@hiero-did-sdk-js/anoncreds@0.0.7':
-    resolution: {integrity: sha1-+WpUCRjrfYOUfH2pXE0hE4SQTgs=, tarball: https://gitlab.dsr-corporation.com/api/v4/projects/1420/packages/npm/@hiero-did-sdk-js/anoncreds/-/@hiero-did-sdk-js/anoncreds-0.0.7.tgz}
+  '@hiero-did-sdk/anoncreds@0.0.3':
+    resolution: {integrity: sha1-pVsqP5XHeZ9w17XJRCkIWKA5dd4=, tarball: https://gitlab.dsr-corporation.com/api/v4/projects/1420/packages/npm/@hiero-did-sdk/anoncreds/-/@hiero-did-sdk/anoncreds-0.0.3.tgz}
 
-  '@hiero-did-sdk-js/cache@0.0.1':
-    resolution: {integrity: sha1-31zSNubUR6fhwq9EA2XuBPN3yS4=, tarball: https://gitlab.dsr-corporation.com/api/v4/projects/1420/packages/npm/@hiero-did-sdk-js/cache/-/@hiero-did-sdk-js/cache-0.0.1.tgz}
+  '@hiero-did-sdk/cache@0.0.1':
+    resolution: {integrity: sha1-Bhzb7sOU4q8eMzLkHv7foHCcc8M=, tarball: https://gitlab.dsr-corporation.com/api/v4/projects/1420/packages/npm/@hiero-did-sdk/cache/-/@hiero-did-sdk/cache-0.0.1.tgz}
 
-  '@hiero-did-sdk-js/client@0.0.1':
-    resolution: {integrity: sha1-/oGgr/tiFidqMYdCFaFGHaIa8s0=, tarball: https://gitlab.dsr-corporation.com/api/v4/projects/1420/packages/npm/@hiero-did-sdk-js/client/-/@hiero-did-sdk-js/client-0.0.1.tgz}
+  '@hiero-did-sdk/client@0.0.1':
+    resolution: {integrity: sha1-ONxxJr5ab4ReLsPjGGktf95slAU=, tarball: https://gitlab.dsr-corporation.com/api/v4/projects/1420/packages/npm/@hiero-did-sdk/client/-/@hiero-did-sdk/client-0.0.1.tgz}
 
-  '@hiero-did-sdk-js/core@0.0.1':
-    resolution: {integrity: sha1-Fnt+yGBWcjXk1BR6/qG7pwwF0no=, tarball: https://gitlab.dsr-corporation.com/api/v4/projects/1420/packages/npm/@hiero-did-sdk-js/core/-/@hiero-did-sdk-js/core-0.0.1.tgz}
+  '@hiero-did-sdk/core@0.0.1':
+    resolution: {integrity: sha1-ng7T9mbOTVEkyGyV8CcUtTiRL/Q=, tarball: https://gitlab.dsr-corporation.com/api/v4/projects/1420/packages/npm/@hiero-did-sdk/core/-/@hiero-did-sdk/core-0.0.1.tgz}
+    engines: {node: '>=20'}
 
-  '@hiero-did-sdk-js/crypto@0.0.1':
-    resolution: {integrity: sha1-boXa93x8ubg3r87M75kulcK7HWI=, tarball: https://gitlab.dsr-corporation.com/api/v4/projects/1420/packages/npm/@hiero-did-sdk-js/crypto/-/@hiero-did-sdk-js/crypto-0.0.1.tgz}
+  '@hiero-did-sdk/crypto@0.0.1':
+    resolution: {integrity: sha1-oea8mNR4It44mUFz8hH9+7CtVv8=, tarball: https://gitlab.dsr-corporation.com/api/v4/projects/1420/packages/npm/@hiero-did-sdk/crypto/-/@hiero-did-sdk/crypto-0.0.1.tgz}
 
-  '@hiero-did-sdk-js/did@0.0.4':
-    resolution: {integrity: sha1-Fdqx1OmzOMO4VVkrqpubLsu7tiU=, tarball: https://gitlab.dsr-corporation.com/api/v4/projects/1420/packages/npm/@hiero-did-sdk-js/did/-/@hiero-did-sdk-js/did-0.0.4.tgz}
+  '@hiero-did-sdk/hcs@0.0.3':
+    resolution: {integrity: sha1-HvXry7u33YR9HTgn2QBfA894wHk=, tarball: https://gitlab.dsr-corporation.com/api/v4/projects/1420/packages/npm/@hiero-did-sdk/hcs/-/@hiero-did-sdk/hcs-0.0.3.tgz}
 
-  '@hiero-did-sdk-js/hcs@0.0.2':
-    resolution: {integrity: sha1-agCGmMRUExHQY2wF4g2gyPJVoY4=, tarball: https://gitlab.dsr-corporation.com/api/v4/projects/1420/packages/npm/@hiero-did-sdk-js/hcs/-/@hiero-did-sdk-js/hcs-0.0.2.tgz}
+  '@hiero-did-sdk/lifecycle@0.0.1':
+    resolution: {integrity: sha1-Wr9teNFTaBKQWTxg4+ciDkmKmTw=, tarball: https://gitlab.dsr-corporation.com/api/v4/projects/1420/packages/npm/@hiero-did-sdk/lifecycle/-/@hiero-did-sdk/lifecycle-0.0.1.tgz}
+    engines: {node: '>=20'}
 
-  '@hiero-did-sdk-js/hcs@0.0.3':
-    resolution: {integrity: sha1-9dUfNxCc5XFAM6I2GfBjHTIvjEQ=, tarball: https://gitlab.dsr-corporation.com/api/v4/projects/1420/packages/npm/@hiero-did-sdk-js/hcs/-/@hiero-did-sdk-js/hcs-0.0.3.tgz}
+  '@hiero-did-sdk/messages@0.0.1':
+    resolution: {integrity: sha1-V/utYJ7aN7gsXQXvUaWw4bnSS9s=, tarball: https://gitlab.dsr-corporation.com/api/v4/projects/1420/packages/npm/@hiero-did-sdk/messages/-/@hiero-did-sdk/messages-0.0.1.tgz}
+    engines: {node: '>=20'}
 
-  '@hiero-did-sdk-js/zstd@0.0.1':
-    resolution: {integrity: sha1-CNd96vi2XFIyLgcJCjLMd1SjPZE=, tarball: https://gitlab.dsr-corporation.com/api/v4/projects/1420/packages/npm/@hiero-did-sdk-js/zstd/-/@hiero-did-sdk-js/zstd-0.0.1.tgz}
+  '@hiero-did-sdk/publisher-internal@0.0.1':
+    resolution: {integrity: sha1-ljb+sGgZZ9+LNPjqCD5/L/e/9qQ=, tarball: https://gitlab.dsr-corporation.com/api/v4/projects/1420/packages/npm/@hiero-did-sdk/publisher-internal/-/@hiero-did-sdk/publisher-internal-0.0.1.tgz}
+    engines: {node: '>=20'}
+
+  '@hiero-did-sdk/registrar@0.0.1':
+    resolution: {integrity: sha1-q26HV0rQbw6F0dGhZll6H8rIc34=, tarball: https://gitlab.dsr-corporation.com/api/v4/projects/1420/packages/npm/@hiero-did-sdk/registrar/-/@hiero-did-sdk/registrar-0.0.1.tgz}
+    engines: {node: '>=20'}
+
+  '@hiero-did-sdk/resolver@0.0.1':
+    resolution: {integrity: sha1-wnraBME9Nh2ZndgtpIpsJAiV/L8=, tarball: https://gitlab.dsr-corporation.com/api/v4/projects/1420/packages/npm/@hiero-did-sdk/resolver/-/@hiero-did-sdk/resolver-0.0.1.tgz}
+    engines: {node: '>=20'}
+
+  '@hiero-did-sdk/resolver@0.0.5':
+    resolution: {integrity: sha1-CgF42+upJbwpnP+KQZPnKWkLobY=, tarball: https://gitlab.dsr-corporation.com/api/v4/projects/1420/packages/npm/@hiero-did-sdk/resolver/-/@hiero-did-sdk/resolver-0.0.5.tgz}
+    engines: {node: '>=20'}
+
+  '@hiero-did-sdk/signer-internal@0.0.1':
+    resolution: {integrity: sha1-VRle2ZFCsdlB4VX4pzmC6Fi6OXg=, tarball: https://gitlab.dsr-corporation.com/api/v4/projects/1420/packages/npm/@hiero-did-sdk/signer-internal/-/@hiero-did-sdk/signer-internal-0.0.1.tgz}
+    engines: {node: '>=20'}
+
+  '@hiero-did-sdk/verifier-internal@0.0.1':
+    resolution: {integrity: sha1-OIOfKsgdl0nu6qjsk5dSZg4WcqQ=, tarball: https://gitlab.dsr-corporation.com/api/v4/projects/1420/packages/npm/@hiero-did-sdk/verifier-internal/-/@hiero-did-sdk/verifier-internal-0.0.1.tgz}
+    engines: {node: '>=20'}
+
+  '@hiero-did-sdk/zstd@0.0.1':
+    resolution: {integrity: sha1-cIIzM5iK9GDHLmBUmci61XBLAUk=, tarball: https://gitlab.dsr-corporation.com/api/v4/projects/1420/packages/npm/@hiero-did-sdk/zstd/-/@hiero-did-sdk/zstd-0.0.1.tgz}
 
   '@hyperledger/anoncreds-nodejs@0.3.1':
     resolution: {integrity: sha512-/oWmWgcOPqjAtd2+dKASPYL84Qd7sAFyCBfEKM7PAgVbObaZUZc0kqA7hkEz/qyiqUvcP/JwKTc1v4zVZi6BTg==}
@@ -2995,38 +3034,6 @@ packages:
 
   '@stablelib/wipe@2.0.1':
     resolution: {integrity: sha512-1eU2K9EgOcV4qc9jcP6G72xxZxEm5PfeI5H55l08W95b4oRJaqhmlWRc4xZAm6IVSKhVNxMi66V67hCzzuMTAg==}
-
-  '@swiss-digital-assets-institute/core@0.3.9':
-    resolution: {integrity: sha1-oAQYm8vkIXhg7bdB5JdSBJWwPBw=, tarball: https://gitlab.dsr-corporation.com/api/v4/projects/1420/packages/npm/@swiss-digital-assets-institute/core/-/@swiss-digital-assets-institute/core-0.3.9.tgz}
-    engines: {node: '>=20'}
-
-  '@swiss-digital-assets-institute/lifecycle@0.3.9':
-    resolution: {integrity: sha1-CiUKkupWQeDX9I9yz+0EAbZLRGk=, tarball: https://gitlab.dsr-corporation.com/api/v4/projects/1420/packages/npm/@swiss-digital-assets-institute/lifecycle/-/@swiss-digital-assets-institute/lifecycle-0.3.9.tgz}
-    engines: {node: '>=20'}
-
-  '@swiss-digital-assets-institute/messages@0.3.9':
-    resolution: {integrity: sha1-CdfXbRGaLiJ9QkXMP6JdQ7I5UNk=, tarball: https://gitlab.dsr-corporation.com/api/v4/projects/1420/packages/npm/@swiss-digital-assets-institute/messages/-/@swiss-digital-assets-institute/messages-0.3.9.tgz}
-    engines: {node: '>=20'}
-
-  '@swiss-digital-assets-institute/publisher-internal@0.3.9':
-    resolution: {integrity: sha1-/9Q7FseGF8bIwOAMyJ7TFqKv3tQ=, tarball: https://gitlab.dsr-corporation.com/api/v4/projects/1420/packages/npm/@swiss-digital-assets-institute/publisher-internal/-/@swiss-digital-assets-institute/publisher-internal-0.3.9.tgz}
-    engines: {node: '>=20'}
-
-  '@swiss-digital-assets-institute/registrar@0.3.9':
-    resolution: {integrity: sha1-1Ek6jpY0jxuA7tk1fytBa4eXSvc=, tarball: https://gitlab.dsr-corporation.com/api/v4/projects/1420/packages/npm/@swiss-digital-assets-institute/registrar/-/@swiss-digital-assets-institute/registrar-0.3.9.tgz}
-    engines: {node: '>=20'}
-
-  '@swiss-digital-assets-institute/resolver@0.3.9':
-    resolution: {integrity: sha1-9s+WUtLhQ3GP1GTNMAE1Z0dTpyY=, tarball: https://gitlab.dsr-corporation.com/api/v4/projects/1420/packages/npm/@swiss-digital-assets-institute/resolver/-/@swiss-digital-assets-institute/resolver-0.3.9.tgz}
-    engines: {node: '>=20'}
-
-  '@swiss-digital-assets-institute/signer-internal@0.3.9':
-    resolution: {integrity: sha1-hf6iW5Bu8sJ5w6tcWJLKB/rGlcw=, tarball: https://gitlab.dsr-corporation.com/api/v4/projects/1420/packages/npm/@swiss-digital-assets-institute/signer-internal/-/@swiss-digital-assets-institute/signer-internal-0.3.9.tgz}
-    engines: {node: '>=20'}
-
-  '@swiss-digital-assets-institute/verifier-internal@0.3.9':
-    resolution: {integrity: sha1-s1bnScN6erWEjCNXSOSozS52WPE=, tarball: https://gitlab.dsr-corporation.com/api/v4/projects/1420/packages/npm/@swiss-digital-assets-institute/verifier-internal/-/@swiss-digital-assets-institute/verifier-internal-0.3.9.tgz}
-    engines: {node: '>=20'}
 
   '@szmarczak/http-timer@5.0.1':
     resolution: {integrity: sha512-+PmQX0PiAYPMeVYe237LJAYvOMYW1j2rH5YROyS3b4CTVJum34HfRvKvAzozHAQG0TnHNdUfY9nCeUyRAs//cw==}
@@ -10100,19 +10107,25 @@ snapshots:
       - expo-crypto
       - react-native
 
-  '@hiero-did-sdk-js/anoncreds@0.0.7(bn.js@5.2.2)(react-native@0.78.2(@babel/core@7.27.4)(@babel/preset-env@7.27.2(@babel/core@7.27.4))(@react-native-community/cli@10.2.7(@babel/core@7.27.4))(react@18.3.1))(react@18.3.1)':
+  '@hiero-did-sdk/anoncreds@0.0.3(bn.js@5.2.2)(react-native@0.78.2(@babel/core@7.27.4)(@babel/preset-env@7.27.2(@babel/core@7.27.4))(@react-native-community/cli@10.2.7(@babel/core@7.27.4))(react@18.3.1))(react@18.3.1)':
     dependencies:
-      '@hiero-did-sdk-js/hcs': 0.0.3(bn.js@5.2.2)(react-native@0.78.2(@babel/core@7.27.4)(@babel/preset-env@7.27.2(@babel/core@7.27.4))(@react-native-community/cli@10.2.7(@babel/core@7.27.4))(react@18.3.1))(react@18.3.1)
-      '@hiero-did-sdk-js/zstd': 0.0.1(react-native@0.78.2(@babel/core@7.27.4)(@babel/preset-env@7.27.2(@babel/core@7.27.4))(@react-native-community/cli@10.2.7(@babel/core@7.27.4))(react@18.3.1))(react@18.3.1)
+      '@hiero-did-sdk/hcs': 0.0.3(bn.js@5.2.2)(react-native@0.78.2(@babel/core@7.27.4)(@babel/preset-env@7.27.2(@babel/core@7.27.4))(@react-native-community/cli@10.2.7(@babel/core@7.27.4))(react@18.3.1))(react@18.3.1)
+      '@hiero-did-sdk/zstd': 0.0.1(react-native@0.78.2(@babel/core@7.27.4)(@babel/preset-env@7.27.2(@babel/core@7.27.4))(@react-native-community/cli@10.2.7(@babel/core@7.27.4))(react@18.3.1))(react@18.3.1)
     transitivePeerDependencies:
       - bn.js
       - expo-crypto
       - react
       - react-native
 
-  '@hiero-did-sdk-js/cache@0.0.1': {}
+  '@hiero-did-sdk/cache@0.0.1(bn.js@5.2.2)(react-native@0.78.2(@babel/core@7.27.4)(@babel/preset-env@7.27.2(@babel/core@7.27.4))(@react-native-community/cli@10.2.7(@babel/core@7.27.4))(react@18.3.1))':
+    dependencies:
+      '@hiero-did-sdk/core': 0.0.1(bn.js@5.2.2)(react-native@0.78.2(@babel/core@7.27.4)(@babel/preset-env@7.27.2(@babel/core@7.27.4))(@react-native-community/cli@10.2.7(@babel/core@7.27.4))(react@18.3.1))
+    transitivePeerDependencies:
+      - bn.js
+      - expo-crypto
+      - react-native
 
-  '@hiero-did-sdk-js/client@0.0.1(bn.js@5.2.2)(react-native@0.78.2(@babel/core@7.27.4)(@babel/preset-env@7.27.2(@babel/core@7.27.4))(@react-native-community/cli@10.2.7(@babel/core@7.27.4))(react@18.3.1))':
+  '@hiero-did-sdk/client@0.0.1(bn.js@5.2.2)(react-native@0.78.2(@babel/core@7.27.4)(@babel/preset-env@7.27.2(@babel/core@7.27.4))(@react-native-community/cli@10.2.7(@babel/core@7.27.4))(react@18.3.1))':
     dependencies:
       '@hashgraph/sdk': 2.66.0(bn.js@5.2.2)(react-native@0.78.2(@babel/core@7.27.4)(@babel/preset-env@7.27.2(@babel/core@7.27.4))(@react-native-community/cli@10.2.7(@babel/core@7.27.4))(react@18.3.1))
     transitivePeerDependencies:
@@ -10120,9 +10133,17 @@ snapshots:
       - expo-crypto
       - react-native
 
-  '@hiero-did-sdk-js/core@0.0.1': {}
+  '@hiero-did-sdk/core@0.0.1(bn.js@5.2.2)(react-native@0.78.2(@babel/core@7.27.4)(@babel/preset-env@7.27.2(@babel/core@7.27.4))(@react-native-community/cli@10.2.7(@babel/core@7.27.4))(react@18.3.1))':
+    dependencies:
+      '@hashgraph/sdk': 2.66.0(bn.js@5.2.2)(react-native@0.78.2(@babel/core@7.27.4)(@babel/preset-env@7.27.2(@babel/core@7.27.4))(@react-native-community/cli@10.2.7(@babel/core@7.27.4))(react@18.3.1))
+      '@scure/base': 1.2.6
+      cbor-x: 1.6.0
+    transitivePeerDependencies:
+      - bn.js
+      - expo-crypto
+      - react-native
 
-  '@hiero-did-sdk-js/crypto@0.0.1(react-native@0.78.2(@babel/core@7.27.4)(@babel/preset-env@7.27.2(@babel/core@7.27.4))(@react-native-community/cli@10.2.7(@babel/core@7.27.4))(react@18.3.1))(react@18.3.1)':
+  '@hiero-did-sdk/crypto@0.0.1(react-native@0.78.2(@babel/core@7.27.4)(@babel/preset-env@7.27.2(@babel/core@7.27.4))(@react-native-community/cli@10.2.7(@babel/core@7.27.4))(react@18.3.1))(react@18.3.1)':
     dependencies:
       crypto: 1.0.1
       crypto-js: 4.2.0
@@ -10131,49 +10152,104 @@ snapshots:
       - react
       - react-native
 
-  '@hiero-did-sdk-js/did@0.0.4(bn.js@5.2.2)(react-native@0.78.2(@babel/core@7.27.4)(@babel/preset-env@7.27.2(@babel/core@7.27.4))(@react-native-community/cli@10.2.7(@babel/core@7.27.4))(react@18.3.1))(react@18.3.1)':
+  '@hiero-did-sdk/hcs@0.0.3(bn.js@5.2.2)(react-native@0.78.2(@babel/core@7.27.4)(@babel/preset-env@7.27.2(@babel/core@7.27.4))(@react-native-community/cli@10.2.7(@babel/core@7.27.4))(react@18.3.1))(react@18.3.1)':
     dependencies:
       '@hashgraph/sdk': 2.66.0(bn.js@5.2.2)(react-native@0.78.2(@babel/core@7.27.4)(@babel/preset-env@7.27.2(@babel/core@7.27.4))(@react-native-community/cli@10.2.7(@babel/core@7.27.4))(react@18.3.1))
-      '@hiero-did-sdk-js/client': 0.0.1(bn.js@5.2.2)(react-native@0.78.2(@babel/core@7.27.4)(@babel/preset-env@7.27.2(@babel/core@7.27.4))(@react-native-community/cli@10.2.7(@babel/core@7.27.4))(react@18.3.1))
-      '@hiero-did-sdk-js/hcs': 0.0.2(bn.js@5.2.2)(react-native@0.78.2(@babel/core@7.27.4)(@babel/preset-env@7.27.2(@babel/core@7.27.4))(@react-native-community/cli@10.2.7(@babel/core@7.27.4))(react@18.3.1))(react@18.3.1)
-      '@swiss-digital-assets-institute/core': 0.3.9(bn.js@5.2.2)(react-native@0.78.2(@babel/core@7.27.4)(@babel/preset-env@7.27.2(@babel/core@7.27.4))(@react-native-community/cli@10.2.7(@babel/core@7.27.4))(react@18.3.1))
-      '@swiss-digital-assets-institute/registrar': 0.3.9(bn.js@5.2.2)(react-native@0.78.2(@babel/core@7.27.4)(@babel/preset-env@7.27.2(@babel/core@7.27.4))(@react-native-community/cli@10.2.7(@babel/core@7.27.4))(react@18.3.1))
-      '@swiss-digital-assets-institute/resolver': 0.3.9(bn.js@5.2.2)(react-native@0.78.2(@babel/core@7.27.4)(@babel/preset-env@7.27.2(@babel/core@7.27.4))(@react-native-community/cli@10.2.7(@babel/core@7.27.4))(react@18.3.1))
+      '@hiero-did-sdk/cache': 0.0.1(bn.js@5.2.2)(react-native@0.78.2(@babel/core@7.27.4)(@babel/preset-env@7.27.2(@babel/core@7.27.4))(@react-native-community/cli@10.2.7(@babel/core@7.27.4))(react@18.3.1))
+      '@hiero-did-sdk/client': 0.0.1(bn.js@5.2.2)(react-native@0.78.2(@babel/core@7.27.4)(@babel/preset-env@7.27.2(@babel/core@7.27.4))(@react-native-community/cli@10.2.7(@babel/core@7.27.4))(react@18.3.1))
+      '@hiero-did-sdk/core': 0.0.1(bn.js@5.2.2)(react-native@0.78.2(@babel/core@7.27.4)(@babel/preset-env@7.27.2(@babel/core@7.27.4))(@react-native-community/cli@10.2.7(@babel/core@7.27.4))(react@18.3.1))
+      '@hiero-did-sdk/crypto': 0.0.1(react-native@0.78.2(@babel/core@7.27.4)(@babel/preset-env@7.27.2(@babel/core@7.27.4))(@react-native-community/cli@10.2.7(@babel/core@7.27.4))(react@18.3.1))(react@18.3.1)
+      '@hiero-did-sdk/zstd': 0.0.1(react-native@0.78.2(@babel/core@7.27.4)(@babel/preset-env@7.27.2(@babel/core@7.27.4))(@react-native-community/cli@10.2.7(@babel/core@7.27.4))(react@18.3.1))(react@18.3.1)
     transitivePeerDependencies:
       - bn.js
       - expo-crypto
       - react
       - react-native
 
-  '@hiero-did-sdk-js/hcs@0.0.2(bn.js@5.2.2)(react-native@0.78.2(@babel/core@7.27.4)(@babel/preset-env@7.27.2(@babel/core@7.27.4))(@react-native-community/cli@10.2.7(@babel/core@7.27.4))(react@18.3.1))(react@18.3.1)':
+  '@hiero-did-sdk/lifecycle@0.0.1(bn.js@5.2.2)(react-native@0.78.2(@babel/core@7.27.4)(@babel/preset-env@7.27.2(@babel/core@7.27.4))(@react-native-community/cli@10.2.7(@babel/core@7.27.4))(react@18.3.1))':
+    dependencies:
+      '@hiero-did-sdk/core': 0.0.1(bn.js@5.2.2)(react-native@0.78.2(@babel/core@7.27.4)(@babel/preset-env@7.27.2(@babel/core@7.27.4))(@react-native-community/cli@10.2.7(@babel/core@7.27.4))(react@18.3.1))
+    transitivePeerDependencies:
+      - bn.js
+      - expo-crypto
+      - react-native
+
+  '@hiero-did-sdk/messages@0.0.1(bn.js@5.2.2)(react-native@0.78.2(@babel/core@7.27.4)(@babel/preset-env@7.27.2(@babel/core@7.27.4))(@react-native-community/cli@10.2.7(@babel/core@7.27.4))(react@18.3.1))':
     dependencies:
       '@hashgraph/sdk': 2.66.0(bn.js@5.2.2)(react-native@0.78.2(@babel/core@7.27.4)(@babel/preset-env@7.27.2(@babel/core@7.27.4))(@react-native-community/cli@10.2.7(@babel/core@7.27.4))(react@18.3.1))
-      '@hiero-did-sdk-js/cache': 0.0.1
-      '@hiero-did-sdk-js/client': 0.0.1(bn.js@5.2.2)(react-native@0.78.2(@babel/core@7.27.4)(@babel/preset-env@7.27.2(@babel/core@7.27.4))(@react-native-community/cli@10.2.7(@babel/core@7.27.4))(react@18.3.1))
-      '@hiero-did-sdk-js/core': 0.0.1
-      '@hiero-did-sdk-js/crypto': 0.0.1(react-native@0.78.2(@babel/core@7.27.4)(@babel/preset-env@7.27.2(@babel/core@7.27.4))(@react-native-community/cli@10.2.7(@babel/core@7.27.4))(react@18.3.1))(react@18.3.1)
-      '@hiero-did-sdk-js/zstd': 0.0.1(react-native@0.78.2(@babel/core@7.27.4)(@babel/preset-env@7.27.2(@babel/core@7.27.4))(@react-native-community/cli@10.2.7(@babel/core@7.27.4))(react@18.3.1))(react@18.3.1)
+      '@hiero-did-sdk/core': 0.0.1(bn.js@5.2.2)(react-native@0.78.2(@babel/core@7.27.4)(@babel/preset-env@7.27.2(@babel/core@7.27.4))(@react-native-community/cli@10.2.7(@babel/core@7.27.4))(react@18.3.1))
+      '@hiero-did-sdk/lifecycle': 0.0.1(bn.js@5.2.2)(react-native@0.78.2(@babel/core@7.27.4)(@babel/preset-env@7.27.2(@babel/core@7.27.4))(@react-native-community/cli@10.2.7(@babel/core@7.27.4))(react@18.3.1))
+      '@hiero-did-sdk/resolver': 0.0.1(bn.js@5.2.2)(react-native@0.78.2(@babel/core@7.27.4)(@babel/preset-env@7.27.2(@babel/core@7.27.4))(@react-native-community/cli@10.2.7(@babel/core@7.27.4))(react@18.3.1))
+    transitivePeerDependencies:
+      - bn.js
+      - expo-crypto
+      - react-native
+
+  '@hiero-did-sdk/publisher-internal@0.0.1(bn.js@5.2.2)(react-native@0.78.2(@babel/core@7.27.4)(@babel/preset-env@7.27.2(@babel/core@7.27.4))(@react-native-community/cli@10.2.7(@babel/core@7.27.4))(react@18.3.1))':
+    dependencies:
+      '@hashgraph/sdk': 2.66.0(bn.js@5.2.2)(react-native@0.78.2(@babel/core@7.27.4)(@babel/preset-env@7.27.2(@babel/core@7.27.4))(@react-native-community/cli@10.2.7(@babel/core@7.27.4))(react@18.3.1))
+      '@hiero-did-sdk/core': 0.0.1(bn.js@5.2.2)(react-native@0.78.2(@babel/core@7.27.4)(@babel/preset-env@7.27.2(@babel/core@7.27.4))(@react-native-community/cli@10.2.7(@babel/core@7.27.4))(react@18.3.1))
+    transitivePeerDependencies:
+      - bn.js
+      - expo-crypto
+      - react-native
+
+  '@hiero-did-sdk/registrar@0.0.1(bn.js@5.2.2)(react-native@0.78.2(@babel/core@7.27.4)(@babel/preset-env@7.27.2(@babel/core@7.27.4))(@react-native-community/cli@10.2.7(@babel/core@7.27.4))(react@18.3.1))':
+    dependencies:
+      '@hashgraph/sdk': 2.66.0(bn.js@5.2.2)(react-native@0.78.2(@babel/core@7.27.4)(@babel/preset-env@7.27.2(@babel/core@7.27.4))(@react-native-community/cli@10.2.7(@babel/core@7.27.4))(react@18.3.1))
+      '@hiero-did-sdk/core': 0.0.1(bn.js@5.2.2)(react-native@0.78.2(@babel/core@7.27.4)(@babel/preset-env@7.27.2(@babel/core@7.27.4))(@react-native-community/cli@10.2.7(@babel/core@7.27.4))(react@18.3.1))
+      '@hiero-did-sdk/lifecycle': 0.0.1(bn.js@5.2.2)(react-native@0.78.2(@babel/core@7.27.4)(@babel/preset-env@7.27.2(@babel/core@7.27.4))(@react-native-community/cli@10.2.7(@babel/core@7.27.4))(react@18.3.1))
+      '@hiero-did-sdk/messages': 0.0.1(bn.js@5.2.2)(react-native@0.78.2(@babel/core@7.27.4)(@babel/preset-env@7.27.2(@babel/core@7.27.4))(@react-native-community/cli@10.2.7(@babel/core@7.27.4))(react@18.3.1))
+      '@hiero-did-sdk/publisher-internal': 0.0.1(bn.js@5.2.2)(react-native@0.78.2(@babel/core@7.27.4)(@babel/preset-env@7.27.2(@babel/core@7.27.4))(@react-native-community/cli@10.2.7(@babel/core@7.27.4))(react@18.3.1))
+      '@hiero-did-sdk/resolver': 0.0.1(bn.js@5.2.2)(react-native@0.78.2(@babel/core@7.27.4)(@babel/preset-env@7.27.2(@babel/core@7.27.4))(@react-native-community/cli@10.2.7(@babel/core@7.27.4))(react@18.3.1))
+      '@hiero-did-sdk/signer-internal': 0.0.1(bn.js@5.2.2)(react-native@0.78.2(@babel/core@7.27.4)(@babel/preset-env@7.27.2(@babel/core@7.27.4))(@react-native-community/cli@10.2.7(@babel/core@7.27.4))(react@18.3.1))
+      '@hiero-did-sdk/verifier-internal': 0.0.1(bn.js@5.2.2)(react-native@0.78.2(@babel/core@7.27.4)(@babel/preset-env@7.27.2(@babel/core@7.27.4))(@react-native-community/cli@10.2.7(@babel/core@7.27.4))(react@18.3.1))
+    transitivePeerDependencies:
+      - bn.js
+      - expo-crypto
+      - react-native
+
+  '@hiero-did-sdk/resolver@0.0.1(bn.js@5.2.2)(react-native@0.78.2(@babel/core@7.27.4)(@babel/preset-env@7.27.2(@babel/core@7.27.4))(@react-native-community/cli@10.2.7(@babel/core@7.27.4))(react@18.3.1))':
+    dependencies:
+      '@hashgraph/sdk': 2.66.0(bn.js@5.2.2)(react-native@0.78.2(@babel/core@7.27.4)(@babel/preset-env@7.27.2(@babel/core@7.27.4))(@react-native-community/cli@10.2.7(@babel/core@7.27.4))(react@18.3.1))
+      '@hiero-did-sdk/core': 0.0.1(bn.js@5.2.2)(react-native@0.78.2(@babel/core@7.27.4)(@babel/preset-env@7.27.2(@babel/core@7.27.4))(@react-native-community/cli@10.2.7(@babel/core@7.27.4))(react@18.3.1))
+      '@hiero-did-sdk/verifier-internal': 0.0.1(bn.js@5.2.2)(react-native@0.78.2(@babel/core@7.27.4)(@babel/preset-env@7.27.2(@babel/core@7.27.4))(@react-native-community/cli@10.2.7(@babel/core@7.27.4))(react@18.3.1))
+    transitivePeerDependencies:
+      - bn.js
+      - expo-crypto
+      - react-native
+
+  '@hiero-did-sdk/resolver@0.0.5(bn.js@5.2.2)(react-native@0.78.2(@babel/core@7.27.4)(@babel/preset-env@7.27.2(@babel/core@7.27.4))(@react-native-community/cli@10.2.7(@babel/core@7.27.4))(react@18.3.1))(react@18.3.1)':
+    dependencies:
+      '@hashgraph/sdk': 2.66.0(bn.js@5.2.2)(react-native@0.78.2(@babel/core@7.27.4)(@babel/preset-env@7.27.2(@babel/core@7.27.4))(@react-native-community/cli@10.2.7(@babel/core@7.27.4))(react@18.3.1))
+      '@hiero-did-sdk/core': 0.0.1(bn.js@5.2.2)(react-native@0.78.2(@babel/core@7.27.4)(@babel/preset-env@7.27.2(@babel/core@7.27.4))(@react-native-community/cli@10.2.7(@babel/core@7.27.4))(react@18.3.1))
+      '@hiero-did-sdk/hcs': 0.0.3(bn.js@5.2.2)(react-native@0.78.2(@babel/core@7.27.4)(@babel/preset-env@7.27.2(@babel/core@7.27.4))(@react-native-community/cli@10.2.7(@babel/core@7.27.4))(react@18.3.1))(react@18.3.1)
+      '@hiero-did-sdk/verifier-internal': 0.0.1(bn.js@5.2.2)(react-native@0.78.2(@babel/core@7.27.4)(@babel/preset-env@7.27.2(@babel/core@7.27.4))(@react-native-community/cli@10.2.7(@babel/core@7.27.4))(react@18.3.1))
     transitivePeerDependencies:
       - bn.js
       - expo-crypto
       - react
       - react-native
 
-  '@hiero-did-sdk-js/hcs@0.0.3(bn.js@5.2.2)(react-native@0.78.2(@babel/core@7.27.4)(@babel/preset-env@7.27.2(@babel/core@7.27.4))(@react-native-community/cli@10.2.7(@babel/core@7.27.4))(react@18.3.1))(react@18.3.1)':
+  '@hiero-did-sdk/signer-internal@0.0.1(bn.js@5.2.2)(react-native@0.78.2(@babel/core@7.27.4)(@babel/preset-env@7.27.2(@babel/core@7.27.4))(@react-native-community/cli@10.2.7(@babel/core@7.27.4))(react@18.3.1))':
     dependencies:
       '@hashgraph/sdk': 2.66.0(bn.js@5.2.2)(react-native@0.78.2(@babel/core@7.27.4)(@babel/preset-env@7.27.2(@babel/core@7.27.4))(@react-native-community/cli@10.2.7(@babel/core@7.27.4))(react@18.3.1))
-      '@hiero-did-sdk-js/cache': 0.0.1
-      '@hiero-did-sdk-js/client': 0.0.1(bn.js@5.2.2)(react-native@0.78.2(@babel/core@7.27.4)(@babel/preset-env@7.27.2(@babel/core@7.27.4))(@react-native-community/cli@10.2.7(@babel/core@7.27.4))(react@18.3.1))
-      '@hiero-did-sdk-js/core': 0.0.1
-      '@hiero-did-sdk-js/crypto': 0.0.1(react-native@0.78.2(@babel/core@7.27.4)(@babel/preset-env@7.27.2(@babel/core@7.27.4))(@react-native-community/cli@10.2.7(@babel/core@7.27.4))(react@18.3.1))(react@18.3.1)
-      '@hiero-did-sdk-js/zstd': 0.0.1(react-native@0.78.2(@babel/core@7.27.4)(@babel/preset-env@7.27.2(@babel/core@7.27.4))(@react-native-community/cli@10.2.7(@babel/core@7.27.4))(react@18.3.1))(react@18.3.1)
+      '@hiero-did-sdk/core': 0.0.1(bn.js@5.2.2)(react-native@0.78.2(@babel/core@7.27.4)(@babel/preset-env@7.27.2(@babel/core@7.27.4))(@react-native-community/cli@10.2.7(@babel/core@7.27.4))(react@18.3.1))
     transitivePeerDependencies:
       - bn.js
       - expo-crypto
-      - react
       - react-native
 
-  '@hiero-did-sdk-js/zstd@0.0.1(react-native@0.78.2(@babel/core@7.27.4)(@babel/preset-env@7.27.2(@babel/core@7.27.4))(@react-native-community/cli@10.2.7(@babel/core@7.27.4))(react@18.3.1))(react@18.3.1)':
+  '@hiero-did-sdk/verifier-internal@0.0.1(bn.js@5.2.2)(react-native@0.78.2(@babel/core@7.27.4)(@babel/preset-env@7.27.2(@babel/core@7.27.4))(@react-native-community/cli@10.2.7(@babel/core@7.27.4))(react@18.3.1))':
+    dependencies:
+      '@hashgraph/sdk': 2.66.0(bn.js@5.2.2)(react-native@0.78.2(@babel/core@7.27.4)(@babel/preset-env@7.27.2(@babel/core@7.27.4))(@react-native-community/cli@10.2.7(@babel/core@7.27.4))(react@18.3.1))
+      '@hiero-did-sdk/core': 0.0.1(bn.js@5.2.2)(react-native@0.78.2(@babel/core@7.27.4)(@babel/preset-env@7.27.2(@babel/core@7.27.4))(@react-native-community/cli@10.2.7(@babel/core@7.27.4))(react@18.3.1))
+    transitivePeerDependencies:
+      - bn.js
+      - expo-crypto
+      - react-native
+
+  '@hiero-did-sdk/zstd@0.0.1(react-native@0.78.2(@babel/core@7.27.4)(@babel/preset-env@7.27.2(@babel/core@7.27.4))(@react-native-community/cli@10.2.7(@babel/core@7.27.4))(react@18.3.1))(react@18.3.1)':
     dependencies:
       react-native-zstd: 1.1.0(react-native@0.78.2(@babel/core@7.27.4)(@babel/preset-env@7.27.2(@babel/core@7.27.4))(@react-native-community/cli@10.2.7(@babel/core@7.27.4))(react@18.3.1))(react@18.3.1)
       zstd-napi: 0.0.10
@@ -11291,87 +11367,6 @@ snapshots:
   '@stablelib/wipe@1.0.1': {}
 
   '@stablelib/wipe@2.0.1': {}
-
-  '@swiss-digital-assets-institute/core@0.3.9(bn.js@5.2.2)(react-native@0.78.2(@babel/core@7.27.4)(@babel/preset-env@7.27.2(@babel/core@7.27.4))(@react-native-community/cli@10.2.7(@babel/core@7.27.4))(react@18.3.1))':
-    dependencies:
-      '@hashgraph/sdk': 2.66.0(bn.js@5.2.2)(react-native@0.78.2(@babel/core@7.27.4)(@babel/preset-env@7.27.2(@babel/core@7.27.4))(@react-native-community/cli@10.2.7(@babel/core@7.27.4))(react@18.3.1))
-      '@scure/base': 1.2.6
-      cbor-x: 1.6.0
-    transitivePeerDependencies:
-      - bn.js
-      - expo-crypto
-      - react-native
-
-  '@swiss-digital-assets-institute/lifecycle@0.3.9(bn.js@5.2.2)(react-native@0.78.2(@babel/core@7.27.4)(@babel/preset-env@7.27.2(@babel/core@7.27.4))(@react-native-community/cli@10.2.7(@babel/core@7.27.4))(react@18.3.1))':
-    dependencies:
-      '@swiss-digital-assets-institute/core': 0.3.9(bn.js@5.2.2)(react-native@0.78.2(@babel/core@7.27.4)(@babel/preset-env@7.27.2(@babel/core@7.27.4))(@react-native-community/cli@10.2.7(@babel/core@7.27.4))(react@18.3.1))
-    transitivePeerDependencies:
-      - bn.js
-      - expo-crypto
-      - react-native
-
-  '@swiss-digital-assets-institute/messages@0.3.9(bn.js@5.2.2)(react-native@0.78.2(@babel/core@7.27.4)(@babel/preset-env@7.27.2(@babel/core@7.27.4))(@react-native-community/cli@10.2.7(@babel/core@7.27.4))(react@18.3.1))':
-    dependencies:
-      '@hashgraph/sdk': 2.66.0(bn.js@5.2.2)(react-native@0.78.2(@babel/core@7.27.4)(@babel/preset-env@7.27.2(@babel/core@7.27.4))(@react-native-community/cli@10.2.7(@babel/core@7.27.4))(react@18.3.1))
-      '@swiss-digital-assets-institute/core': 0.3.9(bn.js@5.2.2)(react-native@0.78.2(@babel/core@7.27.4)(@babel/preset-env@7.27.2(@babel/core@7.27.4))(@react-native-community/cli@10.2.7(@babel/core@7.27.4))(react@18.3.1))
-      '@swiss-digital-assets-institute/lifecycle': 0.3.9(bn.js@5.2.2)(react-native@0.78.2(@babel/core@7.27.4)(@babel/preset-env@7.27.2(@babel/core@7.27.4))(@react-native-community/cli@10.2.7(@babel/core@7.27.4))(react@18.3.1))
-      '@swiss-digital-assets-institute/resolver': 0.3.9(bn.js@5.2.2)(react-native@0.78.2(@babel/core@7.27.4)(@babel/preset-env@7.27.2(@babel/core@7.27.4))(@react-native-community/cli@10.2.7(@babel/core@7.27.4))(react@18.3.1))
-    transitivePeerDependencies:
-      - bn.js
-      - expo-crypto
-      - react-native
-
-  '@swiss-digital-assets-institute/publisher-internal@0.3.9(bn.js@5.2.2)(react-native@0.78.2(@babel/core@7.27.4)(@babel/preset-env@7.27.2(@babel/core@7.27.4))(@react-native-community/cli@10.2.7(@babel/core@7.27.4))(react@18.3.1))':
-    dependencies:
-      '@hashgraph/sdk': 2.66.0(bn.js@5.2.2)(react-native@0.78.2(@babel/core@7.27.4)(@babel/preset-env@7.27.2(@babel/core@7.27.4))(@react-native-community/cli@10.2.7(@babel/core@7.27.4))(react@18.3.1))
-      '@swiss-digital-assets-institute/core': 0.3.9(bn.js@5.2.2)(react-native@0.78.2(@babel/core@7.27.4)(@babel/preset-env@7.27.2(@babel/core@7.27.4))(@react-native-community/cli@10.2.7(@babel/core@7.27.4))(react@18.3.1))
-    transitivePeerDependencies:
-      - bn.js
-      - expo-crypto
-      - react-native
-
-  '@swiss-digital-assets-institute/registrar@0.3.9(bn.js@5.2.2)(react-native@0.78.2(@babel/core@7.27.4)(@babel/preset-env@7.27.2(@babel/core@7.27.4))(@react-native-community/cli@10.2.7(@babel/core@7.27.4))(react@18.3.1))':
-    dependencies:
-      '@hashgraph/sdk': 2.66.0(bn.js@5.2.2)(react-native@0.78.2(@babel/core@7.27.4)(@babel/preset-env@7.27.2(@babel/core@7.27.4))(@react-native-community/cli@10.2.7(@babel/core@7.27.4))(react@18.3.1))
-      '@swiss-digital-assets-institute/core': 0.3.9(bn.js@5.2.2)(react-native@0.78.2(@babel/core@7.27.4)(@babel/preset-env@7.27.2(@babel/core@7.27.4))(@react-native-community/cli@10.2.7(@babel/core@7.27.4))(react@18.3.1))
-      '@swiss-digital-assets-institute/lifecycle': 0.3.9(bn.js@5.2.2)(react-native@0.78.2(@babel/core@7.27.4)(@babel/preset-env@7.27.2(@babel/core@7.27.4))(@react-native-community/cli@10.2.7(@babel/core@7.27.4))(react@18.3.1))
-      '@swiss-digital-assets-institute/messages': 0.3.9(bn.js@5.2.2)(react-native@0.78.2(@babel/core@7.27.4)(@babel/preset-env@7.27.2(@babel/core@7.27.4))(@react-native-community/cli@10.2.7(@babel/core@7.27.4))(react@18.3.1))
-      '@swiss-digital-assets-institute/publisher-internal': 0.3.9(bn.js@5.2.2)(react-native@0.78.2(@babel/core@7.27.4)(@babel/preset-env@7.27.2(@babel/core@7.27.4))(@react-native-community/cli@10.2.7(@babel/core@7.27.4))(react@18.3.1))
-      '@swiss-digital-assets-institute/resolver': 0.3.9(bn.js@5.2.2)(react-native@0.78.2(@babel/core@7.27.4)(@babel/preset-env@7.27.2(@babel/core@7.27.4))(@react-native-community/cli@10.2.7(@babel/core@7.27.4))(react@18.3.1))
-      '@swiss-digital-assets-institute/signer-internal': 0.3.9(bn.js@5.2.2)(react-native@0.78.2(@babel/core@7.27.4)(@babel/preset-env@7.27.2(@babel/core@7.27.4))(@react-native-community/cli@10.2.7(@babel/core@7.27.4))(react@18.3.1))
-      '@swiss-digital-assets-institute/verifier-internal': 0.3.9(bn.js@5.2.2)(react-native@0.78.2(@babel/core@7.27.4)(@babel/preset-env@7.27.2(@babel/core@7.27.4))(@react-native-community/cli@10.2.7(@babel/core@7.27.4))(react@18.3.1))
-    transitivePeerDependencies:
-      - bn.js
-      - expo-crypto
-      - react-native
-
-  '@swiss-digital-assets-institute/resolver@0.3.9(bn.js@5.2.2)(react-native@0.78.2(@babel/core@7.27.4)(@babel/preset-env@7.27.2(@babel/core@7.27.4))(@react-native-community/cli@10.2.7(@babel/core@7.27.4))(react@18.3.1))':
-    dependencies:
-      '@hashgraph/sdk': 2.66.0(bn.js@5.2.2)(react-native@0.78.2(@babel/core@7.27.4)(@babel/preset-env@7.27.2(@babel/core@7.27.4))(@react-native-community/cli@10.2.7(@babel/core@7.27.4))(react@18.3.1))
-      '@swiss-digital-assets-institute/core': 0.3.9(bn.js@5.2.2)(react-native@0.78.2(@babel/core@7.27.4)(@babel/preset-env@7.27.2(@babel/core@7.27.4))(@react-native-community/cli@10.2.7(@babel/core@7.27.4))(react@18.3.1))
-      '@swiss-digital-assets-institute/verifier-internal': 0.3.9(bn.js@5.2.2)(react-native@0.78.2(@babel/core@7.27.4)(@babel/preset-env@7.27.2(@babel/core@7.27.4))(@react-native-community/cli@10.2.7(@babel/core@7.27.4))(react@18.3.1))
-    transitivePeerDependencies:
-      - bn.js
-      - expo-crypto
-      - react-native
-
-  '@swiss-digital-assets-institute/signer-internal@0.3.9(bn.js@5.2.2)(react-native@0.78.2(@babel/core@7.27.4)(@babel/preset-env@7.27.2(@babel/core@7.27.4))(@react-native-community/cli@10.2.7(@babel/core@7.27.4))(react@18.3.1))':
-    dependencies:
-      '@hashgraph/sdk': 2.66.0(bn.js@5.2.2)(react-native@0.78.2(@babel/core@7.27.4)(@babel/preset-env@7.27.2(@babel/core@7.27.4))(@react-native-community/cli@10.2.7(@babel/core@7.27.4))(react@18.3.1))
-      '@swiss-digital-assets-institute/core': 0.3.9(bn.js@5.2.2)(react-native@0.78.2(@babel/core@7.27.4)(@babel/preset-env@7.27.2(@babel/core@7.27.4))(@react-native-community/cli@10.2.7(@babel/core@7.27.4))(react@18.3.1))
-    transitivePeerDependencies:
-      - bn.js
-      - expo-crypto
-      - react-native
-
-  '@swiss-digital-assets-institute/verifier-internal@0.3.9(bn.js@5.2.2)(react-native@0.78.2(@babel/core@7.27.4)(@babel/preset-env@7.27.2(@babel/core@7.27.4))(@react-native-community/cli@10.2.7(@babel/core@7.27.4))(react@18.3.1))':
-    dependencies:
-      '@hashgraph/sdk': 2.66.0(bn.js@5.2.2)(react-native@0.78.2(@babel/core@7.27.4)(@babel/preset-env@7.27.2(@babel/core@7.27.4))(@react-native-community/cli@10.2.7(@babel/core@7.27.4))(react@18.3.1))
-      '@swiss-digital-assets-institute/core': 0.3.9(bn.js@5.2.2)(react-native@0.78.2(@babel/core@7.27.4)(@babel/preset-env@7.27.2(@babel/core@7.27.4))(@react-native-community/cli@10.2.7(@babel/core@7.27.4))(react@18.3.1))
-    transitivePeerDependencies:
-      - bn.js
-      - expo-crypto
-      - react-native
 
   '@szmarczak/http-timer@5.0.1':
     dependencies:

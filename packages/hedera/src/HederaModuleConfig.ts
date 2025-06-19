@@ -1,4 +1,4 @@
-import { HederaAnoncredsRegistryConfiguration } from '@hiero-did-sdk-js/anoncreds'
+import { HederaAnoncredsRegistryConfiguration } from '@hiero-did-sdk/anoncreds'
 
 export interface HederaModuleConfigOptions extends HederaAnoncredsRegistryConfiguration {}
 
