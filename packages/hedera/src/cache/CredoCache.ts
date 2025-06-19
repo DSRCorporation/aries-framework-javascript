@@ -1,14 +1,14 @@
 import { AgentContext, CacheModuleConfig, CredoError } from '@credo-ts/core'
-import { Cache } from '@hiero-did-sdk-js/core'
+import { Cache } from '@hiero-did-sdk/core'
 
-export interface CredoCache {
+export interface ICredoCache {
   get<CacheValue>(agentContext: AgentContext, key: string): Promise<CacheValue | null>
   set<CacheValue>(agentContext: AgentContext, key: string, value: CacheValue, expiresInSeconds?: number): Promise<void>
   remove(agentContext: AgentContext, key: string): Promise<void>
 }
 
-export class HederaLedgerServiceCache implements Cache {
-  private readonly credoCache: CredoCache
+export class CredoCache implements Cache {
+  private readonly credoCache: ICredoCache
 
   constructor(private readonly agentContext: AgentContext) {
     this.credoCache = agentContext.dependencyManager.resolve(CacheModuleConfig).cache

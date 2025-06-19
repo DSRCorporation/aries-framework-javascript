@@ -15,7 +15,7 @@ const config: Config.InitialOptions = {
       {
         isolatedModules: true,
       },
-    ]
+    ],
   },
 }
 
