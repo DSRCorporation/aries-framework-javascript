@@ -13,18 +13,18 @@
     "responder": "ts-node responder.ts"
   },
   "devDependencies": {
-    "@types/express": "^4.17.23",
-    "@types/uuid": "^9.0.8",
-    "@types/ws": "^8.18.1",
-    "ts-node": "^10.9.2"
+    "ts-node": "^10.9.2",
+    "@types/express": "^4.17.13",
+    "@types/uuid": "^9.0.1",
+    "@types/ws": "^8.5.4"
   },
   "dependencies": {
-    "@credo-ts/askar": "workspace:*",
     "@credo-ts/core": "workspace:*",
     "@credo-ts/didcomm": "workspace:*",
     "@credo-ts/node": "workspace:*",
-    "@openwallet-foundation/askar-nodejs": "^0.3.2",
+    "@credo-ts/askar": "workspace:*",
     "class-validator": "0.14.1",
-    "rxjs": "^7.8.2"
+    "rxjs": "^7.8.0",
+    "@openwallet-foundation/askar-nodejs": "^0.3.1"
   }
 }

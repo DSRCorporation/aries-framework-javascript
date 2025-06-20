@@ -31,8 +31,8 @@
   },
   "devDependencies": {
     "@credo-ts/node": "workspace:*",
-    "reflect-metadata": "^0.1.14",
-    "rimraf": "^4.4.1",
-    "typescript": "~5.5.4"
+    "reflect-metadata": "^0.1.13",
+    "rimraf": "^4.4.0",
+    "typescript": "~5.5.2"
   }
 }

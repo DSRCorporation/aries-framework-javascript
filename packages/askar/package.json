@@ -27,18 +27,18 @@
     "@credo-ts/core": "workspace:*",
     "class-transformer": "0.5.1",
     "class-validator": "0.14.1",
-    "rxjs": "^7.8.2",
-    "tsyringe": "^4.10.0"
+    "rxjs": "^7.8.0",
+    "tsyringe": "^4.8.0"
   },
   "devDependencies": {
     "@credo-ts/tenants": "workspace:*",
-    "@openwallet-foundation/askar-nodejs": "^0.3.2",
-    "@openwallet-foundation/askar-shared": "^0.3.2",
-    "@types/ref-array-di": "^1.2.8",
-    "@types/ref-struct-di": "^1.1.12",
-    "reflect-metadata": "^0.1.14",
-    "rimraf": "^4.4.1",
-    "typescript": "~5.5.4"
+    "@openwallet-foundation/askar-nodejs": "^0.3.1",
+    "@openwallet-foundation/askar-shared": "^0.3.1",
+    "@types/ref-array-di": "^1.2.6",
+    "@types/ref-struct-di": "^1.1.10",
+    "reflect-metadata": "^0.1.13",
+    "rimraf": "^4.4.0",
+    "typescript": "~5.5.2"
   },
   "peerDependencies": {
     "@openwallet-foundation/askar-shared": "^0.3.1"

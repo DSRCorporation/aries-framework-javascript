@@ -28,7 +28,7 @@
     "ioredis": "^5.6.1"
   },
   "devDependencies": {
-    "rimraf": "^4.4.1",
-    "typescript": "~5.5.4"
+    "rimraf": "^4.4.0",
+    "typescript": "~5.5.2"
   }
 }

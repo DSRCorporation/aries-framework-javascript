@@ -30,10 +30,10 @@
     "@credo-ts/node": "workspace:*"
   },
   "devDependencies": {
-    "@openwallet-foundation/askar-nodejs": "^0.3.2",
-    "@openwallet-foundation/askar-shared": "^0.3.2",
-    "rimraf": "^4.4.1",
-    "typescript": "~5.5.4"
+    "@openwallet-foundation/askar-nodejs": "^0.3.1",
+    "@openwallet-foundation/askar-shared": "^0.3.1",
+    "rimraf": "^4.4.0",
+    "typescript": "~5.5.2"
   },
   "peerDependencies": {
     "@openwallet-foundation/askar-shared": "^0.3.1"
