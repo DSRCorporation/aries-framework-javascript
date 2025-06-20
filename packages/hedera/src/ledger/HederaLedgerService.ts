@@ -1,3 +1,5 @@
+import {HederaAnoncredsRegistry} from "@hiero-did-sdk/anoncreds";
+import {HederaClientService} from "@hiero-did-sdk/client";
 import type {
   GetCredentialDefinitionReturn,
   GetRevocationRegistryDefinitionReturn,
@@ -13,9 +15,6 @@ import type {
   RegisterSchemaReturn,
 } from '@credo-ts/anoncreds'
 import { type AgentContext, injectable } from '@credo-ts/core'
-import { Client } from '@hashgraph/sdk'
-import { HederaAnoncredsRegistry } from '@hiero-did-sdk/anoncreds'
-import { HederaClientService, NetworkName } from '@hiero-did-sdk/client'
 import { DIDResolution } from '@hiero-did-sdk/core'
 import {
   CreateDIDResult,
@@ -30,6 +29,7 @@ import {
 import { TopicReaderHederaHcs, parseDID, resolveDID } from '@hiero-did-sdk/resolver'
 import { HederaModuleConfig } from '../HederaModuleConfig'
 import { CredoCache } from '../cache/CredoCache'
+import {Client} from "@hashgraph/sdk";
 
 @injectable()
 export class HederaLedgerService {
@@ -46,8 +46,8 @@ export class HederaLedgerService {
     return await resolveDID(did, 'application/ld+json;profile="https://w3id.org/did-resolution"', { topicReader })
   }
 
-  public async createDid(agentContext: AgentContext, props?: NetworkName): Promise<CreateDIDResult> {
-    return this.clientService.withClient({ ...(props ?? {}) }, async (client: Client) => {
+  public async createDid(agentContext: AgentContext, network?: string): Promise<CreateDIDResult> {
+    return this.clientService.withClient({ networkName: network }, async (client: Client) => {
       const topicReader = this.getHederaHcsTopicReader(agentContext)
       return await createDID(
         {
@@ -60,33 +60,35 @@ export class HederaLedgerService {
   }
 
   public async updateDid(agentContext: AgentContext, props: UpdateDIDOptions): Promise<UpdateDIDResult> {
-    const { network: networkName } = parseDID(props.did)
-    return this.clientService.withClient({ networkName }, async (client: Client) => {
-      const topicReader = this.getHederaHcsTopicReader(agentContext)
-      return await updateDID(
-        {
-          ...props,
-          waitForDIDVisibility: false,
-          topicReader,
-        },
-        { client }
-      )
-    })
+    throw new Error('Method not implemented.')
+    // const { network: networkName } = parseDID(props.did)
+    // return this.clientService.withClient({ networkName }, async (client: Client) => {
+    //   const topicReader = this.getHederaHcsTopicReader(agentContext)
+    //   return await updateDID(
+    //     {
+    //       ...props,
+    //       waitForDIDVisibility: false,
+    //       topicReader,
+    //     },
+    //     { client }
+    //   )
+    // })
   }
 
   public async deactivateDid(agentContext: AgentContext, props: DeactivateDIDOptions): Promise<DeactivateDIDResult> {
-    const { network: networkName } = parseDID(props.did)
-    return this.clientService.withClient({ networkName }, async (client: Client) => {
-      const topicReader = this.getHederaHcsTopicReader(agentContext)
-      return await deactivateDID(
-        {
-          ...props,
-          waitForDIDVisibility: false,
-          topicReader,
-        },
-        { client }
-      )
-    })
+    throw new Error('Method not implemented.')
+    // const { network: networkName } = parseDID(props.did)
+    // return this.clientService.withClient({ networkName }, async (client: Client) => {
+    //   const topicReader = this.getHederaHcsTopicReader(agentContext)
+    //   return await deactivateDID(
+    //     {
+    //       ...props,
+    //       waitForDIDVisibility: false,
+    //       topicReader,
+    //     },
+    //     { client }
+    //   )
+    // })
   }
 
   /* Anoncreds*/

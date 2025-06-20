@@ -20,6 +20,7 @@ export class HederaDidResolver implements DidResolver {
     _parsed: ParsedDid,
     _didResolutionOptions: DidResolutionOptions
   ): Promise<DidResolutionResult> {
+
     try {
       agentContext.config.logger.trace('Try to resolve a did document from ledger')
       const ledgerService = agentContext.dependencyManager.resolve(HederaLedgerService)
