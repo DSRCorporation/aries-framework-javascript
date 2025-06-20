@@ -75,7 +75,7 @@ export class BasicTailsFileService implements TailsFileService {
   }
 
   protected async getTailsFilePath(agentContext: AgentContext, tailsHash: string) {
-    return `${await this.getTailsBasePath(agentContext)}/${tailsHash}`.replace(/\\/g, '/')
+    return `${await this.getTailsBasePath(agentContext)}/${tailsHash}`
   }
 
   protected async tailsFileExists(agentContext: AgentContext, tailsHash: string): Promise<boolean> {
