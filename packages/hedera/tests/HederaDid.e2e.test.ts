@@ -3,8 +3,6 @@ import { getHederaAgent, waitTimeout } from './utils'
 
 const logger = new ConsoleLogger(LogLevel.error)
 
-//const did = 'did:hedera:testnet:zGdjMu1hPkjbJXSPPp6RgTptnpYYM9uEkPeNbPhSkXTon_0.0.5139753'
-
 describe('Hedera Module did resolver', () => {
   let agent: Agent
 

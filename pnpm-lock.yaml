@@ -18,28 +18,28 @@ importers:
   .:
     devDependencies:
       '@babel/core':
-        specifier: ^7.27.4
+        specifier: ^7.25.8
         version: 7.27.4
       '@babel/preset-env':
-        specifier: ^7.27.2
+        specifier: ^7.25.8
         version: 7.27.2(@babel/core@7.27.4)
       '@biomejs/biome':
         specifier: ^1.9.4
         version: 1.9.4
       '@changesets/cli':
-        specifier: ^2.29.4
+        specifier: ^2.27.5
         version: 2.29.4
       '@jest/types':
         specifier: ^29.6.3
         version: 29.6.3
       '@openwallet-foundation/askar-nodejs':
-        specifier: ^0.3.2
+        specifier: ^0.3.1
         version: 0.3.2
       '@types/cors':
-        specifier: ^2.8.19
+        specifier: ^2.8.10
         version: 2.8.19
       '@types/express':
-        specifier: ^4.17.23
+        specifier: ^4.17.21
         version: 4.17.23
       '@types/jest':
         specifier: ^29.5.14
@@ -48,16 +48,16 @@ importers:
         specifier: 18.18.8
         version: 18.18.8
       '@types/supertest':
-        specifier: ^6.0.3
+        specifier: ^6.0.2
         version: 6.0.3
       '@types/uuid':
-        specifier: ^9.0.8
+        specifier: ^9.0.1
         version: 9.0.8
       '@types/varint':
-        specifier: ^6.0.3
+        specifier: ^6.0.0
         version: 6.0.3
       '@types/ws':
-        specifier: ^8.18.1
+        specifier: ^8.5.4
         version: 8.18.1
       cors:
         specifier: ^2.8.5
@@ -69,13 +69,10 @@ importers:
         specifier: ^29.7.0
         version: 29.7.0(@types/node@18.18.8)(ts-node@10.9.2(@types/node@18.18.8)(typescript@5.5.4))
       nock:
-        specifier: ^14.0.5
+        specifier: ^14.0.0-beta.19
         version: 14.0.5
-      rimraf:
-        specifier: ^4.4.1
-        version: 4.4.1
       rxjs:
-        specifier: ^7.8.2
+        specifier: ^7.8.0
         version: 7.8.2
       supertest:
         specifier: ^7.1.1
@@ -87,16 +84,16 @@ importers:
         specifier: ^10.9.2
         version: 10.9.2(@types/node@18.18.8)(typescript@5.5.4)
       tsyringe:
-        specifier: ^4.10.0
+        specifier: ^4.8.0
         version: 4.10.0
       typescript:
-        specifier: ~5.5.4
+        specifier: ~5.5.2
         version: 5.5.4
       undici:
         specifier: ^6.20.1
         version: 6.21.3
       ws:
-        specifier: ^8.18.2
+        specifier: ^8.13.0
         version: 8.18.2
 
   demo:
@@ -108,10 +105,10 @@ importers:
         specifier: ^0.2.2
         version: 0.2.2
       '@openwallet-foundation/askar-nodejs':
-        specifier: ^0.3.2
+        specifier: ^0.3.1
         version: 0.3.2
       inquirer:
-        specifier: ^8.2.6
+        specifier: ^8.2.5
         version: 8.2.6
     devDependencies:
       '@credo-ts/anoncreds':
@@ -139,16 +136,16 @@ importers:
         specifier: workspace:*
         version: link:../packages/node
       '@types/figlet':
-        specifier: ^1.7.0
+        specifier: ^1.5.4
         version: 1.7.0
       '@types/inquirer':
-        specifier: ^8.2.11
+        specifier: ^8.2.6
         version: 8.2.11
       clear:
         specifier: ^0.1.0
         version: 0.1.0
       figlet:
-        specifier: ^1.8.1
+        specifier: ^1.5.2
         version: 1.8.1
       ts-node:
         specifier: ^10.9.2
@@ -163,19 +160,19 @@ importers:
         specifier: ^0.2.2
         version: 0.2.2
       '@koa/bodyparser':
-        specifier: ^5.1.2
+        specifier: ^5.1.1
         version: 5.1.2(koa@2.16.1)
       '@openwallet-foundation/askar-nodejs':
-        specifier: ^0.3.2
+        specifier: ^0.3.1
         version: 0.3.2
       express:
         specifier: ^4.21.2
         version: 4.21.2
       inquirer:
-        specifier: ^8.2.6
+        specifier: ^8.2.5
         version: 8.2.6
       jose:
-        specifier: ^5.10.0
+        specifier: ^5.3.0
         version: 5.10.0
       oidc-provider:
         specifier: ^8.8.1
@@ -194,13 +191,13 @@ importers:
         specifier: workspace:*
         version: link:../packages/openid4vc
       '@types/express':
-        specifier: ^4.17.23
+        specifier: ^4.17.21
         version: 4.17.23
       '@types/figlet':
-        specifier: ^1.7.0
+        specifier: ^1.5.4
         version: 1.7.0
       '@types/inquirer':
-        specifier: ^8.2.11
+        specifier: ^8.2.6
         version: 8.2.11
       '@types/oidc-provider':
         specifier: ^8.8.1
@@ -209,13 +206,13 @@ importers:
         specifier: ^0.1.0
         version: 0.1.0
       figlet:
-        specifier: ^1.8.1
+        specifier: ^1.5.2
         version: 1.8.1
       ts-node:
         specifier: ^10.9.2
         version: 10.9.2(@types/node@18.18.8)(typescript@5.5.4)
       tsx:
-        specifier: ^4.19.4
+        specifier: ^4.11.0
         version: 4.19.4
 
   packages/action-menu:
@@ -233,17 +230,17 @@ importers:
         specifier: 0.14.1
         version: 0.14.1
       rxjs:
-        specifier: ^7.8.2
+        specifier: ^7.8.0
         version: 7.8.2
     devDependencies:
       reflect-metadata:
-        specifier: ^0.1.14
+        specifier: ^0.1.13
         version: 0.1.14
       rimraf:
-        specifier: ^4.4.1
+        specifier: ^4.4.0
         version: 4.4.1
       typescript:
-        specifier: ~5.5.4
+        specifier: ~5.5.2
         version: 5.5.4
 
   packages/anoncreds:
@@ -267,7 +264,7 @@ importers:
         specifier: 0.14.1
         version: 0.14.1
       reflect-metadata:
-        specifier: ^0.1.14
+        specifier: ^0.1.13
         version: 0.1.14
     devDependencies:
       '@credo-ts/node':
@@ -280,13 +277,13 @@ importers:
         specifier: ^0.3.1
         version: 0.3.1
       rimraf:
-        specifier: ^4.4.1
+        specifier: ^4.4.0
         version: 4.4.1
       rxjs:
-        specifier: ^7.8.2
+        specifier: ^7.8.0
         version: 7.8.2
       typescript:
-        specifier: ~5.5.4
+        specifier: ~5.5.2
         version: 5.5.4
 
   packages/askar:
@@ -301,42 +298,42 @@ importers:
         specifier: 0.14.1
         version: 0.14.1
       rxjs:
-        specifier: ^7.8.2
+        specifier: ^7.8.0
         version: 7.8.2
       tsyringe:
-        specifier: ^4.10.0
+        specifier: ^4.8.0
         version: 4.10.0
     devDependencies:
       '@credo-ts/tenants':
         specifier: workspace:*
         version: link:../tenants
       '@openwallet-foundation/askar-nodejs':
-        specifier: ^0.3.2
+        specifier: ^0.3.1
         version: 0.3.2
       '@openwallet-foundation/askar-shared':
-        specifier: ^0.3.2
+        specifier: ^0.3.1
         version: 0.3.2
       '@types/ref-array-di':
-        specifier: ^1.2.8
+        specifier: ^1.2.6
         version: 1.2.8
       '@types/ref-struct-di':
-        specifier: ^1.1.12
+        specifier: ^1.1.10
         version: 1.1.12
       reflect-metadata:
-        specifier: ^0.1.14
+        specifier: ^0.1.13
         version: 0.1.14
       rimraf:
-        specifier: ^4.4.1
+        specifier: ^4.4.0
         version: 4.4.1
       typescript:
-        specifier: ~5.5.4
+        specifier: ~5.5.2
         version: 5.5.4
 
   packages/cheqd:
     dependencies:
       '@cheqd/sdk':
-        specifier: ^5.3.1
-        version: 5.3.1
+        specifier: 5.2.1
+        version: 5.2.1
       '@cheqd/ts-proto':
         specifier: ~2.4.1
         version: 2.4.1
@@ -365,17 +362,17 @@ importers:
         specifier: 0.14.1
         version: 0.14.1
       rxjs:
-        specifier: ^7.8.2
+        specifier: ^7.8.0
         version: 7.8.2
       tsyringe:
-        specifier: ^4.10.0
+        specifier: ^4.8.0
         version: 4.10.0
     devDependencies:
       rimraf:
-        specifier: ^4.4.1
+        specifier: ^4.0.7
         version: 4.4.1
       typescript:
-        specifier: ~5.5.4
+        specifier: ~5.5.2
         version: 5.5.4
 
   packages/core:
@@ -402,25 +399,25 @@ importers:
         specifier: ^4.0.1
         version: 4.0.1
       '@noble/curves':
-        specifier: ^1.9.2
+        specifier: ^1.8.1
         version: 1.9.2
       '@noble/hashes':
-        specifier: ^1.8.0
+        specifier: ^1.7.1
         version: 1.8.0
       '@peculiar/asn1-ecc':
-        specifier: ^2.3.15
+        specifier: ^2.3.14
         version: 2.3.15
       '@peculiar/asn1-rsa':
         specifier: ^2.3.15
         version: 2.3.15
       '@peculiar/asn1-schema':
-        specifier: ^2.3.15
+        specifier: ^2.3.13
         version: 2.3.15
       '@peculiar/asn1-x509':
-        specifier: ^2.3.15
+        specifier: ^2.3.13
         version: 2.3.15
       '@peculiar/x509':
-        specifier: ^1.12.4
+        specifier: ^1.12.1
         version: 1.12.4
       '@sd-jwt/core':
         specifier: ^0.7.2
@@ -450,10 +447,10 @@ importers:
         specifier: 0.33.0
         version: 0.33.0
       '@stablelib/ed25519':
-        specifier: ^1.0.3
+        specifier: ^1.0.2
         version: 1.0.3
       '@types/ws':
-        specifier: ^8.18.1
+        specifier: ^8.5.4
         version: 8.18.1
       borc:
         specifier: ^3.0.0
@@ -468,7 +465,7 @@ importers:
         specifier: 0.14.1
         version: 0.14.1
       dcql:
-        specifier: ^0.2.22
+        specifier: ^0.2.20
         version: 0.2.22(typescript@5.5.4)
       did-resolver:
         specifier: ^4.1.0
@@ -483,56 +480,56 @@ importers:
         specifier: ^1.3.6
         version: 1.3.6
       object-inspect:
-        specifier: ^1.13.4
+        specifier: ^1.10.3
         version: 1.13.4
       reflect-metadata:
-        specifier: ^0.1.14
+        specifier: ^0.1.13
         version: 0.1.14
       rxjs:
-        specifier: ^7.8.2
+        specifier: ^7.8.0
         version: 7.8.2
       tsyringe:
-        specifier: ^4.10.0
+        specifier: ^4.8.0
         version: 4.10.0
       uuid:
-        specifier: ^9.0.1
+        specifier: ^9.0.0
         version: 9.0.1
       varint:
         specifier: ^6.0.0
         version: 6.0.0
       web-did-resolver:
-        specifier: ^2.0.30
+        specifier: ^2.0.21
         version: 2.0.30
       webcrypto-core:
-        specifier: ^1.8.1
+        specifier: ^1.8.0
         version: 1.8.1
       zod:
-        specifier: ^3.25.57
+        specifier: ^3.24.2
         version: 3.25.57
     devDependencies:
       '@types/events':
-        specifier: ^3.0.3
+        specifier: ^3.0.0
         version: 3.0.3
       '@types/object-inspect':
-        specifier: ^1.13.0
+        specifier: ^1.8.0
         version: 1.13.0
       '@types/uuid':
-        specifier: ^9.0.8
+        specifier: ^9.0.1
         version: 9.0.8
       '@types/varint':
-        specifier: ^6.0.3
+        specifier: ^6.0.0
         version: 6.0.3
       nock:
-        specifier: ^14.0.5
+        specifier: ^14.0.0-beta.19
         version: 14.0.5
       rimraf:
-        specifier: ^4.4.1
+        specifier: ^4.4.0
         version: 4.4.1
       tslog:
-        specifier: ^4.9.3
+        specifier: ^4.8.2
         version: 4.9.3
       typescript:
-        specifier: ~5.5.4
+        specifier: ~5.5.2
         version: 5.5.4
 
   packages/didcomm:
@@ -547,13 +544,13 @@ importers:
         specifier: 0.14.1
         version: 0.14.1
       luxon:
-        specifier: ^3.6.1
+        specifier: ^3.5.0
         version: 3.6.1
       query-string:
-        specifier: ^7.1.3
+        specifier: ^7.0.1
         version: 7.1.3
       rxjs:
-        specifier: ^7.8.2
+        specifier: ^7.8.0
         version: 7.8.2
     devDependencies:
       '@animo-id/pex':
@@ -563,16 +560,16 @@ importers:
         specifier: ^2.3.2
         version: 2.3.2
       '@types/luxon':
-        specifier: ^3.6.2
+        specifier: ^3.2.0
         version: 3.6.2
       reflect-metadata:
-        specifier: ^0.1.14
+        specifier: ^0.1.13
         version: 0.1.14
       rimraf:
-        specifier: ^4.4.1
+        specifier: ^4.4.0
         version: 4.4.1
       typescript:
-        specifier: ~5.5.4
+        specifier: ~5.5.2
         version: 5.5.4
 
   packages/drpc:
@@ -594,13 +591,13 @@ importers:
         specifier: workspace:*
         version: link:../node
       reflect-metadata:
-        specifier: ^0.1.14
+        specifier: ^0.1.13
         version: 0.1.14
       rimraf:
-        specifier: ^4.4.1
+        specifier: ^4.4.0
         version: 4.4.1
       typescript:
-        specifier: ~5.5.4
+        specifier: ~5.5.2
         version: 5.5.4
 
   packages/hedera:
@@ -615,23 +612,23 @@ importers:
         specifier: ^2.66.0
         version: 2.66.0(bn.js@5.2.2)(react-native@0.78.2(@babel/core@7.27.4)(@babel/preset-env@7.27.2(@babel/core@7.27.4))(@react-native-community/cli@10.2.7(@babel/core@7.27.4))(react@18.3.1))
       '@hiero-did-sdk/anoncreds':
-        specifier: npm:@hiero-did-sdk/anoncreds@0.0.3
-        version: 0.0.3(bn.js@5.2.2)(react-native@0.78.2(@babel/core@7.27.4)(@babel/preset-env@7.27.2(@babel/core@7.27.4))(@react-native-community/cli@10.2.7(@babel/core@7.27.4))(react@18.3.1))(react@18.3.1)
-      '@hiero-did-sdk/client':
-        specifier: npm:@hiero-did-sdk/client@0.0.1
-        version: 0.0.1(bn.js@5.2.2)(react-native@0.78.2(@babel/core@7.27.4)(@babel/preset-env@7.27.2(@babel/core@7.27.4))(@react-native-community/cli@10.2.7(@babel/core@7.27.4))(react@18.3.1))
-      '@hiero-did-sdk/core':
-        specifier: npm:@hiero-did-sdk/core@0.0.1
-        version: 0.0.1(bn.js@5.2.2)(react-native@0.78.2(@babel/core@7.27.4)(@babel/preset-env@7.27.2(@babel/core@7.27.4))(@react-native-community/cli@10.2.7(@babel/core@7.27.4))(react@18.3.1))
-      '@hiero-did-sdk/hcs':
-        specifier: npm:@hiero-did-sdk/hcs@0.0.3
-        version: 0.0.3(bn.js@5.2.2)(react-native@0.78.2(@babel/core@7.27.4)(@babel/preset-env@7.27.2(@babel/core@7.27.4))(@react-native-community/cli@10.2.7(@babel/core@7.27.4))(react@18.3.1))(react@18.3.1)
-      '@hiero-did-sdk/registrar':
-        specifier: npm:@hiero-did-sdk/registrar@0.0.1
-        version: 0.0.1(bn.js@5.2.2)(react-native@0.78.2(@babel/core@7.27.4)(@babel/preset-env@7.27.2(@babel/core@7.27.4))(@react-native-community/cli@10.2.7(@babel/core@7.27.4))(react@18.3.1))
-      '@hiero-did-sdk/resolver':
-        specifier: npm:@hiero-did-sdk/resolver@0.0.5
+        specifier: npm:@hiero-did-sdk/anoncreds@0.0.5
         version: 0.0.5(bn.js@5.2.2)(react-native@0.78.2(@babel/core@7.27.4)(@babel/preset-env@7.27.2(@babel/core@7.27.4))(@react-native-community/cli@10.2.7(@babel/core@7.27.4))(react@18.3.1))(react@18.3.1)
+      '@hiero-did-sdk/client':
+        specifier: npm:@hiero-did-sdk/client@0.0.3
+        version: 0.0.3(bn.js@5.2.2)(react-native@0.78.2(@babel/core@7.27.4)(@babel/preset-env@7.27.2(@babel/core@7.27.4))(@react-native-community/cli@10.2.7(@babel/core@7.27.4))(react@18.3.1))
+      '@hiero-did-sdk/core':
+        specifier: npm:@hiero-did-sdk/core@0.0.2
+        version: 0.0.2(bn.js@5.2.2)(react-native@0.78.2(@babel/core@7.27.4)(@babel/preset-env@7.27.2(@babel/core@7.27.4))(@react-native-community/cli@10.2.7(@babel/core@7.27.4))(react@18.3.1))
+      '@hiero-did-sdk/hcs':
+        specifier: npm:@hiero-did-sdk/hcs@0.0.5
+        version: 0.0.5(bn.js@5.2.2)(react-native@0.78.2(@babel/core@7.27.4)(@babel/preset-env@7.27.2(@babel/core@7.27.4))(@react-native-community/cli@10.2.7(@babel/core@7.27.4))(react@18.3.1))(react@18.3.1)
+      '@hiero-did-sdk/registrar':
+        specifier: npm:@hiero-did-sdk/registrar@0.0.3
+        version: 0.0.3(bn.js@5.2.2)(react-native@0.78.2(@babel/core@7.27.4)(@babel/preset-env@7.27.2(@babel/core@7.27.4))(@react-native-community/cli@10.2.7(@babel/core@7.27.4))(react@18.3.1))(react@18.3.1)
+      '@hiero-did-sdk/resolver':
+        specifier: npm:@hiero-did-sdk/resolver@0.0.7
+        version: 0.0.7(bn.js@5.2.2)(react-native@0.78.2(@babel/core@7.27.4)(@babel/preset-env@7.27.2(@babel/core@7.27.4))(@react-native-community/cli@10.2.7(@babel/core@7.27.4))(react@18.3.1))(react@18.3.1)
     devDependencies:
       '@credo-ts/node':
         specifier: workspace:*
@@ -639,6 +636,9 @@ importers:
       '@hyperledger/anoncreds-nodejs':
         specifier: ^0.3.1
         version: 0.3.1
+      rimraf:
+        specifier: ^4.4.0
+        version: 4.4.1
 
   packages/indy-sdk-to-askar-migration:
     dependencies:
@@ -656,16 +656,16 @@ importers:
         version: link:../node
     devDependencies:
       '@openwallet-foundation/askar-nodejs':
-        specifier: ^0.3.2
+        specifier: ^0.3.1
         version: 0.3.2
       '@openwallet-foundation/askar-shared':
-        specifier: ^0.3.2
+        specifier: ^0.3.1
         version: 0.3.2
       rimraf:
-        specifier: ^4.4.1
+        specifier: ^4.4.0
         version: 4.4.1
       typescript:
-        specifier: ~5.5.4
+        specifier: ~5.5.2
         version: 5.5.4
 
   packages/indy-vdr:
@@ -684,22 +684,22 @@ importers:
         specifier: ^0.2.2
         version: 0.2.2
       '@stablelib/ed25519':
-        specifier: ^1.0.3
+        specifier: ^1.0.2
         version: 1.0.3
       '@types/ref-array-di':
-        specifier: ^1.2.8
+        specifier: ^1.2.6
         version: 1.2.8
       '@types/ref-struct-di':
-        specifier: ^1.1.12
+        specifier: ^1.1.10
         version: 1.1.12
       rimraf:
-        specifier: ^4.4.1
+        specifier: ^4.4.0
         version: 4.4.1
       rxjs:
-        specifier: ^7.8.2
+        specifier: ^7.8.0
         version: 7.8.2
       typescript:
-        specifier: ~5.5.4
+        specifier: ~5.5.2
         version: 5.5.4
 
   packages/node:
@@ -717,32 +717,32 @@ importers:
         specifier: workspace:*
         version: link:../didcomm
       '@types/express':
-        specifier: ^4.17.23
+        specifier: ^4.17.21
         version: 4.17.23
       express:
         specifier: ^4.21.2
         version: 4.21.2
       rxjs:
-        specifier: ^7.8.2
+        specifier: ^7.8.0
         version: 7.8.2
       ws:
-        specifier: ^8.18.2
+        specifier: ^8.13.0
         version: 8.18.2
     devDependencies:
       '@types/node':
         specifier: 18.18.8
         version: 18.18.8
       '@types/ws':
-        specifier: ^8.18.1
+        specifier: ^8.5.4
         version: 8.18.1
       nock:
-        specifier: ^14.0.5
+        specifier: ^14.0.0-beta.19
         version: 14.0.5
       rimraf:
-        specifier: ^4.4.1
+        specifier: ^4.4.0
         version: 4.4.1
       typescript:
-        specifier: ~5.5.4
+        specifier: ~5.5.2
         version: 5.5.4
 
   packages/openid4vc:
@@ -766,29 +766,29 @@ importers:
         specifier: ^0.5.1
         version: 0.5.1
       rxjs:
-        specifier: ^7.8.2
+        specifier: ^7.8.0
         version: 7.8.2
       zod:
-        specifier: ^3.25.57
+        specifier: ^3.24.2
         version: 3.25.57
     devDependencies:
       '@credo-ts/tenants':
         specifier: workspace:*
         version: link:../tenants
       '@types/express':
-        specifier: ^4.17.23
+        specifier: ^4.17.21
         version: 4.17.23
       express:
         specifier: ^4.21.2
         version: 4.21.2
       nock:
-        specifier: ^14.0.5
+        specifier: ^14.0.0-beta.19
         version: 14.0.5
       rimraf:
-        specifier: ^4.4.1
+        specifier: ^4.4.0
         version: 4.4.1
       typescript:
-        specifier: ~5.5.4
+        specifier: ~5.5.2
         version: 5.5.4
 
   packages/question-answer:
@@ -806,20 +806,20 @@ importers:
         specifier: 0.14.1
         version: 0.14.1
       rxjs:
-        specifier: ^7.8.2
+        specifier: ^7.8.0
         version: 7.8.2
     devDependencies:
       '@credo-ts/node':
         specifier: workspace:*
         version: link:../node
       reflect-metadata:
-        specifier: ^0.1.14
+        specifier: ^0.1.13
         version: 0.1.14
       rimraf:
-        specifier: ^4.4.1
+        specifier: ^4.4.0
         version: 4.4.1
       typescript:
-        specifier: ~5.5.4
+        specifier: ~5.5.2
         version: 5.5.4
 
   packages/react-native:
@@ -838,19 +838,19 @@ importers:
         version: 3.3.0
     devDependencies:
       react-native:
-        specifier: ^0.78.2
+        specifier: ^0.78.1
         version: 0.78.2(@babel/core@7.27.4)(@babel/preset-env@7.27.2(@babel/core@7.27.4))(@react-native-community/cli@10.2.7(@babel/core@7.27.4))(react@18.3.1)
       react-native-fs:
         specifier: ^2.20.0
         version: 2.20.0(react-native@0.78.2(@babel/core@7.27.4)(@babel/preset-env@7.27.2(@babel/core@7.27.4))(@react-native-community/cli@10.2.7(@babel/core@7.27.4))(react@18.3.1))
       react-native-get-random-values:
-        specifier: ^1.11.0
+        specifier: ^1.8.0
         version: 1.11.0(react-native@0.78.2(@babel/core@7.27.4)(@babel/preset-env@7.27.2(@babel/core@7.27.4))(@react-native-community/cli@10.2.7(@babel/core@7.27.4))(react@18.3.1))
       rimraf:
-        specifier: ^4.4.1
+        specifier: ^4.4.0
         version: 4.4.1
       typescript:
-        specifier: ~5.5.4
+        specifier: ~5.5.2
         version: 5.5.4
 
   packages/redis-cache:
@@ -863,10 +863,10 @@ importers:
         version: 5.6.1
     devDependencies:
       rimraf:
-        specifier: ^4.4.1
+        specifier: ^4.4.0
         version: 4.4.1
       typescript:
-        specifier: ~5.5.4
+        specifier: ~5.5.2
         version: 5.5.4
 
   packages/tenants:
@@ -878,20 +878,20 @@ importers:
         specifier: workspace:*
         version: link:../didcomm
       async-mutex:
-        specifier: ^0.4.1
+        specifier: ^0.4.0
         version: 0.4.1
     devDependencies:
       '@credo-ts/node':
         specifier: workspace:*
         version: link:../node
       reflect-metadata:
-        specifier: ^0.1.14
+        specifier: ^0.1.13
         version: 0.1.14
       rimraf:
-        specifier: ^4.4.1
+        specifier: ^4.4.0
         version: 4.4.1
       typescript:
-        specifier: ~5.5.4
+        specifier: ~5.5.2
         version: 5.5.4
 
   samples/extension-module:
@@ -909,23 +909,23 @@ importers:
         specifier: workspace:*
         version: link:../../packages/node
       '@openwallet-foundation/askar-nodejs':
-        specifier: ^0.3.2
+        specifier: ^0.3.1
         version: 0.3.2
       class-validator:
         specifier: 0.14.1
         version: 0.14.1
       rxjs:
-        specifier: ^7.8.2
+        specifier: ^7.8.0
         version: 7.8.2
     devDependencies:
       '@types/express':
-        specifier: ^4.17.23
+        specifier: ^4.17.13
         version: 4.17.23
       '@types/uuid':
-        specifier: ^9.0.8
+        specifier: ^9.0.1
         version: 9.0.8
       '@types/ws':
-        specifier: ^8.18.1
+        specifier: ^8.5.4
         version: 8.18.1
       ts-node:
         specifier: ^10.9.2
@@ -940,22 +940,22 @@ importers:
         specifier: workspace:*
         version: link:../../packages/core
       '@types/express':
-        specifier: ^4.17.23
+        specifier: ^4.17.13
         version: 4.17.23
       '@types/multer':
-        specifier: ^1.4.13
+        specifier: ^1.4.7
         version: 1.4.13
       '@types/uuid':
-        specifier: ^9.0.8
+        specifier: ^9.0.1
         version: 9.0.8
       '@types/ws':
-        specifier: ^8.18.1
+        specifier: ^8.5.4
         version: 8.18.1
       form-data:
-        specifier: ^4.0.3
+        specifier: ^4.0.0
         version: 4.0.3
       multer:
-        specifier: 1.4.5-lts.2
+        specifier: ^1.4.5-lts.1
         version: 1.4.5-lts.2
     devDependencies:
       ts-node:
@@ -1906,16 +1906,12 @@ packages:
   '@changesets/write@0.4.0':
     resolution: {integrity: sha512-CdTLvIOPiCNuH71pyDu3rA+Q0n65cmAbXnwWH84rKGiFumFzkmHNT8KHTMEchcxN+Kl8I54xGUhJ7l3E7X396Q==}
 
-  '@cheqd/sdk@5.3.1':
-    resolution: {integrity: sha512-4iwB8Ct6A2jlZw3qx7cPi34JcRsGnb+Mw3dzsAJY+83Fv2aC7ndO3YbUwouPK02scObq/fK5jbV6Dh35M6iMAg==}
+  '@cheqd/sdk@5.2.1':
+    resolution: {integrity: sha512-R6lpEEF0fTpDr4yebT/WUIs7AUgvVbR/V3RMGudcq2nVRv248fD2zpcJroKOpUKsoTUCa9Fw5PkWz01VvdmUEw==}
     engines: {node: '>=20.0.0'}
 
   '@cheqd/ts-proto@2.4.1':
     resolution: {integrity: sha512-tT9MvXjk+GmJXWjFKIMwhXWuStjdhECSBSrx8uyt1cJKVBtFpRBrFLEomA7XIclmfwL6z74YmhM7lEtf5Bn8vg==}
-    engines: {node: '>=20'}
-
-  '@cheqd/ts-proto@2.5.0':
-    resolution: {integrity: sha512-3KqyvcruFxvkz+p6LnSCyUnqBJ2bJeOnIDkaYoAMcmGcSNKti3VECOKGdjjEO3rG/0/gAR9bhEHu9j1mUKSFqA==}
     engines: {node: '>=20'}
 
   '@cheqd/ts-proto@4.1.1':
@@ -2400,24 +2396,32 @@ packages:
     peerDependencies:
       bn.js: ^5.2.1
 
-  '@hiero-did-sdk/anoncreds@0.0.3':
-    resolution: {integrity: sha1-pVsqP5XHeZ9w17XJRCkIWKA5dd4=, tarball: https://gitlab.dsr-corporation.com/api/v4/projects/1420/packages/npm/@hiero-did-sdk/anoncreds/-/@hiero-did-sdk/anoncreds-0.0.3.tgz}
+  '@hiero-did-sdk/anoncreds@0.0.5':
+    resolution: {integrity: sha1-2wM2uEtD9o5uN/rzzifDwYQfAa8=, tarball: https://gitlab.dsr-corporation.com/api/v4/projects/1420/packages/npm/@hiero-did-sdk/anoncreds/-/@hiero-did-sdk/anoncreds-0.0.5.tgz}
 
-  '@hiero-did-sdk/cache@0.0.1':
-    resolution: {integrity: sha1-Bhzb7sOU4q8eMzLkHv7foHCcc8M=, tarball: https://gitlab.dsr-corporation.com/api/v4/projects/1420/packages/npm/@hiero-did-sdk/cache/-/@hiero-did-sdk/cache-0.0.1.tgz}
+  '@hiero-did-sdk/cache@0.0.2':
+    resolution: {integrity: sha1-jffSjrPyflFrvAJEuJW+ncxFcUY=, tarball: https://gitlab.dsr-corporation.com/api/v4/projects/1420/packages/npm/@hiero-did-sdk/cache/-/@hiero-did-sdk/cache-0.0.2.tgz}
 
-  '@hiero-did-sdk/client@0.0.1':
-    resolution: {integrity: sha1-ONxxJr5ab4ReLsPjGGktf95slAU=, tarball: https://gitlab.dsr-corporation.com/api/v4/projects/1420/packages/npm/@hiero-did-sdk/client/-/@hiero-did-sdk/client-0.0.1.tgz}
+  '@hiero-did-sdk/client@0.0.3':
+    resolution: {integrity: sha1-pFwODG9IEbVc9GMkfrC3TroiSbA=, tarball: https://gitlab.dsr-corporation.com/api/v4/projects/1420/packages/npm/@hiero-did-sdk/client/-/@hiero-did-sdk/client-0.0.3.tgz}
 
   '@hiero-did-sdk/core@0.0.1':
     resolution: {integrity: sha1-ng7T9mbOTVEkyGyV8CcUtTiRL/Q=, tarball: https://gitlab.dsr-corporation.com/api/v4/projects/1420/packages/npm/@hiero-did-sdk/core/-/@hiero-did-sdk/core-0.0.1.tgz}
     engines: {node: '>=20'}
 
-  '@hiero-did-sdk/crypto@0.0.1':
-    resolution: {integrity: sha1-oea8mNR4It44mUFz8hH9+7CtVv8=, tarball: https://gitlab.dsr-corporation.com/api/v4/projects/1420/packages/npm/@hiero-did-sdk/crypto/-/@hiero-did-sdk/crypto-0.0.1.tgz}
+  '@hiero-did-sdk/core@0.0.2':
+    resolution: {integrity: sha1-1/QjEyGk0ASFA+2WkyqrGu7lmL4=, tarball: https://gitlab.dsr-corporation.com/api/v4/projects/1420/packages/npm/@hiero-did-sdk/core/-/@hiero-did-sdk/core-0.0.2.tgz}
+    engines: {node: '>=20'}
 
-  '@hiero-did-sdk/hcs@0.0.3':
-    resolution: {integrity: sha1-HvXry7u33YR9HTgn2QBfA894wHk=, tarball: https://gitlab.dsr-corporation.com/api/v4/projects/1420/packages/npm/@hiero-did-sdk/hcs/-/@hiero-did-sdk/hcs-0.0.3.tgz}
+  '@hiero-did-sdk/core@0.0.4':
+    resolution: {integrity: sha1-CBjHJmObZbG1MVRNos1QkLOnPNE=, tarball: https://gitlab.dsr-corporation.com/api/v4/projects/1420/packages/npm/@hiero-did-sdk/core/-/@hiero-did-sdk/core-0.0.4.tgz}
+    engines: {node: '>=20'}
+
+  '@hiero-did-sdk/crypto@0.0.2':
+    resolution: {integrity: sha1-FXqF4hJhZl2l28snZrFu5wRucZ0=, tarball: https://gitlab.dsr-corporation.com/api/v4/projects/1420/packages/npm/@hiero-did-sdk/crypto/-/@hiero-did-sdk/crypto-0.0.2.tgz}
+
+  '@hiero-did-sdk/hcs@0.0.5':
+    resolution: {integrity: sha1-GAwjKLcSl/zGku2NCrIseiLdFwA=, tarball: https://gitlab.dsr-corporation.com/api/v4/projects/1420/packages/npm/@hiero-did-sdk/hcs/-/@hiero-did-sdk/hcs-0.0.5.tgz}
 
   '@hiero-did-sdk/lifecycle@0.0.1':
     resolution: {integrity: sha1-Wr9teNFTaBKQWTxg4+ciDkmKmTw=, tarball: https://gitlab.dsr-corporation.com/api/v4/projects/1420/packages/npm/@hiero-did-sdk/lifecycle/-/@hiero-did-sdk/lifecycle-0.0.1.tgz}
@@ -2431,16 +2435,16 @@ packages:
     resolution: {integrity: sha1-ljb+sGgZZ9+LNPjqCD5/L/e/9qQ=, tarball: https://gitlab.dsr-corporation.com/api/v4/projects/1420/packages/npm/@hiero-did-sdk/publisher-internal/-/@hiero-did-sdk/publisher-internal-0.0.1.tgz}
     engines: {node: '>=20'}
 
-  '@hiero-did-sdk/registrar@0.0.1':
-    resolution: {integrity: sha1-q26HV0rQbw6F0dGhZll6H8rIc34=, tarball: https://gitlab.dsr-corporation.com/api/v4/projects/1420/packages/npm/@hiero-did-sdk/registrar/-/@hiero-did-sdk/registrar-0.0.1.tgz}
+  '@hiero-did-sdk/registrar@0.0.3':
+    resolution: {integrity: sha1-v2Rk8H8kle/DINeOUrqNhQ3quV8=, tarball: https://gitlab.dsr-corporation.com/api/v4/projects/1420/packages/npm/@hiero-did-sdk/registrar/-/@hiero-did-sdk/registrar-0.0.3.tgz}
     engines: {node: '>=20'}
 
   '@hiero-did-sdk/resolver@0.0.1':
     resolution: {integrity: sha1-wnraBME9Nh2ZndgtpIpsJAiV/L8=, tarball: https://gitlab.dsr-corporation.com/api/v4/projects/1420/packages/npm/@hiero-did-sdk/resolver/-/@hiero-did-sdk/resolver-0.0.1.tgz}
     engines: {node: '>=20'}
 
-  '@hiero-did-sdk/resolver@0.0.5':
-    resolution: {integrity: sha1-CgF42+upJbwpnP+KQZPnKWkLobY=, tarball: https://gitlab.dsr-corporation.com/api/v4/projects/1420/packages/npm/@hiero-did-sdk/resolver/-/@hiero-did-sdk/resolver-0.0.5.tgz}
+  '@hiero-did-sdk/resolver@0.0.7':
+    resolution: {integrity: sha1-AMoLzBMbtN95c4lTe0m5TjVn8T8=, tarball: https://gitlab.dsr-corporation.com/api/v4/projects/1420/packages/npm/@hiero-did-sdk/resolver/-/@hiero-did-sdk/resolver-0.0.7.tgz}
     engines: {node: '>=20'}
 
   '@hiero-did-sdk/signer-internal@0.0.1':
@@ -2451,8 +2455,8 @@ packages:
     resolution: {integrity: sha1-OIOfKsgdl0nu6qjsk5dSZg4WcqQ=, tarball: https://gitlab.dsr-corporation.com/api/v4/projects/1420/packages/npm/@hiero-did-sdk/verifier-internal/-/@hiero-did-sdk/verifier-internal-0.0.1.tgz}
     engines: {node: '>=20'}
 
-  '@hiero-did-sdk/zstd@0.0.1':
-    resolution: {integrity: sha1-cIIzM5iK9GDHLmBUmci61XBLAUk=, tarball: https://gitlab.dsr-corporation.com/api/v4/projects/1420/packages/npm/@hiero-did-sdk/zstd/-/@hiero-did-sdk/zstd-0.0.1.tgz}
+  '@hiero-did-sdk/zstd@0.0.2':
+    resolution: {integrity: sha1-QS6ZLrfamatPUNoIAxyV8Kaq6wk=, tarball: https://gitlab.dsr-corporation.com/api/v4/projects/1420/packages/npm/@hiero-did-sdk/zstd/-/@hiero-did-sdk/zstd-0.0.2.tgz}
 
   '@hyperledger/anoncreds-nodejs@0.3.1':
     resolution: {integrity: sha512-/oWmWgcOPqjAtd2+dKASPYL84Qd7sAFyCBfEKM7PAgVbObaZUZc0kqA7hkEz/qyiqUvcP/JwKTc1v4zVZi6BTg==}
@@ -9140,10 +9144,10 @@ snapshots:
       human-id: 4.1.1
       prettier: 2.8.8
 
-  '@cheqd/sdk@5.3.1':
+  '@cheqd/sdk@5.2.1':
     dependencies:
       '@cheqd/ts-proto': 4.1.1
-      '@cheqd/ts-proto-cjs': '@cheqd/ts-proto@2.5.0'
+      '@cheqd/ts-proto-cjs': '@cheqd/ts-proto@2.4.1'
       '@cosmjs/amino': 0.33.1
       '@cosmjs/amino-cjs': '@cosmjs/amino@0.30.1'
       '@cosmjs/crypto': 0.33.1
@@ -9190,12 +9194,6 @@ snapshots:
       - utf-8-validate
 
   '@cheqd/ts-proto@2.4.1':
-    dependencies:
-      '@bufbuild/protobuf': 2.5.2
-      long: 5.3.2
-      protobufjs: 7.5.3
-
-  '@cheqd/ts-proto@2.5.0':
     dependencies:
       '@bufbuild/protobuf': 2.5.2
       long: 5.3.2
@@ -10107,25 +10105,25 @@ snapshots:
       - expo-crypto
       - react-native
 
-  '@hiero-did-sdk/anoncreds@0.0.3(bn.js@5.2.2)(react-native@0.78.2(@babel/core@7.27.4)(@babel/preset-env@7.27.2(@babel/core@7.27.4))(@react-native-community/cli@10.2.7(@babel/core@7.27.4))(react@18.3.1))(react@18.3.1)':
+  '@hiero-did-sdk/anoncreds@0.0.5(bn.js@5.2.2)(react-native@0.78.2(@babel/core@7.27.4)(@babel/preset-env@7.27.2(@babel/core@7.27.4))(@react-native-community/cli@10.2.7(@babel/core@7.27.4))(react@18.3.1))(react@18.3.1)':
     dependencies:
-      '@hiero-did-sdk/hcs': 0.0.3(bn.js@5.2.2)(react-native@0.78.2(@babel/core@7.27.4)(@babel/preset-env@7.27.2(@babel/core@7.27.4))(@react-native-community/cli@10.2.7(@babel/core@7.27.4))(react@18.3.1))(react@18.3.1)
-      '@hiero-did-sdk/zstd': 0.0.1(react-native@0.78.2(@babel/core@7.27.4)(@babel/preset-env@7.27.2(@babel/core@7.27.4))(@react-native-community/cli@10.2.7(@babel/core@7.27.4))(react@18.3.1))(react@18.3.1)
+      '@hiero-did-sdk/hcs': 0.0.5(bn.js@5.2.2)(react-native@0.78.2(@babel/core@7.27.4)(@babel/preset-env@7.27.2(@babel/core@7.27.4))(@react-native-community/cli@10.2.7(@babel/core@7.27.4))(react@18.3.1))(react@18.3.1)
+      '@hiero-did-sdk/zstd': 0.0.2(react-native@0.78.2(@babel/core@7.27.4)(@babel/preset-env@7.27.2(@babel/core@7.27.4))(@react-native-community/cli@10.2.7(@babel/core@7.27.4))(react@18.3.1))(react@18.3.1)
     transitivePeerDependencies:
       - bn.js
       - expo-crypto
       - react
       - react-native
 
-  '@hiero-did-sdk/cache@0.0.1(bn.js@5.2.2)(react-native@0.78.2(@babel/core@7.27.4)(@babel/preset-env@7.27.2(@babel/core@7.27.4))(@react-native-community/cli@10.2.7(@babel/core@7.27.4))(react@18.3.1))':
+  '@hiero-did-sdk/cache@0.0.2(bn.js@5.2.2)(react-native@0.78.2(@babel/core@7.27.4)(@babel/preset-env@7.27.2(@babel/core@7.27.4))(@react-native-community/cli@10.2.7(@babel/core@7.27.4))(react@18.3.1))':
     dependencies:
-      '@hiero-did-sdk/core': 0.0.1(bn.js@5.2.2)(react-native@0.78.2(@babel/core@7.27.4)(@babel/preset-env@7.27.2(@babel/core@7.27.4))(@react-native-community/cli@10.2.7(@babel/core@7.27.4))(react@18.3.1))
+      '@hiero-did-sdk/core': 0.0.4(bn.js@5.2.2)(react-native@0.78.2(@babel/core@7.27.4)(@babel/preset-env@7.27.2(@babel/core@7.27.4))(@react-native-community/cli@10.2.7(@babel/core@7.27.4))(react@18.3.1))
     transitivePeerDependencies:
       - bn.js
       - expo-crypto
       - react-native
 
-  '@hiero-did-sdk/client@0.0.1(bn.js@5.2.2)(react-native@0.78.2(@babel/core@7.27.4)(@babel/preset-env@7.27.2(@babel/core@7.27.4))(@react-native-community/cli@10.2.7(@babel/core@7.27.4))(react@18.3.1))':
+  '@hiero-did-sdk/client@0.0.3(bn.js@5.2.2)(react-native@0.78.2(@babel/core@7.27.4)(@babel/preset-env@7.27.2(@babel/core@7.27.4))(@react-native-community/cli@10.2.7(@babel/core@7.27.4))(react@18.3.1))':
     dependencies:
       '@hashgraph/sdk': 2.66.0(bn.js@5.2.2)(react-native@0.78.2(@babel/core@7.27.4)(@babel/preset-env@7.27.2(@babel/core@7.27.4))(@react-native-community/cli@10.2.7(@babel/core@7.27.4))(react@18.3.1))
     transitivePeerDependencies:
@@ -10143,7 +10141,27 @@ snapshots:
       - expo-crypto
       - react-native
 
-  '@hiero-did-sdk/crypto@0.0.1(react-native@0.78.2(@babel/core@7.27.4)(@babel/preset-env@7.27.2(@babel/core@7.27.4))(@react-native-community/cli@10.2.7(@babel/core@7.27.4))(react@18.3.1))(react@18.3.1)':
+  '@hiero-did-sdk/core@0.0.2(bn.js@5.2.2)(react-native@0.78.2(@babel/core@7.27.4)(@babel/preset-env@7.27.2(@babel/core@7.27.4))(@react-native-community/cli@10.2.7(@babel/core@7.27.4))(react@18.3.1))':
+    dependencies:
+      '@hashgraph/sdk': 2.66.0(bn.js@5.2.2)(react-native@0.78.2(@babel/core@7.27.4)(@babel/preset-env@7.27.2(@babel/core@7.27.4))(@react-native-community/cli@10.2.7(@babel/core@7.27.4))(react@18.3.1))
+      '@scure/base': 1.2.6
+      cbor-x: 1.6.0
+    transitivePeerDependencies:
+      - bn.js
+      - expo-crypto
+      - react-native
+
+  '@hiero-did-sdk/core@0.0.4(bn.js@5.2.2)(react-native@0.78.2(@babel/core@7.27.4)(@babel/preset-env@7.27.2(@babel/core@7.27.4))(@react-native-community/cli@10.2.7(@babel/core@7.27.4))(react@18.3.1))':
+    dependencies:
+      '@hashgraph/sdk': 2.66.0(bn.js@5.2.2)(react-native@0.78.2(@babel/core@7.27.4)(@babel/preset-env@7.27.2(@babel/core@7.27.4))(@react-native-community/cli@10.2.7(@babel/core@7.27.4))(react@18.3.1))
+      '@scure/base': 1.2.6
+      cbor-x: 1.6.0
+    transitivePeerDependencies:
+      - bn.js
+      - expo-crypto
+      - react-native
+
+  '@hiero-did-sdk/crypto@0.0.2(react-native@0.78.2(@babel/core@7.27.4)(@babel/preset-env@7.27.2(@babel/core@7.27.4))(@react-native-community/cli@10.2.7(@babel/core@7.27.4))(react@18.3.1))(react@18.3.1)':
     dependencies:
       crypto: 1.0.1
       crypto-js: 4.2.0
@@ -10152,14 +10170,14 @@ snapshots:
       - react
       - react-native
 
-  '@hiero-did-sdk/hcs@0.0.3(bn.js@5.2.2)(react-native@0.78.2(@babel/core@7.27.4)(@babel/preset-env@7.27.2(@babel/core@7.27.4))(@react-native-community/cli@10.2.7(@babel/core@7.27.4))(react@18.3.1))(react@18.3.1)':
+  '@hiero-did-sdk/hcs@0.0.5(bn.js@5.2.2)(react-native@0.78.2(@babel/core@7.27.4)(@babel/preset-env@7.27.2(@babel/core@7.27.4))(@react-native-community/cli@10.2.7(@babel/core@7.27.4))(react@18.3.1))(react@18.3.1)':
     dependencies:
       '@hashgraph/sdk': 2.66.0(bn.js@5.2.2)(react-native@0.78.2(@babel/core@7.27.4)(@babel/preset-env@7.27.2(@babel/core@7.27.4))(@react-native-community/cli@10.2.7(@babel/core@7.27.4))(react@18.3.1))
-      '@hiero-did-sdk/cache': 0.0.1(bn.js@5.2.2)(react-native@0.78.2(@babel/core@7.27.4)(@babel/preset-env@7.27.2(@babel/core@7.27.4))(@react-native-community/cli@10.2.7(@babel/core@7.27.4))(react@18.3.1))
-      '@hiero-did-sdk/client': 0.0.1(bn.js@5.2.2)(react-native@0.78.2(@babel/core@7.27.4)(@babel/preset-env@7.27.2(@babel/core@7.27.4))(@react-native-community/cli@10.2.7(@babel/core@7.27.4))(react@18.3.1))
-      '@hiero-did-sdk/core': 0.0.1(bn.js@5.2.2)(react-native@0.78.2(@babel/core@7.27.4)(@babel/preset-env@7.27.2(@babel/core@7.27.4))(@react-native-community/cli@10.2.7(@babel/core@7.27.4))(react@18.3.1))
-      '@hiero-did-sdk/crypto': 0.0.1(react-native@0.78.2(@babel/core@7.27.4)(@babel/preset-env@7.27.2(@babel/core@7.27.4))(@react-native-community/cli@10.2.7(@babel/core@7.27.4))(react@18.3.1))(react@18.3.1)
-      '@hiero-did-sdk/zstd': 0.0.1(react-native@0.78.2(@babel/core@7.27.4)(@babel/preset-env@7.27.2(@babel/core@7.27.4))(@react-native-community/cli@10.2.7(@babel/core@7.27.4))(react@18.3.1))(react@18.3.1)
+      '@hiero-did-sdk/cache': 0.0.2(bn.js@5.2.2)(react-native@0.78.2(@babel/core@7.27.4)(@babel/preset-env@7.27.2(@babel/core@7.27.4))(@react-native-community/cli@10.2.7(@babel/core@7.27.4))(react@18.3.1))
+      '@hiero-did-sdk/client': 0.0.3(bn.js@5.2.2)(react-native@0.78.2(@babel/core@7.27.4)(@babel/preset-env@7.27.2(@babel/core@7.27.4))(@react-native-community/cli@10.2.7(@babel/core@7.27.4))(react@18.3.1))
+      '@hiero-did-sdk/core': 0.0.4(bn.js@5.2.2)(react-native@0.78.2(@babel/core@7.27.4)(@babel/preset-env@7.27.2(@babel/core@7.27.4))(@react-native-community/cli@10.2.7(@babel/core@7.27.4))(react@18.3.1))
+      '@hiero-did-sdk/crypto': 0.0.2(react-native@0.78.2(@babel/core@7.27.4)(@babel/preset-env@7.27.2(@babel/core@7.27.4))(@react-native-community/cli@10.2.7(@babel/core@7.27.4))(react@18.3.1))(react@18.3.1)
+      '@hiero-did-sdk/zstd': 0.0.2(react-native@0.78.2(@babel/core@7.27.4)(@babel/preset-env@7.27.2(@babel/core@7.27.4))(@react-native-community/cli@10.2.7(@babel/core@7.27.4))(react@18.3.1))(react@18.3.1)
     transitivePeerDependencies:
       - bn.js
       - expo-crypto
@@ -10194,19 +10212,20 @@ snapshots:
       - expo-crypto
       - react-native
 
-  '@hiero-did-sdk/registrar@0.0.1(bn.js@5.2.2)(react-native@0.78.2(@babel/core@7.27.4)(@babel/preset-env@7.27.2(@babel/core@7.27.4))(@react-native-community/cli@10.2.7(@babel/core@7.27.4))(react@18.3.1))':
+  '@hiero-did-sdk/registrar@0.0.3(bn.js@5.2.2)(react-native@0.78.2(@babel/core@7.27.4)(@babel/preset-env@7.27.2(@babel/core@7.27.4))(@react-native-community/cli@10.2.7(@babel/core@7.27.4))(react@18.3.1))(react@18.3.1)':
     dependencies:
       '@hashgraph/sdk': 2.66.0(bn.js@5.2.2)(react-native@0.78.2(@babel/core@7.27.4)(@babel/preset-env@7.27.2(@babel/core@7.27.4))(@react-native-community/cli@10.2.7(@babel/core@7.27.4))(react@18.3.1))
-      '@hiero-did-sdk/core': 0.0.1(bn.js@5.2.2)(react-native@0.78.2(@babel/core@7.27.4)(@babel/preset-env@7.27.2(@babel/core@7.27.4))(@react-native-community/cli@10.2.7(@babel/core@7.27.4))(react@18.3.1))
+      '@hiero-did-sdk/core': 0.0.4(bn.js@5.2.2)(react-native@0.78.2(@babel/core@7.27.4)(@babel/preset-env@7.27.2(@babel/core@7.27.4))(@react-native-community/cli@10.2.7(@babel/core@7.27.4))(react@18.3.1))
       '@hiero-did-sdk/lifecycle': 0.0.1(bn.js@5.2.2)(react-native@0.78.2(@babel/core@7.27.4)(@babel/preset-env@7.27.2(@babel/core@7.27.4))(@react-native-community/cli@10.2.7(@babel/core@7.27.4))(react@18.3.1))
       '@hiero-did-sdk/messages': 0.0.1(bn.js@5.2.2)(react-native@0.78.2(@babel/core@7.27.4)(@babel/preset-env@7.27.2(@babel/core@7.27.4))(@react-native-community/cli@10.2.7(@babel/core@7.27.4))(react@18.3.1))
       '@hiero-did-sdk/publisher-internal': 0.0.1(bn.js@5.2.2)(react-native@0.78.2(@babel/core@7.27.4)(@babel/preset-env@7.27.2(@babel/core@7.27.4))(@react-native-community/cli@10.2.7(@babel/core@7.27.4))(react@18.3.1))
-      '@hiero-did-sdk/resolver': 0.0.1(bn.js@5.2.2)(react-native@0.78.2(@babel/core@7.27.4)(@babel/preset-env@7.27.2(@babel/core@7.27.4))(@react-native-community/cli@10.2.7(@babel/core@7.27.4))(react@18.3.1))
+      '@hiero-did-sdk/resolver': 0.0.7(bn.js@5.2.2)(react-native@0.78.2(@babel/core@7.27.4)(@babel/preset-env@7.27.2(@babel/core@7.27.4))(@react-native-community/cli@10.2.7(@babel/core@7.27.4))(react@18.3.1))(react@18.3.1)
       '@hiero-did-sdk/signer-internal': 0.0.1(bn.js@5.2.2)(react-native@0.78.2(@babel/core@7.27.4)(@babel/preset-env@7.27.2(@babel/core@7.27.4))(@react-native-community/cli@10.2.7(@babel/core@7.27.4))(react@18.3.1))
       '@hiero-did-sdk/verifier-internal': 0.0.1(bn.js@5.2.2)(react-native@0.78.2(@babel/core@7.27.4)(@babel/preset-env@7.27.2(@babel/core@7.27.4))(@react-native-community/cli@10.2.7(@babel/core@7.27.4))(react@18.3.1))
     transitivePeerDependencies:
       - bn.js
       - expo-crypto
+      - react
       - react-native
 
   '@hiero-did-sdk/resolver@0.0.1(bn.js@5.2.2)(react-native@0.78.2(@babel/core@7.27.4)(@babel/preset-env@7.27.2(@babel/core@7.27.4))(@react-native-community/cli@10.2.7(@babel/core@7.27.4))(react@18.3.1))':
@@ -10219,11 +10238,11 @@ snapshots:
       - expo-crypto
       - react-native
 
-  '@hiero-did-sdk/resolver@0.0.5(bn.js@5.2.2)(react-native@0.78.2(@babel/core@7.27.4)(@babel/preset-env@7.27.2(@babel/core@7.27.4))(@react-native-community/cli@10.2.7(@babel/core@7.27.4))(react@18.3.1))(react@18.3.1)':
+  '@hiero-did-sdk/resolver@0.0.7(bn.js@5.2.2)(react-native@0.78.2(@babel/core@7.27.4)(@babel/preset-env@7.27.2(@babel/core@7.27.4))(@react-native-community/cli@10.2.7(@babel/core@7.27.4))(react@18.3.1))(react@18.3.1)':
     dependencies:
       '@hashgraph/sdk': 2.66.0(bn.js@5.2.2)(react-native@0.78.2(@babel/core@7.27.4)(@babel/preset-env@7.27.2(@babel/core@7.27.4))(@react-native-community/cli@10.2.7(@babel/core@7.27.4))(react@18.3.1))
-      '@hiero-did-sdk/core': 0.0.1(bn.js@5.2.2)(react-native@0.78.2(@babel/core@7.27.4)(@babel/preset-env@7.27.2(@babel/core@7.27.4))(@react-native-community/cli@10.2.7(@babel/core@7.27.4))(react@18.3.1))
-      '@hiero-did-sdk/hcs': 0.0.3(bn.js@5.2.2)(react-native@0.78.2(@babel/core@7.27.4)(@babel/preset-env@7.27.2(@babel/core@7.27.4))(@react-native-community/cli@10.2.7(@babel/core@7.27.4))(react@18.3.1))(react@18.3.1)
+      '@hiero-did-sdk/core': 0.0.4(bn.js@5.2.2)(react-native@0.78.2(@babel/core@7.27.4)(@babel/preset-env@7.27.2(@babel/core@7.27.4))(@react-native-community/cli@10.2.7(@babel/core@7.27.4))(react@18.3.1))
+      '@hiero-did-sdk/hcs': 0.0.5(bn.js@5.2.2)(react-native@0.78.2(@babel/core@7.27.4)(@babel/preset-env@7.27.2(@babel/core@7.27.4))(@react-native-community/cli@10.2.7(@babel/core@7.27.4))(react@18.3.1))(react@18.3.1)
       '@hiero-did-sdk/verifier-internal': 0.0.1(bn.js@5.2.2)(react-native@0.78.2(@babel/core@7.27.4)(@babel/preset-env@7.27.2(@babel/core@7.27.4))(@react-native-community/cli@10.2.7(@babel/core@7.27.4))(react@18.3.1))
     transitivePeerDependencies:
       - bn.js
@@ -10249,7 +10268,7 @@ snapshots:
       - expo-crypto
       - react-native
 
-  '@hiero-did-sdk/zstd@0.0.1(react-native@0.78.2(@babel/core@7.27.4)(@babel/preset-env@7.27.2(@babel/core@7.27.4))(@react-native-community/cli@10.2.7(@babel/core@7.27.4))(react@18.3.1))(react@18.3.1)':
+  '@hiero-did-sdk/zstd@0.0.2(react-native@0.78.2(@babel/core@7.27.4)(@babel/preset-env@7.27.2(@babel/core@7.27.4))(@react-native-community/cli@10.2.7(@babel/core@7.27.4))(react@18.3.1))(react@18.3.1)':
     dependencies:
       react-native-zstd: 1.1.0(react-native@0.78.2(@babel/core@7.27.4)(@babel/preset-env@7.27.2(@babel/core@7.27.4))(@react-native-community/cli@10.2.7(@babel/core@7.27.4))(react@18.3.1))(react@18.3.1)
       zstd-napi: 0.0.10
