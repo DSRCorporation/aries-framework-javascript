@@ -18,9 +18,12 @@ for [DID SCID Method](https://lf-toip.atlassian.net/wiki/spaces/HOME/pages/88572
 ### Supported DID Hosts
 
 - [Hedera](https://hedera.com/)
-    - Technical design for hosting DID SCID on Hedera can be
-      found [here](https://hashgraph.atlassian.net/wiki/external/Yjg3ZjU0ZjI4MGMyNDUzYWJiZGJmYzUxZDgwMzcyNmY) (to be
-      updated)
+    - Initial technical design for hosting DID SCID on Hedera can be
+      found [here](https://hashgraph.atlassian.net/wiki/external/Yjg3ZjU0ZjI4MGMyNDUzYWJiZGJmYzUxZDgwMzcyNmY)
+    - Significant difference between this implementation and initial design - no shared HCS Topic, HCS Topics per DID
+      instead (similar to Hedera DID Method)
+        - Works better for long-term read operations performance and helps to avoid additional complexity
+        - HCS Topic costs will increase in future so specific approach is a subject for discussions and change
 
 Support for other DID Hosts may be added later, but not planned at the moment.
 
@@ -48,7 +51,7 @@ DID SCID module currently depends on integration with Hedera DID Host and Hedera
 import { Agent, DidsModule } from '@credo-ts/core'
 import { agentDependencies } from '@credo-ts/react-native'
 import { AskarModule } from '@credo-ts/askar'
-import { ariesAskar } from '@hyperledger/aries-askar-react-native'
+import { askar } from '@openwallet-foundation/askar-nodejs'
 
 import { DidScidModule, DidScidResolver, DidScidRegistrar, DidScidAnonCredsRegistry } from "@credo-ts/did-scid"
 import { HederaModule, HederaAnonCredsRegistry } from "@credo-ts/hedera"
@@ -94,9 +97,15 @@ const agent = new Agent({
             operatorKey: '<HEDERA_OPERATOR_KEY>',
         }),
 
-        // Indy VDR can optionally be used with Askar as wallet and storage implementation
         askar: new AskarModule({
-            ariesAskar,
+            askar,
+            store: {
+                id: '<WALLET_NAME>',
+                key: '<WALLET_KEY>',
+                database: { type: 'sqlite', config: {} },
+            },
+            enableStorage: false,
+            enableKms: true
         }),
     },
 })
