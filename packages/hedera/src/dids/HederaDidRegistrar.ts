@@ -56,7 +56,10 @@ export class HederaDidRegistrar implements DidRegistrar {
       const ledgerService = agentContext.dependencyManager.resolve(HederaLedgerService)
 
       // Create did
-      const { did, didDocument } = await ledgerService.createDid(agentContext, options.options?.network)
+      const { did, didDocument } = await ledgerService.createDid(agentContext, {
+        network: options.options?.network,
+        privateKey: options.secret?.privateKey,
+      })
 
       // Save the did so we know we created it and can issue with it
       const credoDidDocument = new DidDocument({
@@ -96,7 +99,7 @@ export class HederaDidRegistrar implements DidRegistrar {
     }
   }
 
-  async update(agentContext: AgentContext, options: HederaDidUpdateOptions): Promise<DidUpdateResult> {
+  async update(_agentContext: AgentContext, _options: HederaDidUpdateOptions): Promise<DidUpdateResult> {
     throw new Error('Method not implemented.')
     // const didRepository = agentContext.dependencyManager.resolve(DidRepository)
     // const ledgerService = agentContext.dependencyManager.resolve(HederaLedgerService)
@@ -153,55 +156,54 @@ export class HederaDidRegistrar implements DidRegistrar {
   }
 
   async deactivate(agentContext: AgentContext, options: HederaDidDeactivateOptions): Promise<DidDeactivateResult> {
-    throw new Error('Method not implemented.')
-  //   const didRepository = agentContext.dependencyManager.resolve(DidRepository)
-  //   const ledgerService = agentContext.dependencyManager.resolve(HederaLedgerService)
-  //
-  //   const did = options.did
-  //
-  //   try {
-  //     const { didDocument, didDocumentMetadata } = await ledgerService.resolveDid(agentContext, did)
-  //
-  //     const didRecord = await didRepository.findCreatedDid(agentContext, did)
-  //
-  //     if (!didDocument || didDocumentMetadata.deactivated || !didRecord) {
-  //       return {
-  //         didDocumentMetadata,
-  //         didRegistrationMetadata: {},
-  //         didState: {
-  //           state: 'failed',
-  //           reason: 'Did not found',
-  //         },
-  //       }
-  //     }
-  //
-  //     const { didDocument: deactivatedDidDocument } = await ledgerService.deactivateDid(agentContext, {
-  //       did: options.did,
-  //       privateKey: options.secret?.privateKey,
-  //     })
-  //
-  //     didRecord.didDocument = JsonTransformer.fromJSON(deactivatedDidDocument, DidDocument)
-  //     await didRepository.update(agentContext, didRecord)
-  //
-  //     return {
-  //       didDocumentMetadata: {},
-  //       didRegistrationMetadata: {},
-  //       didState: {
-  //         state: 'finished',
-  //         did,
-  //         didDocument: didRecord.didDocument,
-  //       },
-  //     }
-  //   } catch (error) {
-  //     agentContext.config.logger.error('Error deactivating DID', error)
-  //     return {
-  //       didDocumentMetadata: {},
-  //       didRegistrationMetadata: {},
-  //       didState: {
-  //         state: 'failed',
-  //         reason: `Unable deactivating DID: ${error.message}`,
-  //       },
-  //     }
-  //   }
+    const didRepository = agentContext.dependencyManager.resolve(DidRepository)
+    const ledgerService = agentContext.dependencyManager.resolve(HederaLedgerService)
+
+    const did = options.did
+
+    try {
+      const { didDocument, didDocumentMetadata } = await ledgerService.resolveDid(agentContext, did)
+
+      const didRecord = await didRepository.findCreatedDid(agentContext, did)
+
+      if (!didDocument || didDocumentMetadata.deactivated || !didRecord) {
+        return {
+          didDocumentMetadata,
+          didRegistrationMetadata: {},
+          didState: {
+            state: 'failed',
+            reason: 'Did not found',
+          },
+        }
+      }
+
+      const { didDocument: deactivatedDidDocument } = await ledgerService.deactivateDid(agentContext, {
+        did: options.did,
+        privateKey: options.secret?.privateKey,
+      })
+
+      didRecord.didDocument = JsonTransformer.fromJSON(deactivatedDidDocument, DidDocument)
+      await didRepository.update(agentContext, didRecord)
+
+      return {
+        didDocumentMetadata: {},
+        didRegistrationMetadata: {},
+        didState: {
+          state: 'finished',
+          did,
+          didDocument: didRecord.didDocument,
+        },
+      }
+    } catch (error) {
+      agentContext.config.logger.error('Error deactivating DID', error)
+      return {
+        didDocumentMetadata: {},
+        didRegistrationMetadata: {},
+        didState: {
+          state: 'failed',
+          reason: `Unable deactivating DID: ${error.message}`,
+        },
+      }
+    }
   }
 }

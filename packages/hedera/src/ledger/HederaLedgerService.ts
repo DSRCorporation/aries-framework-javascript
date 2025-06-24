@@ -1,5 +1,3 @@
-import {HederaAnoncredsRegistry} from "@hiero-did-sdk/anoncreds";
-import {HederaClientService} from "@hiero-did-sdk/client";
 import type {
   GetCredentialDefinitionReturn,
   GetRevocationRegistryDefinitionReturn,
@@ -15,7 +13,11 @@ import type {
   RegisterSchemaReturn,
 } from '@credo-ts/anoncreds'
 import { type AgentContext, injectable } from '@credo-ts/core'
-import { DIDResolution } from '@hiero-did-sdk/core'
+import { Client, PrivateKey } from '@hashgraph/sdk'
+import { HederaAnoncredsRegistry } from '@hiero-did-sdk/anoncreds'
+import { HederaClientService } from '@hiero-did-sdk/client'
+import { HederaNetwork } from '@hiero-did-sdk/client/dist/index'
+import { DIDResolution, KeysUtility } from '@hiero-did-sdk/core'
 import {
   CreateDIDResult,
   DeactivateDIDOptions,
@@ -24,12 +26,17 @@ import {
   UpdateDIDResult,
   createDID,
   deactivateDID,
-  updateDID,
+  generateCreateDIDRequest,
+  submitCreateDIDRequest,
 } from '@hiero-did-sdk/registrar'
 import { TopicReaderHederaHcs, parseDID, resolveDID } from '@hiero-did-sdk/resolver'
 import { HederaModuleConfig } from '../HederaModuleConfig'
 import { CredoCache } from '../cache/CredoCache'
-import {Client} from "@hashgraph/sdk";
+
+export interface HederaLedgerServiceDidCreateOptions {
+  network?: HederaNetwork | string
+  privateKey?: string | PrivateKey | undefined
+}
 
 @injectable()
 export class HederaLedgerService {
@@ -46,9 +53,35 @@ export class HederaLedgerService {
     return await resolveDID(did, 'application/ld+json;profile="https://w3id.org/did-resolution"', { topicReader })
   }
 
-  public async createDid(agentContext: AgentContext, network?: string): Promise<CreateDIDResult> {
-    return this.clientService.withClient({ networkName: network }, async (client: Client) => {
+  public async createDid(
+    agentContext: AgentContext,
+    options: HederaLedgerServiceDidCreateOptions
+  ): Promise<CreateDIDResult> {
+    return this.clientService.withClient({ networkName: options.network }, async (client: Client) => {
       const topicReader = this.getHederaHcsTopicReader(agentContext)
+
+      if (options.privateKey) {
+        const rootKey =
+          options.privateKey instanceof PrivateKey
+            ? options.privateKey
+            : PrivateKey.fromStringED25519(options.privateKey)
+        const publicMultibaseRootKey = KeysUtility.fromPublicKey(rootKey.publicKey).toMultibase()
+        const { state, signingRequest } = await generateCreateDIDRequest(
+          {
+            multibasePublicKey: publicMultibaseRootKey,
+          },
+          {
+            client,
+          }
+        )
+        const signature = rootKey.sign(signingRequest.serializedPayload)
+        return await submitCreateDIDRequest(
+          { state, signature, waitForDIDVisibility: false },
+          {
+            client,
+          }
+        )
+      }
       return await createDID(
         {
           waitForDIDVisibility: false,
@@ -59,7 +92,7 @@ export class HederaLedgerService {
     })
   }
 
-  public async updateDid(agentContext: AgentContext, props: UpdateDIDOptions): Promise<UpdateDIDResult> {
+  public async updateDid(_agentContext: AgentContext, _props: UpdateDIDOptions): Promise<UpdateDIDResult> {
     throw new Error('Method not implemented.')
     // const { network: networkName } = parseDID(props.did)
     // return this.clientService.withClient({ networkName }, async (client: Client) => {
@@ -76,19 +109,19 @@ export class HederaLedgerService {
   }
 
   public async deactivateDid(agentContext: AgentContext, props: DeactivateDIDOptions): Promise<DeactivateDIDResult> {
-    throw new Error('Method not implemented.')
-    // const { network: networkName } = parseDID(props.did)
-    // return this.clientService.withClient({ networkName }, async (client: Client) => {
-    //   const topicReader = this.getHederaHcsTopicReader(agentContext)
-    //   return await deactivateDID(
-    //     {
-    //       ...props,
-    //       waitForDIDVisibility: false,
-    //       topicReader,
-    //     },
-    //     { client }
-    //   )
-    // })
+    const { network: networkName } = parseDID(props.did)
+    return this.clientService.withClient({ networkName }, async (client: Client) => {
+      const topicReader = this.getHederaHcsTopicReader(agentContext)
+      return await deactivateDID(
+        {
+          did: props.did,
+          privateKey: props.privateKey,
+          waitForDIDVisibility: false,
+          topicReader,
+        },
+        { client }
+      )
+    })
   }
 
   /* Anoncreds*/
