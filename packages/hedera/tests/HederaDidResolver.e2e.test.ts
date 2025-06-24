@@ -1,7 +1,6 @@
 import { Agent, ConsoleLogger, JsonTransformer, LogLevel } from '@credo-ts/core'
-import { HederaDidRegistrar } from '../src/dids'
 import { HederaDidCreateOptions } from '../src/dids/HederaDidRegistrar'
-import {getHederaAgent, waitTimeout} from './utils'
+import { getHederaAgent } from './utils'
 
 describe('Hedera DID resolver', () => {
   const logger = new ConsoleLogger(LogLevel.error)
@@ -16,12 +15,7 @@ describe('Hedera DID resolver', () => {
     })
     await agent.initialize()
 
-    const _didRegistrar = agent.dependencyManager.resolve(HederaDidRegistrar)
-
     const didResult = await agent.dids.create<HederaDidCreateOptions>({ method: 'hedera' })
-
-    await waitTimeout(3000)
-
     if (!didResult.didState.did) {
       throw new Error('No DID created')
     }
@@ -36,32 +30,20 @@ describe('Hedera DID resolver', () => {
     const resolveResult = await agent.dids.resolve(did)
     expect(JsonTransformer.toJSON(resolveResult)).toMatchObject({
       didDocument: {
-        '@context': ['https://www.w3.org/ns/did/v1', 'https://w3id.org/security/suites/jws-2020/v1'],
+        '@context': ['https://www.w3.org/ns/did/v1'],
         id: did,
-        controller: [did],
+        controller: did,
         verificationMethod: [
           {
             controller: did,
-            id: `${did}#key-1`,
-            publicKeyJwk: {
-              kty: 'OKP',
-              crv: 'Ed25519',
-              x: expect.any(String),
-            },
-            type: 'JsonWebKey2020',
+            id: `${did}#did-root-key`,
+            type: 'Ed25519VerificationKey2020',
+            publicKeyMultibase: expect.any(String),
           },
         ],
-        authentication: [`${did}#key-1`],
       },
-      didDocumentMetadata: {
-        created: expect.any(String),
-        updated: undefined,
-        deactivated: false,
-        versionId: expect.any(String),
-        nextVersionId: '',
-      },
+      didDocumentMetadata: {},
       didResolutionMetadata: {},
     })
   })
-
 })
