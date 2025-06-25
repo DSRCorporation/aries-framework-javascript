@@ -1,9 +1,10 @@
 import { Agent, ConsoleLogger, JsonTransformer, LogLevel } from '@credo-ts/core'
-import { HederaDidCreateOptions } from '../src/dids/HederaDidRegistrar'
+import { HederaDidCreateOptions } from '../src/ledger/HederaLedgerService'
 import { getHederaAgent } from './utils'
 
 describe('Hedera DID resolver', () => {
   const logger = new ConsoleLogger(LogLevel.error)
+  const privateKey = process.env.HEDERA_TEST_OPERATOR_KEY ?? ''
 
   let agent: Agent
   let did: string
@@ -15,7 +16,7 @@ describe('Hedera DID resolver', () => {
     })
     await agent.initialize()
 
-    const didResult = await agent.dids.create<HederaDidCreateOptions>({ method: 'hedera' })
+    const didResult = await agent.dids.create<HederaDidCreateOptions>({ method: 'hedera', secret: { privateKey } })
     if (!didResult.didState.did) {
       throw new Error('No DID created')
     }

@@ -1,8 +1,6 @@
 import {
   AgentContext,
-  DidCreateOptions,
   DidCreateResult,
-  DidDeactivateOptions,
   DidDeactivateResult,
   DidDocument,
   DidDocumentRole,
@@ -10,40 +8,15 @@ import {
   DidRecord,
   DidRegistrar,
   DidRepository,
-  DidUpdateOptions,
   DidUpdateResult,
   JsonTransformer,
 } from '@credo-ts/core'
-import { HederaLedgerService } from '../ledger/HederaLedgerService'
-
-import { PrivateKey } from '@hashgraph/sdk'
-import { HederaNetwork } from '@hiero-did-sdk/client'
-
-export interface HederaDidCreateOptions extends DidCreateOptions {
-  method: 'hedera'
-  did?: string
-  didDocument?: DidDocument
-  secret?: {
-    privateKey?: string | PrivateKey | undefined
-  }
-  options?: {
-    network?: HederaNetwork | string
-  }
-}
-
-export interface HederaDidUpdateOptions extends DidUpdateOptions {
-  did: string
-  secret?: {
-    privateKey?: string | PrivateKey | undefined
-  }
-}
-
-export interface HederaDidDeactivateOptions extends DidDeactivateOptions {
-  did: string
-  secret?: {
-    privateKey?: string | PrivateKey | undefined
-  }
-}
+import {
+  HederaDidCreateOptions,
+  HederaDidDeactivateOptions,
+  HederaDidUpdateOptions,
+  HederaLedgerService,
+} from '../ledger/HederaLedgerService'
 
 export class HederaDidRegistrar implements DidRegistrar {
   public readonly supportedMethods = ['hedera']
@@ -56,12 +29,9 @@ export class HederaDidRegistrar implements DidRegistrar {
       const ledgerService = agentContext.dependencyManager.resolve(HederaLedgerService)
 
       // Create did
-      const { did, didDocument } = await ledgerService.createDid(agentContext, {
-        network: options.options?.network,
-        privateKey: options.secret?.privateKey,
-      })
+      const { did, didDocument } = await ledgerService.createDid(agentContext, options)
 
-      // Save the did so we know we created it and can issue with it
+      // Save the did to wallet
       const credoDidDocument = new DidDocument({
         ...didDocument,
         service: didDocument.service?.map((s) => new DidDocumentService(s)),
@@ -72,6 +42,7 @@ export class HederaDidRegistrar implements DidRegistrar {
           did,
           role: DidDocumentRole.Created,
           didDocument: credoDidDocument,
+          // todo: keys: ???
         })
       )
 
@@ -99,60 +70,53 @@ export class HederaDidRegistrar implements DidRegistrar {
     }
   }
 
-  async update(_agentContext: AgentContext, _options: HederaDidUpdateOptions): Promise<DidUpdateResult> {
-    throw new Error('Method not implemented.')
-    // const didRepository = agentContext.dependencyManager.resolve(DidRepository)
-    // const ledgerService = agentContext.dependencyManager.resolve(HederaLedgerService)
-    //
-    // try {
-    //   const { did } = options
-    //   const { didDocument, didDocumentMetadata } = await ledgerService.resolveDid(agentContext, did)
-    //   const didRecord = await didRepository.findCreatedDid(agentContext, did)
-    //   if (!didDocument || didDocumentMetadata.deactivated || !didRecord) {
-    //     return {
-    //       didDocumentMetadata: {},
-    //       didRegistrationMetadata: {},
-    //       didState: {
-    //         state: 'failed',
-    //         reason: 'Did not found',
-    //       },
-    //     }
-    //   }
-    //
-    //   const { didDocument: updatedDidDocument } = await ledgerService.updateDid(agentContext, {
-    //     did,
-    //     updates: {
-    //       operation: ,
-    //       // id: options.,
-    //       // property: 'verificationMethod',
-    //       // publicKeyMultibase: 'z6MkkFf6yboMwr1LQVAHqatuGYD9foRe7L2wPkEn1A7LyoQb',
-    //     },
-    //     privateKey: options.secret?.privateKey,
-    //   })
-    //
-    //   didRecord.didDocument = JsonTransformer.fromJSON(updatedDidDocument, DidDocument)
-    //   await didRepository.update(agentContext, didRecord)
-    //
-    //   return {
-    //     didDocumentMetadata: {},
-    //     didRegistrationMetadata: {},
-    //     didState: {
-    //       state: 'finished',
-    //       did,
-    //       didDocument: didRecord.didDocument,
-    //     },
-    //   }
-    // } catch (error) {
-    //   agentContext.config.logger.error('Error updating DID', error)
-    //   return {
-    //     didDocumentMetadata: {},
-    //     didRegistrationMetadata: {},
-    //     didState: {
-    //       state: 'failed',
-    //       reason: `Unable update DID: ${error.message}`,
-    //     },
-    //   }
-    // }
+  async update(agentContext: AgentContext, options: HederaDidUpdateOptions): Promise<DidUpdateResult> {
+    const didRepository = agentContext.dependencyManager.resolve(DidRepository)
+    const ledgerService = agentContext.dependencyManager.resolve(HederaLedgerService)
+
+    try {
+      const { did } = options
+      const { didDocument, didDocumentMetadata } = await ledgerService.resolveDid(agentContext, did)
+      const didRecord = await didRepository.findCreatedDid(agentContext, did)
+      if (!didDocument || didDocumentMetadata.deactivated || !didRecord) {
+        return {
+          didDocumentMetadata: {},
+          didRegistrationMetadata: {},
+          didState: {
+            state: 'failed',
+            reason: 'Did not found',
+          },
+        }
+      }
+
+      // Update did
+      const { didDocument: updatedDidDocument } = await ledgerService.updateDid(agentContext, options)
+
+      // Save the did to wallet
+      didRecord.didDocument = JsonTransformer.fromJSON(updatedDidDocument, DidDocument)
+      // todo: didRecord.keys = ???
+      await didRepository.update(agentContext, didRecord)
+
+      return {
+        didDocumentMetadata: {},
+        didRegistrationMetadata: {},
+        didState: {
+          state: 'finished',
+          did,
+          didDocument: didRecord.didDocument,
+        },
+      }
+    } catch (error) {
+      agentContext.config.logger.error('Error updating DID', error)
+      return {
+        didDocumentMetadata: {},
+        didRegistrationMetadata: {},
+        didState: {
+          state: 'failed',
+          reason: `Unable update DID: ${error.message}`,
+        },
+      }
+    }
   }
 
   async deactivate(agentContext: AgentContext, options: HederaDidDeactivateOptions): Promise<DidDeactivateResult> {
@@ -176,12 +140,10 @@ export class HederaDidRegistrar implements DidRegistrar {
           },
         }
       }
+      // Deactivate did
+      const { didDocument: deactivatedDidDocument } = await ledgerService.deactivateDid(agentContext, options)
 
-      const { didDocument: deactivatedDidDocument } = await ledgerService.deactivateDid(agentContext, {
-        did: options.did,
-        privateKey: options.secret?.privateKey,
-      })
-
+      // Save the did to wallet
       didRecord.didDocument = JsonTransformer.fromJSON(deactivatedDidDocument, DidDocument)
       await didRepository.update(agentContext, didRecord)
 
