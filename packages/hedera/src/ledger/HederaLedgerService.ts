@@ -1,4 +1,4 @@
-import type {
+import {
   GetCredentialDefinitionReturn,
   GetRevocationRegistryDefinitionReturn,
   GetRevocationStatusListReturn,
@@ -12,30 +12,58 @@ import type {
   RegisterSchemaOptions,
   RegisterSchemaReturn,
 } from '@credo-ts/anoncreds'
-import { type AgentContext, injectable } from '@credo-ts/core'
+import {
+  type AgentContext,
+  DidCreateOptions,
+  DidDeactivateOptions,
+  DidDocument,
+  DidUpdateOptions,
+  injectable,
+} from '@credo-ts/core'
 import { Client, PrivateKey } from '@hashgraph/sdk'
 import { HederaAnoncredsRegistry } from '@hiero-did-sdk/anoncreds'
 import { HederaClientService } from '@hiero-did-sdk/client'
 import { HederaNetwork } from '@hiero-did-sdk/client/dist/index'
-import { DIDResolution, KeysUtility } from '@hiero-did-sdk/core'
+import { DIDResolution, KeysUtility, Service, VerificationMethod } from '@hiero-did-sdk/core'
 import {
   CreateDIDResult,
-  DeactivateDIDOptions,
+  DIDUpdateBuilder,
   DeactivateDIDResult,
-  UpdateDIDOptions,
   UpdateDIDResult,
-  createDID,
   deactivateDID,
   generateCreateDIDRequest,
+  generateUpdateDIDRequest,
   submitCreateDIDRequest,
+  submitUpdateDIDRequest,
 } from '@hiero-did-sdk/registrar'
 import { TopicReaderHederaHcs, parseDID, resolveDID } from '@hiero-did-sdk/resolver'
 import { HederaModuleConfig } from '../HederaModuleConfig'
 import { CredoCache } from '../cache/CredoCache'
 
-export interface HederaLedgerServiceDidCreateOptions {
-  network?: HederaNetwork | string
-  privateKey?: string | PrivateKey | undefined
+export interface HederaDidCreateOptions extends DidCreateOptions {
+  method: 'hedera'
+  did?: string
+  didDocument?: DidDocument
+  secret: {
+    privateKey: string | PrivateKey
+  }
+  options?: {
+    network?: HederaNetwork | string
+  }
+}
+
+export interface HederaDidUpdateOptions extends DidUpdateOptions {
+  did: string
+  secret: {
+    privateKey: string | PrivateKey
+  }
+}
+
+export interface HederaDidDeactivateOptions extends DidDeactivateOptions {
+  did: string
+  secret: {
+    privateKey: string | PrivateKey
+  }
 }
 
 @injectable()
@@ -53,70 +81,114 @@ export class HederaLedgerService {
     return await resolveDID(did, 'application/ld+json;profile="https://w3id.org/did-resolution"', { topicReader })
   }
 
-  public async createDid(
-    agentContext: AgentContext,
-    options: HederaLedgerServiceDidCreateOptions
-  ): Promise<CreateDIDResult> {
-    return this.clientService.withClient({ networkName: options.network }, async (client: Client) => {
+  public async createDid(agentContext: AgentContext, props: HederaDidCreateOptions): Promise<CreateDIDResult> {
+    const { options, secret, didDocument } = props
+    return this.clientService.withClient({ networkName: options?.network }, async (client: Client) => {
       const topicReader = this.getHederaHcsTopicReader(agentContext)
-
-      if (options.privateKey) {
-        const rootKey =
-          options.privateKey instanceof PrivateKey
-            ? options.privateKey
-            : PrivateKey.fromStringED25519(options.privateKey)
-        const publicMultibaseRootKey = KeysUtility.fromPublicKey(rootKey.publicKey).toMultibase()
-        const { state, signingRequest } = await generateCreateDIDRequest(
-          {
-            multibasePublicKey: publicMultibaseRootKey,
-          },
-          {
-            client,
-          }
-        )
-        const signature = rootKey.sign(signingRequest.serializedPayload)
-        return await submitCreateDIDRequest(
-          { state, signature, waitForDIDVisibility: false },
-          {
-            client,
-          }
-        )
-      }
-      return await createDID(
+      const rootKey =
+        secret.privateKey instanceof PrivateKey ? secret.privateKey : PrivateKey.fromStringED25519(secret.privateKey)
+      const multibasePublicKey = KeysUtility.fromPublicKey(rootKey.publicKey).toMultibase()
+      const { state, signingRequest } = await generateCreateDIDRequest(
         {
-          waitForDIDVisibility: false,
+          multibasePublicKey,
           topicReader,
         },
-        { client }
+        {
+          client,
+        }
+      )
+      const signature = rootKey.sign(signingRequest.serializedPayload)
+      const createdDidDocument = await submitCreateDIDRequest(
+        { state, signature, topicReader },
+        {
+          client,
+        }
+      )
+
+      if (didDocument) {
+        // update did document
+        const { didDocument: updatedDidDocument } = await this.updateDid(agentContext, {
+          did: createdDidDocument.did,
+          didDocumentOperation: 'setDidDocument',
+          didDocument: didDocument,
+          options: { ...options },
+          secret: { ...secret },
+        })
+        return {
+          did: createdDidDocument.did,
+          didDocument: updatedDidDocument,
+          privateKey: undefined,
+        }
+      }
+
+      return createdDidDocument
+    })
+  }
+
+  public async updateDid(agentContext: AgentContext, props: HederaDidUpdateOptions): Promise<UpdateDIDResult> {
+    const { did, didDocumentOperation, didDocument, secret } = props
+
+    if (!didDocumentOperation) {
+      throw new Error('DidDocumentOperation is required')
+    }
+
+    const { network: networkName } = parseDID(did)
+    return this.clientService.withClient({ networkName }, async (client: Client) => {
+      const topicReader = this.getHederaHcsTopicReader(agentContext)
+
+      const currentDidDocumentResolution = await resolveDID(
+        did,
+        'application/ld+json;profile="https://w3id.org/did-resolution"',
+        { topicReader }
+      )
+      if (!currentDidDocumentResolution.didDocument) {
+        throw new Error(`DID ${did} not found`)
+      }
+
+      const didUpdates = this.prepareDidUpdates(
+        currentDidDocumentResolution.didDocument,
+        didDocument,
+        didDocumentOperation
+      )
+
+      const { states, signingRequests } = await generateUpdateDIDRequest(
+        {
+          did,
+          updates: didUpdates.build(),
+          topicReader,
+        },
+        {
+          client,
+        }
+      )
+
+      const rootKey =
+        secret.privateKey instanceof PrivateKey ? secret.privateKey : PrivateKey.fromStringED25519(secret.privateKey)
+      const signatures = this.signRequests(signingRequests, rootKey)
+      return await submitUpdateDIDRequest(
+        {
+          states,
+          signatures,
+          topicReader,
+        },
+        {
+          client,
+        }
       )
     })
   }
 
-  public async updateDid(_agentContext: AgentContext, _props: UpdateDIDOptions): Promise<UpdateDIDResult> {
-    throw new Error('Method not implemented.')
-    // const { network: networkName } = parseDID(props.did)
-    // return this.clientService.withClient({ networkName }, async (client: Client) => {
-    //   const topicReader = this.getHederaHcsTopicReader(agentContext)
-    //   return await updateDID(
-    //     {
-    //       ...props,
-    //       waitForDIDVisibility: false,
-    //       topicReader,
-    //     },
-    //     { client }
-    //   )
-    // })
-  }
-
-  public async deactivateDid(agentContext: AgentContext, props: DeactivateDIDOptions): Promise<DeactivateDIDResult> {
+  public async deactivateDid(
+    agentContext: AgentContext,
+    props: HederaDidDeactivateOptions
+  ): Promise<DeactivateDIDResult> {
     const { network: networkName } = parseDID(props.did)
     return this.clientService.withClient({ networkName }, async (client: Client) => {
       const topicReader = this.getHederaHcsTopicReader(agentContext)
       return await deactivateDID(
         {
           did: props.did,
-          privateKey: props.privateKey,
-          waitForDIDVisibility: false,
+          privateKey: props.secret?.privateKey,
           topicReader,
         },
         { client }
@@ -185,6 +257,8 @@ export class HederaLedgerService {
     return await sdk.registerRevocationStatusList(options)
   }
 
+  // Private methods
+
   private getHederaHcsTopicReader(agentContext: AgentContext): TopicReaderHederaHcs {
     const cache = this.config.options.cache ?? new CredoCache(agentContext)
     return new TopicReaderHederaHcs({ ...this.config.options, cache })
@@ -193,5 +267,119 @@ export class HederaLedgerService {
   private getHederaAnonCredsSdk(agentContext: AgentContext): HederaAnoncredsRegistry {
     const cache = this.config.options.cache ?? new CredoCache(agentContext)
     return new HederaAnoncredsRegistry({ ...this.config.options, cache })
+  }
+
+  private getId(item: { id: string } | string): string {
+    const id = typeof item === 'string' ? item : item.id
+    return id.includes('#') ? `#${id.split('#').pop()}` : id
+  }
+
+  private getDiff(currentArray?: any[], newArray?: any[]) {
+    const currentList = currentArray || []
+    const newList = newArray || []
+
+    const currentIds = new Set(currentList.map((item) => this.getId(item)))
+    const newIds = new Set(newList.map((item) => this.getId(item)))
+
+    const existingItems = newList.filter((item) => currentIds.has(this.getId(item))).map((item) => item.id)
+    const newItems = newList.filter((item) => !currentIds.has(this.getId(item)))
+    const missingItems = currentList.filter((item) => !newIds.has(this.getId(item)))
+
+    return { existingItems, newItems, missingItems }
+  }
+
+  private signRequests(signingRequests: Record<string, any>, privateKey: PrivateKey): Record<string, Uint8Array> {
+    return Object.entries(signingRequests).reduce((acc, [key, request]) => {
+      return {
+        ...acc,
+        [key]: privateKey.sign(request.serializedPayload),
+      }
+    }, {})
+  }
+
+  private prepareDidUpdates(currentDoc: any, newDoc: any, operation: string): DIDUpdateBuilder {
+    const builder = new DIDUpdateBuilder()
+    const fields = [
+      'service',
+      'verificationMethod',
+      'assertionMethod',
+      'authentication',
+      'capabilityDelegation',
+      'capabilityInvocation',
+      'keyAgreement',
+    ]
+
+    fields.forEach((field) => {
+      const { existingItems, newItems, missingItems } = this.getDiff(currentDoc[field], newDoc[field])
+
+      if (operation === 'setDidDocument') {
+        missingItems.forEach((item) => {
+          this.getUpdateMethod(builder, field, 'remove')(this.getId(item))
+        })
+        newItems.forEach((item) => {
+          this.getUpdateMethod(builder, field, 'add')(item)
+        })
+      }
+
+      if (operation === 'addToDidDocument') {
+        newItems.forEach((item) => {
+          this.getUpdateMethod(builder, field, 'add')(item)
+        })
+      }
+
+      if (operation === 'removeFromDidDocument') {
+        existingItems.forEach((item) => {
+          this.getUpdateMethod(builder, field, 'remove')(item)
+        })
+      }
+    })
+
+    return builder
+  }
+
+  private getUpdateMethod(
+    builder: DIDUpdateBuilder,
+    field: string,
+    action: 'add' | 'remove'
+  ): (item: any) => DIDUpdateBuilder {
+    type MethodDelegate = (item: any) => DIDUpdateBuilder
+
+    const methodMap: Record<string, Record<'add' | 'remove', MethodDelegate>> = {
+      service: {
+        add: (item: Service) => builder.addService(item),
+        remove: (id: string) => builder.removeService(id),
+      },
+      verificationMethod: {
+        add: (item: VerificationMethod | string) => builder.addVerificationMethod(item),
+        remove: (id: string) => builder.removeVerificationMethod(id),
+      },
+      assertionMethod: {
+        add: (item: VerificationMethod | string) => builder.addAssertionMethod(item),
+        remove: (id: string) => builder.removeAssertionMethod(id),
+      },
+      authentication: {
+        add: (item: VerificationMethod | string) => builder.addAuthenticationMethod(item),
+        remove: (id: string) => builder.removeAuthenticationMethod(id),
+      },
+      capabilityDelegation: {
+        add: (item: VerificationMethod | string) => builder.addCapabilityDelegationMethod(item),
+        remove: (id: string) => builder.removeCapabilityDelegationMethod(id),
+      },
+      capabilityInvocation: {
+        add: (item: VerificationMethod | string) => builder.addCapabilityInvocationMethod(item),
+        remove: (id: string) => builder.removeCapabilityInvocationMethod(id),
+      },
+      keyAgreement: {
+        add: (item: VerificationMethod | string) => builder.addKeyAgreementMethod(item),
+        remove: (id: string) => builder.removeKeyAgreementMethod(id),
+      },
+    }
+
+    const fieldMethods = methodMap[field]
+    if (!fieldMethods) {
+      return () => builder
+    }
+
+    return fieldMethods[action]
   }
 }
