@@ -3,6 +3,7 @@ import {
   DidCreateResult,
   DidDeactivateResult,
   DidDocument,
+  DidDocumentKey,
   DidDocumentRole,
   DidDocumentService,
   DidRecord,
@@ -11,6 +12,8 @@ import {
   DidUpdateResult,
   JsonTransformer,
 } from '@credo-ts/core'
+import { PrivateKey } from '@hashgraph/sdk'
+import { KeysUtility } from '@hiero-did-sdk/core'
 import {
   HederaDidCreateOptions,
   HederaDidDeactivateOptions,
@@ -36,13 +39,24 @@ export class HederaDidRegistrar implements DidRegistrar {
         ...didDocument,
         service: didDocument.service?.map((s) => new DidDocumentService(s)),
       })
+
+      const hederaSignKey =
+        options.secret.key.hederaPrivateKey instanceof PrivateKey
+          ? options.secret.key.hederaPrivateKey
+          : PrivateKey.fromStringED25519(options.secret.key.hederaPrivateKey)
+      const keys = [
+        {
+          kmsKeyId: options.secret.key.kmsKeyId,
+          didDocumentRelativeKeyId: KeysUtility.fromPublicKey(hederaSignKey.publicKey).toMultibase(),
+        } satisfies DidDocumentKey,
+      ]
       await didRepository.save(
         agentContext,
         new DidRecord({
           did,
           role: DidDocumentRole.Created,
           didDocument: credoDidDocument,
-          // todo: keys: ???
+          keys,
         })
       )
 
@@ -93,8 +107,17 @@ export class HederaDidRegistrar implements DidRegistrar {
       const { didDocument: updatedDidDocument } = await ledgerService.updateDid(agentContext, options)
 
       // Save the did to wallet
+      const hederaSignKey =
+        options.secret.key.hederaPrivateKey instanceof PrivateKey
+          ? options.secret.key.hederaPrivateKey
+          : PrivateKey.fromStringED25519(options.secret.key.hederaPrivateKey)
+      const keys = didRecord.keys ?? []
+      keys.push({
+        kmsKeyId: options.secret.key.kmsKeyId,
+        didDocumentRelativeKeyId: KeysUtility.fromPublicKey(hederaSignKey.publicKey).toMultibase(),
+      } satisfies DidDocumentKey)
       didRecord.didDocument = JsonTransformer.fromJSON(updatedDidDocument, DidDocument)
-      // todo: didRecord.keys = ???
+      didRecord.keys = keys
       await didRepository.update(agentContext, didRecord)
 
       return {
@@ -144,7 +167,17 @@ export class HederaDidRegistrar implements DidRegistrar {
       const { didDocument: deactivatedDidDocument } = await ledgerService.deactivateDid(agentContext, options)
 
       // Save the did to wallet
+      const hederaSignKey =
+        options.secret.key.hederaPrivateKey instanceof PrivateKey
+          ? options.secret.key.hederaPrivateKey
+          : PrivateKey.fromStringED25519(options.secret.key.hederaPrivateKey)
+      const keys = didRecord.keys ?? []
+      keys.push({
+        kmsKeyId: options.secret.key.kmsKeyId,
+        didDocumentRelativeKeyId: KeysUtility.fromPublicKey(hederaSignKey.publicKey).toMultibase(),
+      } satisfies DidDocumentKey)
       didRecord.didDocument = JsonTransformer.fromJSON(deactivatedDidDocument, DidDocument)
+      didRecord.keys = keys
       await didRepository.update(agentContext, didRecord)
 
       return {

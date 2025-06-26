@@ -59,6 +59,7 @@ describe('Hedera DID registrar', () => {
       options: { network: 'testnet' },
       secret: { privateKey },
     })
+
     expect(didResult).toMatchObject({
       didState: {
         state: 'finished',
