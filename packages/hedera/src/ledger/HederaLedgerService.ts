@@ -30,22 +30,27 @@ import {
   DIDUpdateBuilder,
   DeactivateDIDResult,
   UpdateDIDResult,
-  deactivateDID,
   generateCreateDIDRequest,
+  generateDeactivateDIDRequest,
   generateUpdateDIDRequest,
   submitCreateDIDRequest,
+  submitDeactivateDIDRequest,
   submitUpdateDIDRequest,
 } from '@hiero-did-sdk/registrar'
 import { TopicReaderHederaHcs, parseDID, resolveDID } from '@hiero-did-sdk/resolver'
 import { HederaModuleConfig } from '../HederaModuleConfig'
-import { CredoCache } from '../cache/CredoCache'
+import { CredoCache } from './cache/CredoCache'
+import {Publisher} from "./publisher/Publisher";
 
 export interface HederaDidCreateOptions extends DidCreateOptions {
   method: 'hedera'
   did?: string
   didDocument?: DidDocument
   secret: {
-    privateKey: string | PrivateKey
+    key: {
+      kmsKeyId: string
+      publicKeyMultibase: string
+    }
   }
   options?: {
     network?: HederaNetwork | string
@@ -55,14 +60,20 @@ export interface HederaDidCreateOptions extends DidCreateOptions {
 export interface HederaDidUpdateOptions extends DidUpdateOptions {
   did: string
   secret: {
-    privateKey: string | PrivateKey
+    key: {
+      kmsKeyId: string
+      publicKeyMultibase: string
+    }
   }
 }
 
 export interface HederaDidDeactivateOptions extends DidDeactivateOptions {
   did: string
   secret: {
-    privateKey: string | PrivateKey
+    key: {
+      kmsKeyId: string
+      publicKeyMultibase: string
+    }
   }
 }
 
@@ -85,28 +96,39 @@ export class HederaLedgerService {
     const { options, secret, didDocument } = props
     return this.clientService.withClient({ networkName: options?.network }, async (client: Client) => {
       const topicReader = this.getHederaHcsTopicReader(agentContext)
-      const rootKey =
-        secret.privateKey instanceof PrivateKey ? secret.privateKey : PrivateKey.fromStringED25519(secret.privateKey)
-      const multibasePublicKey = KeysUtility.fromPublicKey(rootKey.publicKey).toMultibase()
+      const controller =
+        typeof didDocument?.controller === 'string'
+          ? didDocument?.controller
+          : Array.isArray(didDocument?.controller)
+            ? didDocument?.controller[0]
+            : undefined
+
+      const hederaSignKey =
+        secret.key.hederaPrivateKey instanceof PrivateKey
+          ? secret.key.hederaPrivateKey
+          : PrivateKey.fromStringED25519(secret.key.hederaPrivateKey)
       const { state, signingRequest } = await generateCreateDIDRequest(
         {
-          multibasePublicKey,
+          controller,
+          multibasePublicKey: KeysUtility.fromPublicKey(hederaSignKey.publicKey).toMultibase(),
           topicReader,
         },
         {
-          client,
-        }
-      )
-      const signature = rootKey.sign(signingRequest.serializedPayload)
-      const createdDidDocument = await submitCreateDIDRequest(
-        { state, signature, topicReader },
-        {
+          Publisher
           client,
         }
       )
 
+      const signature = hederaSignKey.sign(signingRequest.serializedPayload)
+      const createdDidDocument = await submitCreateDIDRequest(
+        { state, signature, topicReader },
+        {
+          client,
+          publisher: {},
+        }
+      )
+
       if (didDocument) {
-        // update did document
         const { didDocument: updatedDidDocument } = await this.updateDid(agentContext, {
           did: createdDidDocument.did,
           didDocumentOperation: 'setDidDocument',
@@ -117,7 +139,6 @@ export class HederaLedgerService {
         return {
           did: createdDidDocument.did,
           didDocument: updatedDidDocument,
-          privateKey: undefined,
         }
       }
 
@@ -162,9 +183,11 @@ export class HederaLedgerService {
         }
       )
 
-      const rootKey =
-        secret.privateKey instanceof PrivateKey ? secret.privateKey : PrivateKey.fromStringED25519(secret.privateKey)
-      const signatures = this.signRequests(signingRequests, rootKey)
+      const hederaSignKey =
+        secret.key.hederaPrivateKey instanceof PrivateKey
+          ? secret.key.hederaPrivateKey
+          : PrivateKey.fromStringED25519(secret.key.hederaPrivateKey)
+      const signatures = this.signRequests(signingRequests, hederaSignKey)
       return await submitUpdateDIDRequest(
         {
           states,
@@ -182,16 +205,33 @@ export class HederaLedgerService {
     agentContext: AgentContext,
     props: HederaDidDeactivateOptions
   ): Promise<DeactivateDIDResult> {
+    const { did, secret } = props
     const { network: networkName } = parseDID(props.did)
     return this.clientService.withClient({ networkName }, async (client: Client) => {
       const topicReader = this.getHederaHcsTopicReader(agentContext)
-      return await deactivateDID(
+      const { state, signingRequest } = await generateDeactivateDIDRequest(
         {
-          did: props.did,
-          privateKey: props.secret?.privateKey,
+          did,
           topicReader,
         },
-        { client }
+        {
+          client,
+        }
+      )
+      const hederaSignKey =
+        secret.key.hederaPrivateKey instanceof PrivateKey
+          ? secret.key.hederaPrivateKey
+          : PrivateKey.fromStringED25519(secret.key.hederaPrivateKey)
+      const signature = hederaSignKey.sign(signingRequest.serializedPayload)
+      return await submitDeactivateDIDRequest(
+        {
+          state,
+          signature,
+          topicReader,
+        },
+        {
+          client,
+        }
       )
     })
   }
