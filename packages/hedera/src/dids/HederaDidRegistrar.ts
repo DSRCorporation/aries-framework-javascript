@@ -3,17 +3,13 @@ import {
   DidCreateResult,
   DidDeactivateResult,
   DidDocument,
-  DidDocumentKey,
   DidDocumentRole,
   DidDocumentService,
   DidRecord,
   DidRegistrar,
   DidRepository,
   DidUpdateResult,
-  JsonTransformer,
 } from '@credo-ts/core'
-import { PrivateKey } from '@hashgraph/sdk'
-import { KeysUtility } from '@hiero-did-sdk/core'
 import {
   HederaDidCreateOptions,
   HederaDidDeactivateOptions,
@@ -32,7 +28,7 @@ export class HederaDidRegistrar implements DidRegistrar {
       const ledgerService = agentContext.dependencyManager.resolve(HederaLedgerService)
 
       // Create did
-      const { did, didDocument } = await ledgerService.createDid(agentContext, options)
+      const { did, didDocument, keys } = await ledgerService.createDid(agentContext, options)
 
       // Save the did to wallet
       const credoDidDocument = new DidDocument({
@@ -40,16 +36,6 @@ export class HederaDidRegistrar implements DidRegistrar {
         service: didDocument.service?.map((s) => new DidDocumentService(s)),
       })
 
-      const hederaSignKey =
-        options.secret.key.hederaPrivateKey instanceof PrivateKey
-          ? options.secret.key.hederaPrivateKey
-          : PrivateKey.fromStringED25519(options.secret.key.hederaPrivateKey)
-      const keys = [
-        {
-          kmsKeyId: options.secret.key.kmsKeyId,
-          didDocumentRelativeKeyId: KeysUtility.fromPublicKey(hederaSignKey.publicKey).toMultibase(),
-        } satisfies DidDocumentKey,
-      ]
       await didRepository.save(
         agentContext,
         new DidRecord({
@@ -84,121 +70,123 @@ export class HederaDidRegistrar implements DidRegistrar {
     }
   }
 
-  async update(agentContext: AgentContext, options: HederaDidUpdateOptions): Promise<DidUpdateResult> {
-    const didRepository = agentContext.dependencyManager.resolve(DidRepository)
-    const ledgerService = agentContext.dependencyManager.resolve(HederaLedgerService)
-
-    try {
-      const { did } = options
-      const { didDocument, didDocumentMetadata } = await ledgerService.resolveDid(agentContext, did)
-      const didRecord = await didRepository.findCreatedDid(agentContext, did)
-      if (!didDocument || didDocumentMetadata.deactivated || !didRecord) {
-        return {
-          didDocumentMetadata: {},
-          didRegistrationMetadata: {},
-          didState: {
-            state: 'failed',
-            reason: 'Did not found',
-          },
-        }
-      }
-
-      // Update did
-      const { didDocument: updatedDidDocument } = await ledgerService.updateDid(agentContext, options)
-
-      // Save the did to wallet
-      const hederaSignKey =
-        options.secret.key.hederaPrivateKey instanceof PrivateKey
-          ? options.secret.key.hederaPrivateKey
-          : PrivateKey.fromStringED25519(options.secret.key.hederaPrivateKey)
-      const keys = didRecord.keys ?? []
-      keys.push({
-        kmsKeyId: options.secret.key.kmsKeyId,
-        didDocumentRelativeKeyId: KeysUtility.fromPublicKey(hederaSignKey.publicKey).toMultibase(),
-      } satisfies DidDocumentKey)
-      didRecord.didDocument = JsonTransformer.fromJSON(updatedDidDocument, DidDocument)
-      didRecord.keys = keys
-      await didRepository.update(agentContext, didRecord)
-
-      return {
-        didDocumentMetadata: {},
-        didRegistrationMetadata: {},
-        didState: {
-          state: 'finished',
-          did,
-          didDocument: didRecord.didDocument,
-        },
-      }
-    } catch (error) {
-      agentContext.config.logger.error('Error updating DID', error)
-      return {
-        didDocumentMetadata: {},
-        didRegistrationMetadata: {},
-        didState: {
-          state: 'failed',
-          reason: `Unable update DID: ${error.message}`,
-        },
-      }
-    }
+  async update(_agentContext: AgentContext, _options: HederaDidUpdateOptions): Promise<DidUpdateResult> {
+    throw new Error('sss')
+    // const didRepository = agentContext.dependencyManager.resolve(DidRepository)
+    // const ledgerService = agentContext.dependencyManager.resolve(HederaLedgerService)
+    //
+    // try {
+    //   const { did } = options
+    //   const { didDocument, didDocumentMetadata } = await ledgerService.resolveDid(agentContext, did)
+    //   const didRecord = await didRepository.findCreatedDid(agentContext, did)
+    //   if (!didDocument || didDocumentMetadata.deactivated || !didRecord) {
+    //     return {
+    //       didDocumentMetadata: {},
+    //       didRegistrationMetadata: {},
+    //       didState: {
+    //         state: 'failed',
+    //         reason: 'Did not found',
+    //       },
+    //     }
+    //   }
+    //
+    //   // Update did
+    //   const { didDocument: updatedDidDocument } = await ledgerService.updateDid(agentContext, options)
+    //
+    //   // Save the did to wallet
+    //   const hederaSignKey =
+    //     options.secret.key.hederaPrivateKey instanceof PrivateKey
+    //       ? options.secret.key.hederaPrivateKey
+    //       : PrivateKey.fromStringED25519(options.secret.key.hederaPrivateKey)
+    //   const keys = didRecord.keys ?? []
+    //   keys.push({
+    //     kmsKeyId: options.secret.key.kmsKeyId,
+    //     didDocumentRelativeKeyId: KeysUtility.fromPublicKey(hederaSignKey.publicKey).toMultibase(),
+    //   } satisfies DidDocumentKey)
+    //   didRecord.didDocument = JsonTransformer.fromJSON(updatedDidDocument, DidDocument)
+    //   didRecord.keys = keys
+    //   await didRepository.update(agentContext, didRecord)
+    //
+    //   return {
+    //     didDocumentMetadata: {},
+    //     didRegistrationMetadata: {},
+    //     didState: {
+    //       state: 'finished',
+    //       did,
+    //       didDocument: didRecord.didDocument,
+    //     },
+    //   }
+    // } catch (error) {
+    //   agentContext.config.logger.error('Error updating DID', error)
+    //   return {
+    //     didDocumentMetadata: {},
+    //     didRegistrationMetadata: {},
+    //     didState: {
+    //       state: 'failed',
+    //       reason: `Unable update DID: ${error.message}`,
+    //     },
+    //   }
+    // }
   }
 
-  async deactivate(agentContext: AgentContext, options: HederaDidDeactivateOptions): Promise<DidDeactivateResult> {
-    const didRepository = agentContext.dependencyManager.resolve(DidRepository)
-    const ledgerService = agentContext.dependencyManager.resolve(HederaLedgerService)
-
-    const did = options.did
-
-    try {
-      const { didDocument, didDocumentMetadata } = await ledgerService.resolveDid(agentContext, did)
-
-      const didRecord = await didRepository.findCreatedDid(agentContext, did)
-
-      if (!didDocument || didDocumentMetadata.deactivated || !didRecord) {
-        return {
-          didDocumentMetadata,
-          didRegistrationMetadata: {},
-          didState: {
-            state: 'failed',
-            reason: 'Did not found',
-          },
-        }
-      }
-      // Deactivate did
-      const { didDocument: deactivatedDidDocument } = await ledgerService.deactivateDid(agentContext, options)
-
-      // Save the did to wallet
-      const hederaSignKey =
-        options.secret.key.hederaPrivateKey instanceof PrivateKey
-          ? options.secret.key.hederaPrivateKey
-          : PrivateKey.fromStringED25519(options.secret.key.hederaPrivateKey)
-      const keys = didRecord.keys ?? []
-      keys.push({
-        kmsKeyId: options.secret.key.kmsKeyId,
-        didDocumentRelativeKeyId: KeysUtility.fromPublicKey(hederaSignKey.publicKey).toMultibase(),
-      } satisfies DidDocumentKey)
-      didRecord.didDocument = JsonTransformer.fromJSON(deactivatedDidDocument, DidDocument)
-      didRecord.keys = keys
-      await didRepository.update(agentContext, didRecord)
-
-      return {
-        didDocumentMetadata: {},
-        didRegistrationMetadata: {},
-        didState: {
-          state: 'finished',
-          did,
-          didDocument: didRecord.didDocument,
-        },
-      }
-    } catch (error) {
-      agentContext.config.logger.error('Error deactivating DID', error)
-      return {
-        didDocumentMetadata: {},
-        didRegistrationMetadata: {},
-        didState: {
-          state: 'failed',
-          reason: `Unable deactivating DID: ${error.message}`,
-        },
-      }
-    }
+  async deactivate(_agentContext: AgentContext, _options: HederaDidDeactivateOptions): Promise<DidDeactivateResult> {
+    throw new Error('sss')
+    // const didRepository = agentContext.dependencyManager.resolve(DidRepository)
+    // const ledgerService = agentContext.dependencyManager.resolve(HederaLedgerService)
+    //
+    // const did = options.did
+    //
+    // try {
+    //   const { didDocument, didDocumentMetadata } = await ledgerService.resolveDid(agentContext, did)
+    //
+    //   const didRecord = await didRepository.findCreatedDid(agentContext, did)
+    //
+    //   if (!didDocument || didDocumentMetadata.deactivated || !didRecord) {
+    //     return {
+    //       didDocumentMetadata,
+    //       didRegistrationMetadata: {},
+    //       didState: {
+    //         state: 'failed',
+    //         reason: 'Did not found',
+    //       },
+    //     }
+    //   }
+    //   // Deactivate did
+    //   const { didDocument: deactivatedDidDocument } = await ledgerService.deactivateDid(agentContext, options)
+    //
+    //   // Save the did to wallet
+    //   const hederaSignKey =
+    //     options.secret.key.hederaPrivateKey instanceof PrivateKey
+    //       ? options.secret.key.hederaPrivateKey
+    //       : PrivateKey.fromStringED25519(options.secret.key.hederaPrivateKey)
+    //   const keys = didRecord.keys ?? []
+    //   keys.push({
+    //     kmsKeyId: options.secret.key.kmsKeyId,
+    //     didDocumentRelativeKeyId: KeysUtility.fromPublicKey(hederaSignKey.publicKey).toMultibase(),
+    //   } satisfies DidDocumentKey)
+    //   didRecord.didDocument = JsonTransformer.fromJSON(deactivatedDidDocument, DidDocument)
+    //   didRecord.keys = keys
+    //   await didRepository.update(agentContext, didRecord)
+    //
+    //   return {
+    //     didDocumentMetadata: {},
+    //     didRegistrationMetadata: {},
+    //     didState: {
+    //       state: 'finished',
+    //       did,
+    //       didDocument: didRecord.didDocument,
+    //     },
+    //   }
+    // } catch (error) {
+    //   agentContext.config.logger.error('Error deactivating DID', error)
+    //   return {
+    //     didDocumentMetadata: {},
+    //     didRegistrationMetadata: {},
+    //     didState: {
+    //       state: 'failed',
+    //       reason: `Unable deactivating DID: ${error.message}`,
+    //     },
+    //   }
+    // }
   }
 }

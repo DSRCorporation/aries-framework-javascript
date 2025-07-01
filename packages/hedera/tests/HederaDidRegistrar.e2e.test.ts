@@ -7,7 +7,7 @@ import {
 import { getHederaAgent } from './utils'
 
 describe('Hedera DID registrar', () => {
-  const privateKey = process.env.HEDERA_TEST_OPERATOR_KEY ?? ''
+  const _privateKey = process.env.HEDERA_TEST_OPERATOR_KEY ?? ''
   const logger = new ConsoleLogger(LogLevel.error)
   let agent: Agent
 
@@ -57,7 +57,9 @@ describe('Hedera DID registrar', () => {
     const didResult = await agent.dids.create<HederaDidCreateOptions>({
       method: 'hedera',
       options: { network: 'testnet' },
-      secret: { privateKey },
+      secret: {
+        createKey: true
+      },
     })
 
     expect(didResult).toMatchObject({
@@ -80,7 +82,9 @@ describe('Hedera DID registrar', () => {
       method: 'hedera',
       didDocument: validDidDoc(),
       options: { network: 'testnet' },
-      secret: { privateKey },
+      secret: {
+        createKey: true
+      },
     })
     expect(didResult.didState.state).toEqual('finished')
 
@@ -122,7 +126,7 @@ describe('Hedera DID registrar', () => {
         network: 'testnet',
       },
       secret: {
-        privateKey,
+        createKey: true
       },
     })
     expect(didResult).toMatchObject({ didState: { state: 'finished' } })
@@ -137,7 +141,7 @@ describe('Hedera DID registrar', () => {
       didDocument,
       didDocumentOperation: 'addToDidDocument',
       secret: {
-        privateKey,
+        createKey: true
       },
     })
 
@@ -169,7 +173,7 @@ describe('Hedera DID registrar', () => {
       },
       didDocumentOperation: 'removeFromDidDocument',
       secret: {
-        privateKey,
+        createKey: true
       },
     })
 
@@ -188,7 +192,9 @@ describe('Hedera DID registrar', () => {
     const didResult = await agent.dids.create<HederaDidCreateOptions>({
       method: 'hedera',
       options: { network: 'testnet' },
-      secret: { privateKey },
+      secret: {
+        createKey: true
+      },
     })
     expect(didResult).toMatchObject({ didState: { state: 'finished' } })
 
@@ -204,7 +210,7 @@ describe('Hedera DID registrar', () => {
       didDocument,
       didDocumentOperation: 'addToDidDocument',
       secret: {
-        privateKey,
+        createKey: true
       },
     })
     expect(addUpdateResult.didState.didDocument?.id).toEqual(did)
@@ -232,7 +238,7 @@ describe('Hedera DID registrar', () => {
       didDocument,
       didDocumentOperation: 'removeFromDidDocument',
       secret: {
-        privateKey,
+        createKey: true
       },
     })
     expect(removeUpdateResult.didState.didDocument?.id).toEqual(did)
@@ -253,7 +259,7 @@ describe('Hedera DID registrar', () => {
         network: 'testnet',
       },
       secret: {
-        privateKey,
+        createKey: true
       },
     })
     expect(didResult).toMatchObject({ didState: { state: 'finished' } })
@@ -263,7 +269,7 @@ describe('Hedera DID registrar', () => {
     const deactivateResult = await agent.dids.deactivate<HederaDidDeactivateOptions>({
       did,
       secret: {
-        privateKey,
+        createKey: true
       },
     })
 
