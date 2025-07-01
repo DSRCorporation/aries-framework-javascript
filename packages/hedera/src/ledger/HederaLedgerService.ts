@@ -16,65 +16,53 @@ import {
   type AgentContext,
   DidCreateOptions,
   DidDeactivateOptions,
-  DidDocument,
+  DidDocumentKey,
   DidUpdateOptions,
-  injectable,
+  Kms,
+  XOR,
+  injectable, TypedArrayEncoder,
 } from '@credo-ts/core'
+import { KmsJwkPublicOkp } from '@credo-ts/core/src/modules/kms'
 import { Client, PrivateKey } from '@hashgraph/sdk'
 import { HederaAnoncredsRegistry } from '@hiero-did-sdk/anoncreds'
 import { HederaClientService } from '@hiero-did-sdk/client'
 import { HederaNetwork } from '@hiero-did-sdk/client/dist/index'
-import { DIDResolution, KeysUtility, Service, VerificationMethod } from '@hiero-did-sdk/core'
+import {DIDResolution, Service, VerificationMethod} from '@hiero-did-sdk/core'
 import {
   CreateDIDResult,
   DIDUpdateBuilder,
   DeactivateDIDResult,
   UpdateDIDResult,
   generateCreateDIDRequest,
-  generateDeactivateDIDRequest,
-  generateUpdateDIDRequest,
   submitCreateDIDRequest,
-  submitDeactivateDIDRequest,
-  submitUpdateDIDRequest,
 } from '@hiero-did-sdk/registrar'
-import { TopicReaderHederaHcs, parseDID, resolveDID } from '@hiero-did-sdk/resolver'
+import { TopicReaderHederaHcs, resolveDID } from '@hiero-did-sdk/resolver'
 import { HederaModuleConfig } from '../HederaModuleConfig'
 import { CredoCache } from './cache/CredoCache'
-import {Publisher} from "./publisher/Publisher";
+import { KmsPublisher } from './publisher/KmsPublisher'
+
+type DidOperationSecretOptions = {
+  keys?: DidDocumentKey[]
+} & XOR<{ createKey?: boolean }, { keyId?: string }>
 
 export interface HederaDidCreateOptions extends DidCreateOptions {
   method: 'hedera'
-  did?: string
-  didDocument?: DidDocument
-  secret: {
-    key: {
-      kmsKeyId: string
-      publicKeyMultibase: string
-    }
-  }
   options?: {
     network?: HederaNetwork | string
   }
+  secret: DidOperationSecretOptions
+}
+
+export interface HederaCreateDIDResult extends CreateDIDResult {
+  keys: DidDocumentKey[]
 }
 
 export interface HederaDidUpdateOptions extends DidUpdateOptions {
-  did: string
-  secret: {
-    key: {
-      kmsKeyId: string
-      publicKeyMultibase: string
-    }
-  }
+  secret: DidOperationSecretOptions
 }
 
 export interface HederaDidDeactivateOptions extends DidDeactivateOptions {
-  did: string
-  secret: {
-    key: {
-      kmsKeyId: string
-      publicKeyMultibase: string
-    }
-  }
+  secret: DidOperationSecretOptions
 }
 
 @injectable()
@@ -92,10 +80,11 @@ export class HederaLedgerService {
     return await resolveDID(did, 'application/ld+json;profile="https://w3id.org/did-resolution"', { topicReader })
   }
 
-  public async createDid(agentContext: AgentContext, props: HederaDidCreateOptions): Promise<CreateDIDResult> {
+  public async createDid(agentContext: AgentContext, props: HederaDidCreateOptions): Promise<HederaCreateDIDResult> {
     const { options, secret, didDocument } = props
     return this.clientService.withClient({ networkName: options?.network }, async (client: Client) => {
       const topicReader = this.getHederaHcsTopicReader(agentContext)
+
       const controller =
         typeof didDocument?.controller === 'string'
           ? didDocument?.controller
@@ -103,137 +92,181 @@ export class HederaLedgerService {
             ? didDocument?.controller[0]
             : undefined
 
-      const hederaSignKey =
-        secret.key.hederaPrivateKey instanceof PrivateKey
-          ? secret.key.hederaPrivateKey
-          : PrivateKey.fromStringED25519(secret.key.hederaPrivateKey)
+      if (!props.secret.createKey && !props.secret.keyId) {
+        throw new Error('createKey or keyId are required')
+      }
+
+      const kms = agentContext.dependencyManager.resolve(Kms.KeyManagementApi)
+
+      let keyId: string
+      const keys = props.secret.keys ?? []
+      let publicJwk: KmsJwkPublicOkp & { crv: 'Ed25519' }
+      if (props.secret.createKey) {
+        const createKeyResult = await kms.createKey({
+          type: {
+            crv: 'Ed25519',
+            kty: 'OKP',
+          },
+        })
+        publicJwk = createKeyResult.publicJwk
+        keys.push({
+          kmsKeyId: createKeyResult.keyId,
+          didDocumentRelativeKeyId: '#key',
+        })
+        keyId = createKeyResult.keyId
+      } else {
+        keyId = props.secret.keyId!
+        const _publicJwk = await kms.getPublicKey({ keyId })
+        if (!_publicJwk) {
+          throw new Error(`Key with key id '${keyId}' not found`)
+        }
+        if (_publicJwk.kty !== 'OKP' || _publicJwk.crv !== 'Ed25519') {
+          throw new Error(
+              `Key with key id '${keyId}' uses unsupported ${Kms.getJwkHumanDescription(_publicJwk)} for did:hedera`
+          )
+        }
+        publicJwk = {
+          ..._publicJwk,
+          crv: _publicJwk.crv,
+        }
+      }
+
+      const publisher = await this.getPublisher(agentContext, client, keyId)
+
       const { state, signingRequest } = await generateCreateDIDRequest(
         {
           controller,
-          multibasePublicKey: KeysUtility.fromPublicKey(hederaSignKey.publicKey).toMultibase(),
+          multibasePublicKey: this.getMultibasePublicKey(publicJwk),
           topicReader,
         },
         {
-          Publisher
           client,
+          publisher,
         }
       )
 
-      const signature = hederaSignKey.sign(signingRequest.serializedPayload)
-      const createdDidDocument = await submitCreateDIDRequest(
-        { state, signature, topicReader },
+      const signatureResult = await kms.sign({ keyId, data: signingRequest.serializedPayload, algorithm: 'EdDSA' })
+      const createdDidDocumentResult = await submitCreateDIDRequest(
+        { state, signature: signatureResult.signature, topicReader },
         {
           client,
-          publisher: {},
+          publisher,
         }
       )
 
-      if (didDocument) {
-        const { didDocument: updatedDidDocument } = await this.updateDid(agentContext, {
-          did: createdDidDocument.did,
-          didDocumentOperation: 'setDidDocument',
-          didDocument: didDocument,
-          options: { ...options },
-          secret: { ...secret },
-        })
-        return {
-          did: createdDidDocument.did,
-          didDocument: updatedDidDocument,
-        }
-      }
+      // if (didDocument) {
+      //   const { didDocument: updatedDidDocument, keys: updatedKeys } = await this.updateDid(agentContext, {
+      //     did: createdDidDocument.did,
+      //     didDocumentOperation: 'setDidDocument',
+      //     didDocument: didDocument,
+      //     options: { ...options },
+      //     secret: { ...secret },
+      //   })
+      //   return {
+      //     did: createdDidDocument.did,
+      //     didDocument: updatedDidDocument,
+      //     keys: updatedKeys
+      //   }
+      // }
 
-      return createdDidDocument
+      return {
+        ...createdDidDocumentResult,
+        keys,
+      }
     })
   }
 
-  public async updateDid(agentContext: AgentContext, props: HederaDidUpdateOptions): Promise<UpdateDIDResult> {
-    const { did, didDocumentOperation, didDocument, secret } = props
-
-    if (!didDocumentOperation) {
-      throw new Error('DidDocumentOperation is required')
-    }
-
-    const { network: networkName } = parseDID(did)
-    return this.clientService.withClient({ networkName }, async (client: Client) => {
-      const topicReader = this.getHederaHcsTopicReader(agentContext)
-
-      const currentDidDocumentResolution = await resolveDID(
-        did,
-        'application/ld+json;profile="https://w3id.org/did-resolution"',
-        { topicReader }
-      )
-      if (!currentDidDocumentResolution.didDocument) {
-        throw new Error(`DID ${did} not found`)
-      }
-
-      const didUpdates = this.prepareDidUpdates(
-        currentDidDocumentResolution.didDocument,
-        didDocument,
-        didDocumentOperation
-      )
-
-      const { states, signingRequests } = await generateUpdateDIDRequest(
-        {
-          did,
-          updates: didUpdates.build(),
-          topicReader,
-        },
-        {
-          client,
-        }
-      )
-
-      const hederaSignKey =
-        secret.key.hederaPrivateKey instanceof PrivateKey
-          ? secret.key.hederaPrivateKey
-          : PrivateKey.fromStringED25519(secret.key.hederaPrivateKey)
-      const signatures = this.signRequests(signingRequests, hederaSignKey)
-      return await submitUpdateDIDRequest(
-        {
-          states,
-          signatures,
-          topicReader,
-        },
-        {
-          client,
-        }
-      )
-    })
+  public async updateDid(_agentContext: AgentContext, _props: HederaDidUpdateOptions): Promise<UpdateDIDResult> {
+    throw new Error('ddd')
+    //
+    // const { did, didDocumentOperation, didDocument, secret } = props
+    //
+    // if (!didDocumentOperation) {
+    //   throw new Error('DidDocumentOperation is required')
+    // }
+    //
+    // const { network: networkName } = parseDID(did)
+    // return this.clientService.withClient({ networkName }, async (client: Client) => {
+    //   const topicReader = this.getHederaHcsTopicReader(agentContext)
+    //
+    //   const currentDidDocumentResolution = await resolveDID(
+    //     did,
+    //     'application/ld+json;profile="https://w3id.org/did-resolution"',
+    //     { topicReader }
+    //   )
+    //   if (!currentDidDocumentResolution.didDocument) {
+    //     throw new Error(`DID ${did} not found`)
+    //   }
+    //
+    //   const didUpdates = this.prepareDidUpdates(
+    //     currentDidDocumentResolution.didDocument,
+    //     didDocument,
+    //     didDocumentOperation
+    //   )
+    //
+    //   const { states, signingRequests } = await generateUpdateDIDRequest(
+    //     {
+    //       did,
+    //       updates: didUpdates.build(),
+    //       topicReader,
+    //     },
+    //     {
+    //       client,
+    //     }
+    //   )
+    //
+    //   const hederaSignKey =
+    //     secret.key.hederaPrivateKey instanceof PrivateKey
+    //       ? secret.key.hederaPrivateKey
+    //       : PrivateKey.fromStringED25519(secret.key.hederaPrivateKey)
+    //   const signatures = this.signRequests(signingRequests, hederaSignKey)
+    //   return await submitUpdateDIDRequest(
+    //     {
+    //       states,
+    //       signatures,
+    //       topicReader,
+    //     },
+    //     {
+    //       client,
+    //     }
+    //   )
+    // })
   }
 
   public async deactivateDid(
-    agentContext: AgentContext,
-    props: HederaDidDeactivateOptions
+    _agentContext: AgentContext,
+    _props: HederaDidDeactivateOptions
   ): Promise<DeactivateDIDResult> {
-    const { did, secret } = props
-    const { network: networkName } = parseDID(props.did)
-    return this.clientService.withClient({ networkName }, async (client: Client) => {
-      const topicReader = this.getHederaHcsTopicReader(agentContext)
-      const { state, signingRequest } = await generateDeactivateDIDRequest(
-        {
-          did,
-          topicReader,
-        },
-        {
-          client,
-        }
-      )
-      const hederaSignKey =
-        secret.key.hederaPrivateKey instanceof PrivateKey
-          ? secret.key.hederaPrivateKey
-          : PrivateKey.fromStringED25519(secret.key.hederaPrivateKey)
-      const signature = hederaSignKey.sign(signingRequest.serializedPayload)
-      return await submitDeactivateDIDRequest(
-        {
-          state,
-          signature,
-          topicReader,
-        },
-        {
-          client,
-        }
-      )
-    })
+    throw new Error('ddd')
+    // const { did, secret } = props
+    // const { network: networkName } = parseDID(props.did)
+    // return this.clientService.withClient({ networkName }, async (client: Client) => {
+    //   const topicReader = this.getHederaHcsTopicReader(agentContext)
+    //   const { state, signingRequest } = await generateDeactivateDIDRequest(
+    //     {
+    //       did,
+    //       topicReader,
+    //     },
+    //     {
+    //       client,
+    //     }
+    //   )
+    //   const hederaSignKey =
+    //     secret.key.hederaPrivateKey instanceof PrivateKey
+    //       ? secret.key.hederaPrivateKey
+    //       : PrivateKey.fromStringED25519(secret.key.hederaPrivateKey)
+    //   const signature = hederaSignKey.sign(signingRequest.serializedPayload)
+    //   return await submitDeactivateDIDRequest(
+    //     {
+    //       state,
+    //       signature,
+    //       topicReader,
+    //     },
+    //     {
+    //       client,
+    //     }
+    //   )
+    // })
   }
 
   /* Anoncreds*/
@@ -304,9 +337,19 @@ export class HederaLedgerService {
     return new TopicReaderHederaHcs({ ...this.config.options, cache })
   }
 
+  private async getPublisher(agentContext: AgentContext, client: Client, keyId: string): Promise<KmsPublisher> {
+    const publisher = new KmsPublisher(agentContext, client)
+    await publisher.setKeyId(keyId)
+    return publisher
+  }
+
   private getHederaAnonCredsSdk(agentContext: AgentContext): HederaAnoncredsRegistry {
     const cache = this.config.options.cache ?? new CredoCache(agentContext)
     return new HederaAnoncredsRegistry({ ...this.config.options, cache })
+  }
+
+  private getMultibasePublicKey(publicJwk: KmsJwkPublicOkp & { crv: 'Ed25519' }): string {
+    return `z${TypedArrayEncoder.toBase58(Uint8Array.from(TypedArrayEncoder.fromBase64(publicJwk.x)))}`
   }
 
   private getId(item: { id: string } | string): string {
