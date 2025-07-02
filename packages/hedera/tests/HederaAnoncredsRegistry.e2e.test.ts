@@ -1,15 +1,15 @@
 import { Agent, ConsoleLogger, LogLevel, utils } from '@credo-ts/core'
+import { HederaDidCreateOptions } from '../src/ledger/HederaLedgerService'
 import { getHederaAgent, waitTimeout } from './utils'
 import { testCache } from './utils/testCache'
 
 describe('Hedera AnonCreds support', () => {
-  const privateKey = process.env.HEDERA_TEST_OPERATOR_KEY ?? ''
   const consensusTimeout = 5000
 
   let agent: Agent
   let did: string
 
-  const logger = new ConsoleLogger(LogLevel.warn)
+  const logger = new ConsoleLogger(LogLevel.error)
   const cache = new testCache()
 
   beforeAll(async () => {
@@ -22,11 +22,8 @@ describe('Hedera AnonCreds support', () => {
     await agent.initialize()
 
     // Making the test did
-    const didRegistrarResult = await agent.dids.create({
+    const didRegistrarResult = await agent.dids.create<HederaDidCreateOptions>({
       method: 'hedera',
-      secret: {
-        privateKey,
-      },
     })
     if (!didRegistrarResult.didState?.didDocument?.id) throw new Error('DidRegistrarError')
 

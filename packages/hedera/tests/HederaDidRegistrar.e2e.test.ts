@@ -1,24 +1,32 @@
-import { Agent, ConsoleLogger, DidDocument, DidDocumentService, LogLevel, VerificationMethod } from '@credo-ts/core'
+import {
+  Agent,
+  ConsoleLogger,
+  DidDocument,
+  DidDocumentKey,
+  DidDocumentService,
+  LogLevel,
+  VerificationMethod,
+} from '@credo-ts/core'
 import {
   HederaDidCreateOptions,
   HederaDidDeactivateOptions,
   HederaDidUpdateOptions,
 } from '../src/ledger/HederaLedgerService'
+import { getMultibasePublicKey } from '../src/ledger/utils'
 import { getHederaAgent } from './utils'
 
 describe('Hedera DID registrar', () => {
-  const _privateKey = process.env.HEDERA_TEST_OPERATOR_KEY ?? ''
   const logger = new ConsoleLogger(LogLevel.error)
   let agent: Agent
 
   const validDid = 'did:hedera:testnet:44eesExqdsUvLZ35FpnBPErqRGRnYbzzyG3wgCCYxkmq_0.0.6226170'
 
-  function validVerificationMethod() {
+  function validVerificationMethod(publicKeyMultibase?: string) {
     return new VerificationMethod({
       id: '#key-1',
       type: 'Ed25519VerificationKey2020',
       controller: validDid,
-      publicKeyMultibase: 'z44eesExqdsUvLZ35FpnBPErqRGRnYbzzyG3wgCCYxkmq',
+      publicKeyMultibase: publicKeyMultibase ?? 'z44eesExqdsUvLZ35FpnBPErqRGRnYbzzyG3wgCCYxkmq',
     })
   }
 
@@ -30,9 +38,9 @@ describe('Hedera DID registrar', () => {
     })
   }
 
-  function validDidDoc() {
+  function validDidDoc(publicKeyMultibase?: string) {
     const service = [validService()]
-    const verificationMethod = [validVerificationMethod()]
+    const verificationMethod = [validVerificationMethod(publicKeyMultibase)]
 
     return new DidDocument({
       id: validDid,
@@ -57,9 +65,6 @@ describe('Hedera DID registrar', () => {
     const didResult = await agent.dids.create<HederaDidCreateOptions>({
       method: 'hedera',
       options: { network: 'testnet' },
-      secret: {
-        createKey: true
-      },
     })
 
     expect(didResult).toMatchObject({
@@ -78,17 +83,29 @@ describe('Hedera DID registrar', () => {
   })
 
   it('should create a did:hedera did document with document presets', async () => {
+    const { keyId, publicJwk } = await agent.kms.createKey({
+      type: {
+        crv: 'Ed25519',
+        kty: 'OKP',
+      },
+    })
+    const multibasePublicKey = getMultibasePublicKey(publicJwk)
+    const keys: DidDocumentKey[] = [
+      {
+        kmsKeyId: keyId,
+        didDocumentRelativeKeyId: '#key-1',
+      },
+    ]
+
     const didResult = await agent.dids.create<HederaDidCreateOptions>({
       method: 'hedera',
-      didDocument: validDidDoc(),
+      didDocument: validDidDoc(multibasePublicKey),
       options: { network: 'testnet' },
-      secret: {
-        createKey: true
-      },
+      secret: { keys },
     })
     expect(didResult.didState.state).toEqual('finished')
 
-    const verificationMethod = validVerificationMethod()
+    const verificationMethod = validVerificationMethod(multibasePublicKey)
     expect(didResult.didState.didDocument?.verificationMethod).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
@@ -125,9 +142,6 @@ describe('Hedera DID registrar', () => {
       options: {
         network: 'testnet',
       },
-      secret: {
-        createKey: true
-      },
     })
     expect(didResult).toMatchObject({ didState: { state: 'finished' } })
 
@@ -140,9 +154,6 @@ describe('Hedera DID registrar', () => {
       did,
       didDocument,
       didDocumentOperation: 'addToDidDocument',
-      secret: {
-        createKey: true
-      },
     })
 
     expect(addUpdateResult.didState.state).toEqual('finished')
@@ -172,9 +183,6 @@ describe('Hedera DID registrar', () => {
         verificationMethod: undefined,
       },
       didDocumentOperation: 'removeFromDidDocument',
-      secret: {
-        createKey: true
-      },
     })
 
     expect(removeUpdateResult.didState.state).toEqual('finished')
@@ -188,20 +196,31 @@ describe('Hedera DID registrar', () => {
   })
 
   it('should create a did:hedera did document, add and remove verification method', async () => {
+    const { keyId, publicJwk } = await agent.kms.createKey({
+      type: {
+        crv: 'Ed25519',
+        kty: 'OKP',
+      },
+    })
+    const multibasePublicKey = getMultibasePublicKey(publicJwk)
+    const keys: DidDocumentKey[] = [
+      {
+        kmsKeyId: keyId,
+        didDocumentRelativeKeyId: '#key-1',
+      },
+    ]
+
     // create did document
     const didResult = await agent.dids.create<HederaDidCreateOptions>({
       method: 'hedera',
       options: { network: 'testnet' },
-      secret: {
-        createKey: true
-      },
     })
     expect(didResult).toMatchObject({ didState: { state: 'finished' } })
 
     const did = didResult.didState.did!
     const didDocument = didResult.didState.didDocument as DidDocument
 
-    const validVerification = validVerificationMethod()
+    const validVerification = validVerificationMethod(multibasePublicKey)
     didDocument.verificationMethod = [validVerification]
 
     // add verification method to the document
@@ -210,7 +229,7 @@ describe('Hedera DID registrar', () => {
       didDocument,
       didDocumentOperation: 'addToDidDocument',
       secret: {
-        createKey: true
+        keys,
       },
     })
     expect(addUpdateResult.didState.didDocument?.id).toEqual(did)
@@ -238,7 +257,7 @@ describe('Hedera DID registrar', () => {
       didDocument,
       didDocumentOperation: 'removeFromDidDocument',
       secret: {
-        createKey: true
+        keys,
       },
     })
     expect(removeUpdateResult.didState.didDocument?.id).toEqual(did)
@@ -252,14 +271,119 @@ describe('Hedera DID registrar', () => {
     expect(removeResolvedDocument.didDocument?.service ?? []).toHaveLength(0)
   })
 
+  it('should create a did:hedera did document, but should not add verification method without required keys', async () => {
+    const { publicJwk } = await agent.kms.createKey({
+      type: {
+        crv: 'Ed25519',
+        kty: 'OKP',
+      },
+    })
+    const multibasePublicKey = getMultibasePublicKey(publicJwk)
+
+    // create did document
+    const didResult = await agent.dids.create<HederaDidCreateOptions>({
+      method: 'hedera',
+      options: { network: 'testnet' },
+    })
+    expect(didResult).toMatchObject({ didState: { state: 'finished' } })
+
+    const did = didResult.didState.did!
+    const didDocument = didResult.didState.didDocument as DidDocument
+
+    const validVerification = validVerificationMethod(multibasePublicKey)
+    didDocument.verificationMethod = [validVerification]
+
+    // add verification method to the document
+    let updateResult = await agent.dids.update<HederaDidUpdateOptions>({
+      did,
+      didDocument,
+      didDocumentOperation: 'addToDidDocument',
+    })
+    expect(updateResult.didState.state).toEqual('failed')
+    if (updateResult.didState.state === 'failed')
+      expect(updateResult.didState.reason).toEqual(
+        'Unable update DID: Key #key-1 from verificationMethod not found in keys'
+      )
+
+    // add assertion method to the document
+    didDocument.verificationMethod = undefined
+    didDocument.assertionMethod = [validVerification]
+
+    updateResult = await agent.dids.update<HederaDidUpdateOptions>({
+      did,
+      didDocument,
+      didDocumentOperation: 'addToDidDocument',
+    })
+    expect(updateResult.didState.state).toEqual('failed')
+    if (updateResult.didState.state === 'failed')
+      expect(updateResult.didState.reason).toEqual(
+        'Unable update DID: Key #key-1 from assertionMethod not found in keys'
+      )
+
+    // add authentication method to the document
+    didDocument.assertionMethod = undefined
+    didDocument.authentication = [validVerification]
+
+    updateResult = await agent.dids.update<HederaDidUpdateOptions>({
+      did,
+      didDocument,
+      didDocumentOperation: 'addToDidDocument',
+    })
+    expect(updateResult.didState.state).toEqual('failed')
+    if (updateResult.didState.state === 'failed')
+      expect(updateResult.didState.reason).toEqual(
+        'Unable update DID: Key #key-1 from authentication not found in keys'
+      )
+
+    // add authentication method to the document
+    didDocument.authentication = undefined
+    didDocument.capabilityDelegation = [validVerification]
+
+    updateResult = await agent.dids.update<HederaDidUpdateOptions>({
+      did,
+      didDocument,
+      didDocumentOperation: 'addToDidDocument',
+    })
+    expect(updateResult.didState.state).toEqual('failed')
+    if (updateResult.didState.state === 'failed')
+      expect(updateResult.didState.reason).toEqual(
+        'Unable update DID: Key #key-1 from capabilityDelegation not found in keys'
+      )
+
+    // add authentication method to the document
+    didDocument.capabilityDelegation = undefined
+    didDocument.capabilityInvocation = [validVerification]
+
+    updateResult = await agent.dids.update<HederaDidUpdateOptions>({
+      did,
+      didDocument,
+      didDocumentOperation: 'addToDidDocument',
+    })
+    expect(updateResult.didState.state).toEqual('failed')
+    if (updateResult.didState.state === 'failed')
+      expect(updateResult.didState.reason).toEqual(
+        'Unable update DID: Key #key-1 from capabilityInvocation not found in keys'
+      )
+
+    // add authentication method to the document
+    didDocument.capabilityInvocation = undefined
+    didDocument.keyAgreement = [validVerification]
+
+    updateResult = await agent.dids.update<HederaDidUpdateOptions>({
+      did,
+      didDocument,
+      didDocumentOperation: 'addToDidDocument',
+    })
+    expect(updateResult.didState.state).toEqual('failed')
+    if (updateResult.didState.state === 'failed')
+      expect(updateResult.didState.reason).toEqual('Unable update DID: Key #key-1 from keyAgreement not found in keys')
+  })
+
   it('should create and deactivate a did:hedera did', async () => {
     const didResult = await agent.dids.create<HederaDidCreateOptions>({
       method: 'hedera',
       options: {
         network: 'testnet',
-      },
-      secret: {
-        createKey: true
       },
     })
     expect(didResult).toMatchObject({ didState: { state: 'finished' } })
@@ -268,9 +392,6 @@ describe('Hedera DID registrar', () => {
 
     const deactivateResult = await agent.dids.deactivate<HederaDidDeactivateOptions>({
       did,
-      secret: {
-        createKey: true
-      },
     })
 
     expect(deactivateResult.didState.didDocument?.id).toEqual(did)
