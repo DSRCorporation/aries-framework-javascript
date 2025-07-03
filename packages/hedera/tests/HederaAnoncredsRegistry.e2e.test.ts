@@ -1,6 +1,6 @@
 import { Agent, ConsoleLogger, LogLevel, utils } from '@credo-ts/core'
 import { HederaDidCreateOptions } from '../src/ledger/HederaLedgerService'
-import { getHederaAgent, waitTimeout } from './utils'
+import { getHederaAgent } from './utils'
 import { testCache } from './utils/testCache'
 
 describe('Hedera AnonCreds support', () => {
@@ -61,7 +61,7 @@ describe('Hedera AnonCreds support', () => {
       const schemaId = schemaResult?.schemaState?.schemaId
       expect(schemaId).toBeDefined()
 
-      await waitTimeout(consensusTimeout)
+      //await waitTimeout(consensusTimeout)
 
       // Register credential definition for the schema
       const credDefResult = await agent.modules.anoncreds.registerCredentialDefinition({
@@ -80,7 +80,7 @@ describe('Hedera AnonCreds support', () => {
 
       const credentialDefinitionId = credDefResult.credentialDefinitionState.credentialDefinitionId ?? ''
 
-      await waitTimeout(consensusTimeout)
+      //await waitTimeout(consensusTimeout)
 
       // Register revocation registry definition
       const revRegDefRegResult = await agent.modules.anoncreds.registerRevocationRegistryDefinition({
@@ -97,7 +97,7 @@ describe('Hedera AnonCreds support', () => {
         revRegDefRegResult?.revocationRegistryDefinitionState?.revocationRegistryDefinitionId ?? ''
       expect(revocationRegistryDefinitionId).toBeDefined()
 
-      await waitTimeout(consensusTimeout)
+      //await waitTimeout(consensusTimeout)
 
       const resolvedRevRegDef =
         await agent.modules.anoncreds.getRevocationRegistryDefinition(revocationRegistryDefinitionId)
@@ -115,7 +115,7 @@ describe('Hedera AnonCreds support', () => {
       const revocationStatusList = registerRevocationStatusListResponse?.revocationStatusListState.revocationStatusList
       expect(revocationStatusList).toBeDefined()
 
-      await waitTimeout(consensusTimeout)
+      //await waitTimeout(consensusTimeout)
 
       // Resolve the revocation status list
       const revocationStatusListResponse = await agent.modules.anoncreds.getRevocationStatusList(
@@ -128,7 +128,7 @@ describe('Hedera AnonCreds support', () => {
       expect(revocationStatusListResponse?.revocationStatusList?.issuerId).toEqual(did)
       expect(revocationStatusListResponse?.revocationStatusList?.revocationList).toEqual([0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
 
-      await waitTimeout(consensusTimeout)
+      //await waitTimeout(consensusTimeout)
 
       // Update revocation status list - Revoke indexes
       const revokeUpdateRevocationStatusListResponse = await agent.modules.anoncreds.updateRevocationStatusList({
@@ -144,7 +144,7 @@ describe('Hedera AnonCreds support', () => {
         revokeUpdateRevocationStatusListResponse?.revocationStatusListState.revocationStatusList
       expect(revokeRevocationStatusList).toBeDefined()
 
-      await waitTimeout(consensusTimeout)
+      //await waitTimeout(consensusTimeout)
 
       // Resolve the revocation status list
       const revokeRevocationStatusListResponse = await agent.modules.anoncreds.getRevocationStatusList(
@@ -174,7 +174,7 @@ describe('Hedera AnonCreds support', () => {
         issueUpdateRevocationStatusListResponse?.revocationStatusListState.revocationStatusList
       expect(issueRevocationStatusList).toBeDefined()
 
-      await waitTimeout(consensusTimeout)
+      //await waitTimeout(consensusTimeout)
 
       // Resolve the revocation status list
       const issueRevocationStatusListResponse = await agent.modules.anoncreds.getRevocationStatusList(

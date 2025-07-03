@@ -25,8 +25,7 @@ import {
 import { KeyManagementApi } from '@credo-ts/core/src/modules/kms'
 import { Client } from '@hashgraph/sdk'
 import { HederaAnoncredsRegistry } from '@hiero-did-sdk/anoncreds'
-import { HederaClientService } from '@hiero-did-sdk/client'
-import { HederaNetwork } from '@hiero-did-sdk/client/dist/index'
+import { HederaNetwork, HederaClientService } from '@hiero-did-sdk/client'
 import { DIDResolution, DID_ROOT_KEY_ID, Service, VerificationMethod } from '@hiero-did-sdk/core'
 import {
   CreateDIDResult,
