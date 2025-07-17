@@ -6,6 +6,7 @@ import packageJson from './package.json'
 
 const config: Config.InitialOptions = {
   ...base,
+  testTimeout: 100000,
   displayName: packageJson.name,
 }
 

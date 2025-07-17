@@ -9,7 +9,6 @@ import {
 } from '@credo-ts/core'
 import {
   HederaDidCreateOptions,
-  HederaDidDeactivateOptions,
   HederaDidUpdateOptions,
 } from '../src/ledger/HederaLedgerService'
 import { getMultibasePublicKey } from '../src/ledger/utils'
