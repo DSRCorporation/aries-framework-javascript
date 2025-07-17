@@ -20,7 +20,6 @@ export class TestTailsFileService extends BasicTailsFileService {
     return {
       tailsFileUrl: options.revocationRegistryDefinition.value.tailsLocation,
     }
-    // tailsFileUrl: options.revocationRegistryDefinition.value.tailsLocation.replace(/\\/g, '/')
   }
 
   public async getTailsFile(

@@ -17,6 +17,8 @@ export enum RegistryOptions {
   hedera = 'did:hedera',
 }
 
+type Extensible = Record<string, string>
+
 export class Faber extends BaseAgent {
   public outOfBandId?: string
   public credentialDefinition?: RegisterCredentialDefinitionReturnStateFinished
@@ -39,12 +41,22 @@ export class Faber extends BaseAgent {
     // and store the existing did in the wallet
     // indy did is based on private key (seed)
     const unqualifiedIndyDid = '2jEvRuKmfBJTRa7QowDpNN'
-    const cheqdDid = 'did:cheqd:testnet:d37eba59-513d-42d3-8f9f-d1df0548b675'
-    const indyDid = `did:indy:${indyNetworkConfig.indyNamespace}:${unqualifiedIndyDid}`
-    const hederaDid = 'did:hedera:testnet:44eesExqdsUvLZ35FpnBPErqRGRnYbzzyG3wgCCYxkmq_0.0.6231121'
-    const didDocumentRelativeKeyId = registry === RegistryOptions.indy ? '#verkey' : registry === RegistryOptions.cheqd ? '#key-1' : '#did-root-key'
 
-    const did = registry === RegistryOptions.indy ? indyDid : registry === RegistryOptions.cheqd ? cheqdDid : hederaDid
+    const rootKeyIds: Extensible = {
+      [RegistryOptions.indy]: '#verkey',
+      [RegistryOptions.cheqd]: '#key-1',
+      [RegistryOptions.hedera]: '#did-root-key',
+    }
+
+    const Dids: Extensible = {
+      [RegistryOptions.indy]: `did:indy:${indyNetworkConfig.indyNamespace}:${unqualifiedIndyDid}`,
+      [RegistryOptions.cheqd]: 'did:cheqd:testnet:d37eba59-513d-42d3-8f9f-d1df0548b675',
+      [RegistryOptions.hedera]: 'did:hedera:testnet:44eesExqdsUvLZ35FpnBPErqRGRnYbzzyG3wgCCYxkmq_0.0.6231121',
+    }
+
+    const didDocumentRelativeKeyId = rootKeyIds[registry]
+    const did = Dids[registry]
+
     const { privateJwk } = transformPrivateKeyToPrivateJwk({
       type: {
         crv: 'Ed25519',
