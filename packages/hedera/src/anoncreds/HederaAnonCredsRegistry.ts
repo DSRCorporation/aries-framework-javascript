@@ -25,7 +25,7 @@ export class HederaAnonCredsRegistry implements AnonCredsRegistry {
     options: RegisterSchemaOptions
   ): Promise<RegisterSchemaReturn> {
     try {
-      agentContext.config.logger.trace('Submitting register schema request to ledger')
+      agentContext.config.logger.trace('Registering schema on Hedera ledger')
       const ledgerService = agentContext.dependencyManager.resolve(HederaLedgerService)
       return await ledgerService.registerSchema(agentContext, options)
     } catch (error) {
@@ -48,7 +48,7 @@ export class HederaAnonCredsRegistry implements AnonCredsRegistry {
 
   public async getSchema(agentContext: AgentContext, schemaId: string): Promise<GetSchemaReturn> {
     try {
-      agentContext.config.logger.trace(`Submitting get schema request for schema '${schemaId}' to ledger`)
+      agentContext.config.logger.trace(`Resolving schema '${schemaId}' from Hedera ledger`)
       const ledgerService = agentContext.dependencyManager.resolve(HederaLedgerService)
       return await ledgerService.getSchema(agentContext, schemaId)
     } catch (error) {
@@ -72,7 +72,7 @@ export class HederaAnonCredsRegistry implements AnonCredsRegistry {
     options: RegisterCredentialDefinitionOptions
   ): Promise<RegisterCredentialDefinitionReturn> {
     try {
-      agentContext.config.logger.trace('Submitting register credential definition request to ledger')
+      agentContext.config.logger.trace('Registering credential definition on Hedera ledger')
       const ledgerService = agentContext.dependencyManager.resolve(HederaLedgerService)
       return await ledgerService.registerCredentialDefinition(agentContext, options)
     } catch (error) {
@@ -102,7 +102,7 @@ export class HederaAnonCredsRegistry implements AnonCredsRegistry {
   ): Promise<GetCredentialDefinitionReturn> {
     try {
       agentContext.config.logger.trace(
-        `Submitting get credential definition request for '${credentialDefinitionId}' to ledger`
+        `Resolving credential definition '${credentialDefinitionId}' from Hedera ledger`
       )
       const ledgerService = agentContext.dependencyManager.resolve(HederaLedgerService)
       return await ledgerService.getCredentialDefinition(agentContext, credentialDefinitionId)
@@ -128,7 +128,7 @@ export class HederaAnonCredsRegistry implements AnonCredsRegistry {
   ): Promise<RegisterRevocationRegistryDefinitionReturn> {
     try {
       agentContext.config.logger.trace(
-        `Submitting register revocation registry definition request for '${options.revocationRegistryDefinition.credDefId}' to ledger`
+        `Registering revocation registry definition for '${options.revocationRegistryDefinition.credDefId}' on Hedera ledger`
       )
       const ledgerService = agentContext.dependencyManager.resolve(HederaLedgerService)
       return await ledgerService.registerRevocationRegistryDefinition(agentContext, options)
@@ -159,7 +159,7 @@ export class HederaAnonCredsRegistry implements AnonCredsRegistry {
   ): Promise<GetRevocationRegistryDefinitionReturn> {
     try {
       agentContext.config.logger.trace(
-        `Submitting get revocation registry definition request for '${revocationRegistryDefinitionId}' to ledger`
+          `Resolving revocation registry definition for '${revocationRegistryDefinitionId}' from Hedera ledger`
       )
       const ledgerService = agentContext.dependencyManager.resolve(HederaLedgerService)
       return await ledgerService.getRevocationRegistryDefinition(agentContext, revocationRegistryDefinitionId)
@@ -188,7 +188,7 @@ export class HederaAnonCredsRegistry implements AnonCredsRegistry {
   ): Promise<RegisterRevocationStatusListReturn> {
     try {
       agentContext.config.logger.trace(
-        `Submitting register revocation status list request for '${options.revocationStatusList.revRegDefId}' to ledger`
+          `Registering revocation status list for '${options.revocationStatusList.revRegDefId}' on Hedera ledger`
       )
       const ledgerService = agentContext.dependencyManager.resolve(HederaLedgerService)
       return await ledgerService.registerRevocationStatusList(agentContext, options)
@@ -220,7 +220,7 @@ export class HederaAnonCredsRegistry implements AnonCredsRegistry {
   ): Promise<GetRevocationStatusListReturn> {
     try {
       agentContext.config.logger.trace(
-        `Submitting get revocation status request for '${revocationRegistryId}' to ledger`
+          `Resolving revocation status for for '${revocationRegistryId}' from Hedera ledger`
       )
       const ledgerService = agentContext.dependencyManager.resolve(HederaLedgerService)
       return await ledgerService.getRevocationStatusList(agentContext, revocationRegistryId, timestamp)

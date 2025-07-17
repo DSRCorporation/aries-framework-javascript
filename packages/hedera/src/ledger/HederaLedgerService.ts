@@ -26,7 +26,7 @@ import { KeyManagementApi } from '@credo-ts/core/src/modules/kms'
 import { Client } from '@hashgraph/sdk'
 import { HederaAnoncredsRegistry } from '@hiero-did-sdk/anoncreds'
 import { HederaNetwork, HederaClientService } from '@hiero-did-sdk/client'
-import { DIDResolution, DID_ROOT_KEY_ID, Service, VerificationMethod } from '@hiero-did-sdk/core'
+import {DIDResolution, DID_ROOT_KEY_ID, Service, VerificationMethod, parseDID} from '@hiero-did-sdk/core'
 import {
   CreateDIDResult,
   DIDUpdateBuilder,
@@ -39,7 +39,7 @@ import {
   submitDeactivateDIDRequest,
   submitUpdateDIDRequest,
 } from '@hiero-did-sdk/registrar'
-import { TopicReaderHederaHcs, parseDID, resolveDID } from '@hiero-did-sdk/resolver'
+import { TopicReaderHederaHcs, resolveDID } from '@hiero-did-sdk/resolver'
 import { HederaModuleConfig } from '../HederaModuleConfig'
 import { CredoCache } from './cache/CredoCache'
 import { KmsPublisher } from './publisher/KmsPublisher'
@@ -164,7 +164,7 @@ export class HederaLedgerService {
     }
 
     // Check all required keys presents
-    this.checkKeys(didDocument, secret?.keys ?? [])
+    this.checkRequiredDidDocumentKeys(didDocument, secret?.keys ?? [])
 
     const { network: networkName } = parseDID(did)
     return this.clientService.withClient({ networkName }, async (client: Client) => {
@@ -331,9 +331,9 @@ export class HederaLedgerService {
   }
 
   private async getPublisher(agentContext: AgentContext, client: Client, keyId: string): Promise<KmsPublisher> {
-    const publisher = new KmsPublisher(agentContext, client)
-    await publisher.setKeyId(keyId)
-    return publisher
+    const kms = agentContext.dependencyManager.resolve(Kms.KeyManagementApi)
+    const key = await createOrGetKey(kms, keyId)
+    return new KmsPublisher(agentContext, client, key)
   }
 
   private getHederaAnonCredsSdk(agentContext: AgentContext): HederaAnoncredsRegistry {
@@ -383,7 +383,7 @@ export class HederaLedgerService {
     return result
   }
 
-  private checkKeys(didDocument: DidDocument | Partial<DidDocument>, keys: DidDocumentKey[]) {
+  private checkRequiredDidDocumentKeys(didDocument: DidDocument | Partial<DidDocument>, keys: DidDocumentKey[]) {
     const fields = [
       'verificationMethod',
       'assertionMethod',

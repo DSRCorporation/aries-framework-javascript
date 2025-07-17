@@ -24,8 +24,6 @@ export class HederaDidRegistrar implements DidRegistrar {
 
   async create(agentContext: AgentContext, options: HederaDidCreateOptions): Promise<DidCreateResult> {
     try {
-      agentContext.config.logger.trace('Try to create the did document to ledger')
-
       const didRepository = agentContext.dependencyManager.resolve(DidRepository)
       const ledgerService = agentContext.dependencyManager.resolve(HederaLedgerService)
 
@@ -58,7 +56,7 @@ export class HederaDidRegistrar implements DidRegistrar {
         },
       }
     } catch (error) {
-      agentContext.config.logger.debug('Error creating of the did ', {
+      agentContext.config.logger.debug('Error creating DID', {
         error,
       })
       return {
@@ -92,7 +90,7 @@ export class HederaDidRegistrar implements DidRegistrar {
       }
 
       // Update did
-      const keys = this.concateKeys(didRecord.keys, options.secret?.keys)
+      const keys = this.concatKeys(didRecord.keys, options.secret?.keys)
       const { didDocument: updatedDidDocument } = await ledgerService.updateDid(agentContext, {
         ...options,
         secret: { keys },
@@ -113,7 +111,7 @@ export class HederaDidRegistrar implements DidRegistrar {
         },
       }
     } catch (error) {
-      agentContext.config.logger.error('Error updating DID', error)
+      agentContext.config.logger.error('Error update DID', error)
       return {
         didDocumentMetadata: {},
         didRegistrationMetadata: {},
@@ -125,7 +123,7 @@ export class HederaDidRegistrar implements DidRegistrar {
     }
   }
 
-  async deactivate(agentContext: AgentContext, options: HederaDidDeactivateOptions): Promise<DidDeactivateResult> {
+  async deactivate(agentContext: AgentContext, options: Omit<HederaDidDeactivateOptions, 'secret'>): Promise<DidDeactivateResult> {
     const didRepository = agentContext.dependencyManager.resolve(DidRepository)
     const ledgerService = agentContext.dependencyManager.resolve(HederaLedgerService)
 
@@ -147,15 +145,13 @@ export class HederaDidRegistrar implements DidRegistrar {
         }
       }
       // Deactivate did
-      const keys = this.concateKeys(didRecord.keys, options.secret?.keys)
       const { didDocument: deactivatedDidDocument } = await ledgerService.deactivateDid(agentContext, {
         ...options,
-        secret: { keys },
+        secret: { keys: didRecord.keys },
       })
 
       // Save the did to wallet
       didRecord.didDocument = JsonTransformer.fromJSON(deactivatedDidDocument, DidDocument)
-      didRecord.keys = keys
       await didRepository.update(agentContext, didRecord)
 
       return {
@@ -168,7 +164,7 @@ export class HederaDidRegistrar implements DidRegistrar {
         },
       }
     } catch (error) {
-      agentContext.config.logger.error('Error deactivating DID', error)
+      agentContext.config.logger.error('Error deactivate DID', error)
       return {
         didDocumentMetadata: {},
         didRegistrationMetadata: {},
@@ -180,12 +176,10 @@ export class HederaDidRegistrar implements DidRegistrar {
     }
   }
 
-  private concateKeys(keys1?: DidDocumentKey[], keys2?: DidDocumentKey[]): DidDocumentKey[] {
-    const _keys1 = keys1 ?? []
-    const _keys2 = keys2 ?? []
+  private concatKeys(keys1: DidDocumentKey[] = [], keys2: DidDocumentKey[] = []): DidDocumentKey[] {
     return [
-      ..._keys1,
-      ..._keys2.filter((k2) => !_keys1.some((k1) => k1.didDocumentRelativeKeyId === k2.didDocumentRelativeKeyId)),
+      ...keys1,
+      ...keys2.filter((k2) => !keys1.some((k1) => k1.didDocumentRelativeKeyId === k2.didDocumentRelativeKeyId)),
     ]
   }
 }

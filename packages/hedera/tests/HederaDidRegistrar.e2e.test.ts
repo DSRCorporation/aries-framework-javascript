@@ -390,8 +390,8 @@ describe('Hedera DID registrar', () => {
 
     const did = didResult.didState.did!
 
-    const deactivateResult = await agent.dids.deactivate<HederaDidDeactivateOptions>({
-      did,
+    const deactivateResult = await agent.dids.deactivate({
+      did
     })
 
     expect(deactivateResult.didState.didDocument?.id).toEqual(did)
