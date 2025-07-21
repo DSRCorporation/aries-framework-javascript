@@ -14,8 +14,8 @@ import { askar } from '@openwallet-foundation/askar-nodejs'
 import { TestTailsFileService } from './testTailsFileService'
 
 export const getHederaModuleConfig = (props: { operatorId?: string; operatorKey?: string }) => {
-  const operatorId = props.operatorId ?? process.env.HEDERA_TEST_OPERATOR_ID ?? ''
-  const operatorKey = props.operatorKey ?? process.env.HEDERA_TEST_OPERATOR_KEY ?? ''
+  const operatorId = props.operatorId ?? process.env.HEDERA_OPERATOR_ID ?? ''
+  const operatorKey = props.operatorKey ?? process.env.HEDERA_OPERATOR_KEY ?? ''
   return {
     networks: [
       {
