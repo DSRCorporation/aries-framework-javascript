@@ -23,6 +23,7 @@
     "@credo-ts/askar": "workspace:*",
     "@credo-ts/core": "workspace:*",
     "@credo-ts/didcomm": "workspace:*",
+    "@credo-ts/hedera": "workspace:*",
     "@credo-ts/indy-vdr": "workspace:*",
     "@credo-ts/cheqd": "workspace:*",
     "@credo-ts/node": "workspace:*",
