@@ -1,5 +1,5 @@
 import { AgentContext, Kms, TypedArrayEncoder } from '@credo-ts/core'
-import {KeyManagementApi, KmsJwkPublicOkp} from '@credo-ts/core/src/modules/kms'
+import { KeyManagementApi, KmsJwkPublicOkp } from '@credo-ts/core/src/modules/kms'
 import { Client, PublicKey, Transaction, TransactionReceipt } from '@hashgraph/sdk'
 import { KeysUtility } from '@hiero-did-sdk/core'
 import { Publisher as ClientPublisher } from '@hiero-did-sdk/publisher-internal'
@@ -11,14 +11,18 @@ export class KmsPublisher extends ClientPublisher {
   private keyId!: string
   private submitPublicKey!: PublicKey
 
-  constructor(agentContext: AgentContext, client: Client, key: { keyId: string; publicJwk: KmsJwkPublicOkp & { crv: 'Ed25519' } }) {
+  constructor(
+    agentContext: AgentContext,
+    client: Client,
+    key: { keyId: string; publicJwk: KmsJwkPublicOkp & { crv: 'Ed25519' } }
+  ) {
     super(client)
 
     this.kms = agentContext.dependencyManager.resolve(Kms.KeyManagementApi)
 
     this.keyId = key.keyId
     this.submitPublicKey = KeysUtility.fromBytes(
-        Uint8Array.from(TypedArrayEncoder.fromBase64(key.publicJwk.x))
+      Uint8Array.from(TypedArrayEncoder.fromBase64(key.publicJwk.x))
     ).toPublicKey()
   }
 

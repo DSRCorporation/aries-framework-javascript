@@ -25,8 +25,8 @@ import {
 import { KeyManagementApi } from '@credo-ts/core/src/modules/kms'
 import { Client } from '@hashgraph/sdk'
 import { HederaAnoncredsRegistry } from '@hiero-did-sdk/anoncreds'
-import { HederaNetwork, HederaClientService } from '@hiero-did-sdk/client'
-import {DIDResolution, DID_ROOT_KEY_ID, Service, VerificationMethod, parseDID} from '@hiero-did-sdk/core'
+import { HederaClientService, HederaNetwork } from '@hiero-did-sdk/client'
+import { DIDResolution, DID_ROOT_KEY_ID, Service, VerificationMethod, parseDID } from '@hiero-did-sdk/core'
 import {
   CreateDIDResult,
   DIDUpdateBuilder,
@@ -287,7 +287,12 @@ export class HederaLedgerService {
     options: RegisterCredentialDefinitionOptions
   ): Promise<RegisterCredentialDefinitionReturn> {
     const sdk = this.getHederaAnonCredsSdk(agentContext)
-    return await sdk.registerCredentialDefinition(options)
+    return await sdk.registerCredentialDefinition({
+      ...options,
+      options: {
+        supportRevocation: options.options?.supportRevocation === true ?? false,
+      },
+    })
   }
 
   async getRevocationRegistryDefinition(
