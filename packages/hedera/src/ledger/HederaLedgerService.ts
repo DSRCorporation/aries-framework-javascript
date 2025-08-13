@@ -290,7 +290,7 @@ export class HederaLedgerService {
     return await sdk.registerCredentialDefinition({
       ...options,
       options: {
-        supportRevocation: options.options?.supportRevocation === true ?? false,
+        supportRevocation: options.options?.supportRevocation === true,
       },
     })
   }
