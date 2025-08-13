@@ -1,5 +1,5 @@
 import { Agent, ConsoleLogger, LogLevel, utils } from '@credo-ts/core'
-import { HederaDidCreateOptions } from '../src/ledger/HederaLedgerService'
+import { HederaDidCreateOptions } from '../../src/ledger/HederaLedgerService'
 import { getHederaAgent, testCache } from './utils'
 
 describe('Hedera AnonCreds support', () => {
@@ -42,7 +42,7 @@ describe('Hedera AnonCreds support', () => {
   })
 
   describe('Hedera Anoncreds Registry', () => {
-    it('Full flow (register and resolve schema, credential definition, revocation registry definition, revocation status list)', async () => {
+    it('should executes the full workflow (register and resolve schema, credential definition, revocation registry definition, revocation status list)', async () => {
       // Create the schema
       const schemaResult = await agent.modules.anoncreds.registerSchema({
         schema: {

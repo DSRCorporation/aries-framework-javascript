@@ -8,6 +8,7 @@ const config: Config.InitialOptions = {
   ...base,
   testTimeout: 100000,
   displayName: packageJson.name,
+  coveragePathIgnorePatterns: ['../tests'],
 }
 
 export default config

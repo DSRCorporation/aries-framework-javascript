@@ -29,11 +29,11 @@ export class CredoCache implements Cache {
     await this.credoCache.remove(this.agentContext, key)
   }
 
-  cleanup(): Promise<void> {
+  async clear(): Promise<void> {
     throw new Error('Method not implemented.')
   }
 
-  cleanupExpired(): Promise<void> {
+  async cleanupExpired(): Promise<void> {
     throw new Error('Method not implemented.')
   }
 }
