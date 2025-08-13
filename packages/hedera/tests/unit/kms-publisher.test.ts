@@ -1,14 +1,13 @@
+import { Kms, TypedArrayEncoder } from '@credo-ts/core'
+import { KmsJwkPublicOkp } from '@credo-ts/core/src/modules/kms'
 import { KeysUtility } from '@hiero-did-sdk/core'
-import { Kms, TypedArrayEncoder} from '@credo-ts/core'
-import { KmsPublisher } from "../../src/ledger/publisher/KmsPublisher";
-import { KmsJwkPublicOkp} from "@credo-ts/core/src/modules/kms";
+import { KmsPublisher } from '../../src/ledger/publisher/KmsPublisher'
 
 jest.mock('@hiero-did-sdk/core', () => ({
   KeysUtility: {
     fromBytes: jest.fn(),
   },
-  DIDError: class DIDError extends Error {}
-
+  DIDError: class DIDError extends Error {},
 }))
 
 jest.mock('@credo-ts/core', () => ({
@@ -24,13 +23,13 @@ jest.mock('../../src/ledger/utils', () => ({
   createOrGetKey: jest.fn(),
 }))
 
-import {createOrGetKey} from "../../src/ledger/utils";
+import { createOrGetKey } from '../../src/ledger/utils'
 
 jest.mock('@hiero-did-sdk/publisher-internal', () => {
   return {
     Publisher: jest.fn(),
   }
-});
+})
 
 describe('KmsPublisher', () => {
   const mockClient = {
@@ -39,7 +38,7 @@ describe('KmsPublisher', () => {
     execute: jest.fn(),
     operator: {
       accountId: '0.0.1234',
-      publicKey: {}
+      publicKey: {},
     },
   }
 
@@ -54,7 +53,7 @@ describe('KmsPublisher', () => {
   const signMock = jest.fn().mockResolvedValue({ signature: 'signature-bytes' })
 
   const kmsMock = {
-    sign: signMock
+    sign: signMock,
   }
 
   const agentContext = {
@@ -64,8 +63,8 @@ describe('KmsPublisher', () => {
           return kmsMock
         }
         throw new Error(`Unexpected dependency: ${key}`)
-      })
-    }
+      }),
+    },
   }
 
   const keyId = 'test-key-id'
@@ -81,9 +80,7 @@ describe('KmsPublisher', () => {
 
   beforeEach(() => {
     jest.clearAllMocks()
-
     ;(TypedArrayEncoder.fromBase64 as jest.Mock).mockReturnValue(new Uint8Array([1, 2, 3]))
-
     ;(KeysUtility.fromBytes as jest.Mock).mockReturnValue(mockPublicKey)
     mockPublicKey.toPublicKey.mockReturnValue(fakePublicKey)
 
@@ -107,7 +104,7 @@ describe('KmsPublisher', () => {
   })
 
   it('should correctly update key in setKeyId', async () => {
-    (createOrGetKey as jest.Mock).mockResolvedValue({
+    ;(createOrGetKey as jest.Mock).mockResolvedValue({
       publicJwk: { x: base64X, crv: 'Ed25519' },
     })
 
