@@ -7,11 +7,8 @@ import {
   LogLevel,
   VerificationMethod,
 } from '@credo-ts/core'
-import {
-  HederaDidCreateOptions,
-  HederaDidUpdateOptions,
-} from '../src/ledger/HederaLedgerService'
-import { getMultibasePublicKey } from '../src/ledger/utils'
+import { HederaDidCreateOptions, HederaDidUpdateOptions } from '../../src/ledger/HederaLedgerService'
+import { getMultibasePublicKey } from '../../src/ledger/utils'
 import { getHederaAgent } from './utils'
 
 describe('Hedera DID registrar', () => {
@@ -390,7 +387,7 @@ describe('Hedera DID registrar', () => {
     const did = didResult.didState.did!
 
     const deactivateResult = await agent.dids.deactivate({
-      did
+      did,
     })
 
     expect(deactivateResult.didState.didDocument?.id).toEqual(did)

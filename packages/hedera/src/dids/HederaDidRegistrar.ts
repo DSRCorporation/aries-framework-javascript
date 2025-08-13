@@ -123,7 +123,10 @@ export class HederaDidRegistrar implements DidRegistrar {
     }
   }
 
-  async deactivate(agentContext: AgentContext, options: Omit<HederaDidDeactivateOptions, 'secret'>): Promise<DidDeactivateResult> {
+  async deactivate(
+    agentContext: AgentContext,
+    options: Omit<HederaDidDeactivateOptions, 'secret'>
+  ): Promise<DidDeactivateResult> {
     const didRepository = agentContext.dependencyManager.resolve(DidRepository)
     const ledgerService = agentContext.dependencyManager.resolve(HederaLedgerService)
 
