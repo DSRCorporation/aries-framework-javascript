@@ -63,7 +63,7 @@ describe('Hedera AnonCreds support', () => {
         credentialDefinition: {
           tag: 'default',
           issuerId: did,
-          schemaId: schemaId!,
+          schemaId: schemaId,
         },
         options: {
           supportRevocation: true,

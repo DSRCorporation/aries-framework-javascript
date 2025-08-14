@@ -34,6 +34,7 @@ const createMockAgentContext = () =>
 describe('HederaAnonCredsRegistry', () => {
   let service: HederaAnonCredsRegistry
   let mockAgentContext: AgentContext
+  // biome-ignore lint/suspicious/noExplicitAny: <explanation>
   let mockLedgerService: any
 
   beforeEach(() => {
@@ -137,8 +138,18 @@ describe('HederaAnonCredsRegistry', () => {
 
   describe('registerCredentialDefinition', () => {
     const options: RegisterCredentialDefinitionOptions = {
-      credentialDefinition: { issuerId: 'did:hedera:issuer' },
-    } as any
+      options: {},
+      credentialDefinition: {
+        issuerId: 'did:hedera:issuer',
+        schemaId: '',
+        type: 'CL',
+        tag: '',
+        value: {
+          primary: {},
+          revocation: undefined,
+        },
+      },
+    }
 
     it('should call ledgerService.registerCredentialDefinition and return result on success', async () => {
       const expected: RegisterCredentialDefinitionReturn = {
@@ -223,8 +234,24 @@ describe('HederaAnonCredsRegistry', () => {
 
   describe('registerRevocationRegistryDefinition', () => {
     const options: RegisterRevocationRegistryDefinitionOptions = {
-      revocationRegistryDefinition: { credDefId: 'credDef1', issuerId: 'did:hedera:issuer' },
-    } as any
+      options: {},
+      revocationRegistryDefinition: {
+        credDefId: 'credDef1',
+        issuerId: 'did:hedera:issuer',
+        revocDefType: 'CL_ACCUM',
+        tag: '',
+        value: {
+          publicKeys: {
+            accumKey: {
+              z: '',
+            },
+          },
+          maxCredNum: 0,
+          tailsLocation: '',
+          tailsHash: '',
+        },
+      },
+    }
 
     it('should call ledgerService.registerRevocationRegistryDefinition and return result on success', async () => {
       const expected: RegisterRevocationRegistryDefinitionReturn = {
@@ -318,8 +345,14 @@ describe('HederaAnonCredsRegistry', () => {
 
   describe('registerRevocationStatusList', () => {
     const options: RegisterRevocationStatusListOptions = {
-      revocationStatusList: { revRegDefId: 'regDef1', issuerId: 'did:hedera:issuer' },
-    } as any
+      options: {},
+      revocationStatusList: {
+        revRegDefId: 'regDef1',
+        issuerId: 'did:hedera:issuer',
+        revocationList: [],
+        currentAccumulator: '',
+      },
+    }
 
     it('should call ledgerService.registerRevocationStatusList and return result on success', async () => {
       const expected: RegisterRevocationStatusListReturn = {

@@ -5,8 +5,11 @@ import { HederaDidUpdateOptions } from '../../src/ledger/HederaLedgerService'
 
 describe('HederaDidRegistrar', () => {
   let service: HederaDidRegistrar
+  // biome-ignore lint/suspicious/noExplicitAny: <explanation>
   let mockAgentContext: any
+  // biome-ignore lint/suspicious/noExplicitAny: <explanation>
   let mockDidRepository: any
+  // biome-ignore lint/suspicious/noExplicitAny: <explanation>
   let mockLedgerService: any
 
   beforeEach(() => {
@@ -30,6 +33,7 @@ describe('HederaDidRegistrar', () => {
 
     mockAgentContext = {
       dependencyManager: {
+        // biome-ignore lint/suspicious/noExplicitAny: <explanation>
         resolve: jest.fn().mockImplementation((obj: any) => {
           if (obj.name === 'DidRepository') return mockDidRepository
           if (obj.name === 'HederaLedgerService') return mockLedgerService
@@ -53,13 +57,10 @@ describe('HederaDidRegistrar', () => {
 
       mockLedgerService.createDid.mockResolvedValue({ did, didDocument, rootKey })
 
-      const result = await service.create(
-        mockAgentContext as AgentContext,
-        {
-          method: 'hedera',
-          options: {},
-        } as any
-      )
+      const result = await service.create(mockAgentContext as AgentContext, {
+        method: 'hedera',
+        options: {},
+      })
 
       expect(mockDidRepository.save).toHaveBeenCalled()
       const savedRecord = mockDidRepository.save.mock.calls[0][1]
@@ -76,13 +77,10 @@ describe('HederaDidRegistrar', () => {
     it('should handle error and return failed state', async () => {
       mockLedgerService.createDid.mockRejectedValue(new Error('Create failed'))
 
-      const result = await service.create(
-        mockAgentContext as AgentContext,
-        {
-          method: 'hedera',
-          options: {},
-        } as any
-      )
+      const result = await service.create(mockAgentContext as AgentContext, {
+        method: 'hedera',
+        options: {},
+      })
 
       expect(mockAgentContext.config.logger.debug).toHaveBeenCalledWith('Error creating DID', expect.any(Object))
 
@@ -149,9 +147,10 @@ describe('HederaDidRegistrar', () => {
       mockLedgerService.resolveDid.mockResolvedValue({ didDocument: null, didDocumentMetadata: { deactivated: true } })
       mockDidRepository.findCreatedDid.mockResolvedValue(null)
 
-      const options = {
+      const options: HederaDidUpdateOptions = {
         did,
-      } as any
+        didDocument: {},
+      }
 
       const result = await service.update(mockAgentContext as AgentContext, options)
 
@@ -162,10 +161,11 @@ describe('HederaDidRegistrar', () => {
     it('should handle error and return failed state', async () => {
       mockLedgerService.resolveDid.mockRejectedValue(new Error('Update failed'))
 
-      const options = {
+      const options: HederaDidUpdateOptions = {
         did,
         didDocumentOperation: 'setDidDocument',
-      } as any
+        didDocument: {},
+      }
 
       const result = await service.update(mockAgentContext as AgentContext, options)
 
@@ -249,6 +249,7 @@ describe('HederaDidRegistrar', () => {
 
       const keys2 = [{ didDocumentRelativeKeyId: 'key2' }, { didDocumentRelativeKeyId: 'key3' }] as DidDocumentKey[]
 
+      // biome-ignore lint/suspicious/noExplicitAny: <explanation>
       const result = (service as any).concatKeys(keys1, keys2)
 
       expect(result).toHaveLength(3)
@@ -262,6 +263,7 @@ describe('HederaDidRegistrar', () => {
     })
 
     it('should handle undefined arguments and return empty array', () => {
+      // biome-ignore lint/suspicious/noExplicitAny: <explanation>
       const result = (service as any).concatKeys(undefined, undefined)
       expect(result).toEqual([])
     })
