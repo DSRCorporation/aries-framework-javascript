@@ -28,7 +28,7 @@ describe('Hedera DID resolver', () => {
     await agent.shutdown()
   })
 
-  it('should resolve a did:cheqd did from local testnet', async () => {
+  it('should resolve a did:hedera did from local testnet', async () => {
     const resolveResult = await agent.dids.resolve(did)
 
     expect(JsonTransformer.toJSON(resolveResult)).toMatchObject({

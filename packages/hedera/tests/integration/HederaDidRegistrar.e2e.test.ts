@@ -132,7 +132,6 @@ describe('Hedera DID registrar', () => {
   })
 
   it('should create a did:hedera did document, add and remove service', async () => {
-    // create document
     const didResult = await agent.dids.create<HederaDidCreateOptions>({
       method: 'hedera',
       options: {
@@ -141,11 +140,10 @@ describe('Hedera DID registrar', () => {
     })
     expect(didResult).toMatchObject({ didState: { state: 'finished' } })
 
-    const did = didResult.didState.did!
+    const did = didResult.didState.did ?? ''
     const didDocument = didResult.didState.didDocument as DidDocument
     didDocument.service = [validService()]
 
-    // add service to the document
     const addUpdateResult = await agent.dids.update<HederaDidUpdateOptions>({
       did,
       didDocument,
@@ -171,7 +169,6 @@ describe('Hedera DID registrar', () => {
       ])
     )
 
-    // remove service from the document
     const removeUpdateResult = await agent.dids.update<HederaDidUpdateOptions>({
       did,
       didDocument: {
@@ -206,20 +203,18 @@ describe('Hedera DID registrar', () => {
       },
     ]
 
-    // create did document
     const didResult = await agent.dids.create<HederaDidCreateOptions>({
       method: 'hedera',
       options: { network: 'testnet' },
     })
     expect(didResult).toMatchObject({ didState: { state: 'finished' } })
 
-    const did = didResult.didState.did!
+    const did = didResult.didState.did ?? ''
     const didDocument = didResult.didState.didDocument as DidDocument
 
     const validVerification = validVerificationMethod(multibasePublicKey)
     didDocument.verificationMethod = [validVerification]
 
-    // add verification method to the document
     const addUpdateResult = await agent.dids.update<HederaDidUpdateOptions>({
       did,
       didDocument,
@@ -247,7 +242,6 @@ describe('Hedera DID registrar', () => {
       ])
     )
 
-    // remove verification method from the document
     const removeUpdateResult = await agent.dids.update<HederaDidUpdateOptions>({
       did,
       didDocument,
@@ -276,20 +270,18 @@ describe('Hedera DID registrar', () => {
     })
     const multibasePublicKey = getMultibasePublicKey(publicJwk)
 
-    // create did document
     const didResult = await agent.dids.create<HederaDidCreateOptions>({
       method: 'hedera',
       options: { network: 'testnet' },
     })
     expect(didResult).toMatchObject({ didState: { state: 'finished' } })
 
-    const did = didResult.didState.did!
+    const did = didResult.didState.did ?? ''
     const didDocument = didResult.didState.didDocument as DidDocument
 
     const validVerification = validVerificationMethod(multibasePublicKey)
     didDocument.verificationMethod = [validVerification]
 
-    // add verification method to the document
     let updateResult = await agent.dids.update<HederaDidUpdateOptions>({
       did,
       didDocument,
@@ -301,7 +293,6 @@ describe('Hedera DID registrar', () => {
         'Unable update DID: Key #key-1 from verificationMethod not found in keys'
       )
 
-    // add assertion method to the document
     didDocument.verificationMethod = undefined
     didDocument.assertionMethod = [validVerification]
 
@@ -316,7 +307,6 @@ describe('Hedera DID registrar', () => {
         'Unable update DID: Key #key-1 from assertionMethod not found in keys'
       )
 
-    // add authentication method to the document
     didDocument.assertionMethod = undefined
     didDocument.authentication = [validVerification]
 
@@ -331,7 +321,6 @@ describe('Hedera DID registrar', () => {
         'Unable update DID: Key #key-1 from authentication not found in keys'
       )
 
-    // add authentication method to the document
     didDocument.authentication = undefined
     didDocument.capabilityDelegation = [validVerification]
 
@@ -346,7 +335,6 @@ describe('Hedera DID registrar', () => {
         'Unable update DID: Key #key-1 from capabilityDelegation not found in keys'
       )
 
-    // add authentication method to the document
     didDocument.capabilityDelegation = undefined
     didDocument.capabilityInvocation = [validVerification]
 
@@ -361,7 +349,6 @@ describe('Hedera DID registrar', () => {
         'Unable update DID: Key #key-1 from capabilityInvocation not found in keys'
       )
 
-    // add authentication method to the document
     didDocument.capabilityInvocation = undefined
     didDocument.keyAgreement = [validVerification]
 
@@ -384,7 +371,7 @@ describe('Hedera DID registrar', () => {
     })
     expect(didResult).toMatchObject({ didState: { state: 'finished' } })
 
-    const did = didResult.didState.did!
+    const did = didResult.didState.did ?? ''
 
     const deactivateResult = await agent.dids.deactivate({
       did,

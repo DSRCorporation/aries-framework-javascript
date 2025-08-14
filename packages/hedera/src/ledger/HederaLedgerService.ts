@@ -355,6 +355,7 @@ export class HederaLedgerService {
     return id.includes('#') ? `#${id.split('#').pop()}` : id
   }
 
+  // biome-ignore lint/suspicious/noExplicitAny: <explanation>
   private getDiff(currentArray?: any[], newArray?: any[]) {
     const currentList = currentArray || []
     const newList = newArray || []
@@ -370,6 +371,7 @@ export class HederaLedgerService {
   }
 
   private async signRequests(
+    // biome-ignore lint/suspicious/noExplicitAny: <explanation>
     signingRequests: Record<string, any>,
     kms: KeyManagementApi,
     keyId: string
@@ -398,6 +400,7 @@ export class HederaLedgerService {
       'keyAgreement',
     ]
     for (const field of fields) {
+      // biome-ignore lint/suspicious/noExplicitAny: <explanation>
       const fieldValue = (didDocument as any)[field]
       if (fieldValue) {
         const fieldValues = Array.isArray(fieldValue) ? fieldValue : [fieldValue]
@@ -412,6 +415,7 @@ export class HederaLedgerService {
     }
   }
 
+  // biome-ignore lint/suspicious/noExplicitAny: <explanation>
   private prepareDidUpdates(currentDoc: any, newDoc: any, operation: string): DIDUpdateBuilder {
     const builder = new DIDUpdateBuilder()
     const fields = [
@@ -464,7 +468,9 @@ export class HederaLedgerService {
     builder: DIDUpdateBuilder,
     field: string,
     action: 'add' | 'remove'
+    // biome-ignore lint/suspicious/noExplicitAny: <explanation>
   ): (item: any) => DIDUpdateBuilder {
+    // biome-ignore lint/suspicious/noExplicitAny: <explanation>
     type MethodDelegate = (item: any) => DIDUpdateBuilder
 
     const methodMap: Record<string, Record<'add' | 'remove', MethodDelegate>> = {
