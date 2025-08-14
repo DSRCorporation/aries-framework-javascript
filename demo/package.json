@@ -1,6 +1,6 @@
 {
   "name": "credo-demo",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "private": true,
   "repository": {
     "type": "git",
@@ -23,6 +23,7 @@
     "@credo-ts/askar": "workspace:*",
     "@credo-ts/core": "workspace:*",
     "@credo-ts/didcomm": "workspace:*",
+    "@credo-ts/hedera": "workspace:*",
     "@credo-ts/indy-vdr": "workspace:*",
     "@credo-ts/cheqd": "workspace:*",
     "@credo-ts/node": "workspace:*",
