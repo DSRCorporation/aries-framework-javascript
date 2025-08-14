@@ -4,7 +4,9 @@ import { HederaLedgerService } from '../../src/ledger/HederaLedgerService'
 
 describe('HederaDidResolver', () => {
   let resolver: HederaDidResolver
+  // biome-ignore lint/suspicious/noExplicitAny:
   let mockAgentContext: any
+  // biome-ignore lint/suspicious/noExplicitAny:
   let mockLedgerService: any
 
   beforeEach(() => {
@@ -40,6 +42,7 @@ describe('HederaDidResolver', () => {
 
     jest.spyOn(JsonTransformer, 'fromJSON').mockReturnValue(fakeDidDocument as unknown as DidDocument)
 
+    // biome-ignore lint/suspicious/noExplicitAny:
     const result = await resolver.resolve(mockAgentContext, did, {} as any, {} as any)
 
     expect(mockAgentContext.config.logger.trace).toHaveBeenCalledWith('Try to resolve a did document from ledger')
@@ -60,6 +63,7 @@ describe('HederaDidResolver', () => {
 
     mockLedgerService.resolveDid.mockRejectedValue(error)
 
+    // biome-ignore lint/suspicious/noExplicitAny:
     const result = await resolver.resolve(mockAgentContext, did, {} as any, {} as any)
 
     expect(mockAgentContext.config.logger.trace).toHaveBeenCalledWith('Try to resolve a did document from ledger')

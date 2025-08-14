@@ -1,6 +1,7 @@
 import type { AgentContext, Cache } from '@credo-ts/core'
 
 export class testCache implements Cache {
+  // biome-ignore lint/suspicious/noExplicitAny:
   private _cache: Map<string, any> = new Map<string, any>()
 
   get<CacheValue>(_agentContext: AgentContext, key: string): Promise<CacheValue | null> {

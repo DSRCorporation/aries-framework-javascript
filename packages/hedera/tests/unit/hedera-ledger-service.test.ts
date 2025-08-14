@@ -9,7 +9,11 @@ import { AgentContext, DependencyManager } from '@credo-ts/core'
 import { DidDocumentKey, Kms } from '@credo-ts/core'
 import { KmsJwkPublicOkp } from '@credo-ts/core/src/modules/kms'
 import { Client } from '@hashgraph/sdk'
-import { HederaDidCreateOptions, HederaLedgerService } from '../../src/ledger/HederaLedgerService'
+import {
+  HederaDidCreateOptions,
+  HederaDidUpdateOptions,
+  HederaLedgerService,
+} from '../../src/ledger/HederaLedgerService'
 
 jest.mock('@hiero-did-sdk/registrar', () => ({
   DIDUpdateBuilder: jest.fn().mockReturnValue({
@@ -39,6 +43,7 @@ jest.mock('@hiero-did-sdk/registrar', () => ({
 
 import {
   DIDUpdateBuilder,
+  UpdateDIDResult,
   generateCreateDIDRequest,
   generateDeactivateDIDRequest,
   generateUpdateDIDRequest,
@@ -115,8 +120,10 @@ describe('HederaLedgerService', () => {
       },
     })
 
-    jest.spyOn(service.clientService, 'withClient').mockImplementation(async (_props, operation) => {
+    // biome-ignore lint/suspicious/noExplicitAny: <explanation>
+    jest.spyOn((service as any).clientService, 'withClient').mockImplementation(async (_props, operation) => {
       const mockClient = {} as Client
+      // @ts-ignore
       return operation(mockClient)
     })
   })
@@ -126,7 +133,6 @@ describe('HederaLedgerService', () => {
       const did = 'did:hedera:test'
 
       const mockResolution = { didDocument: { id: did } }
-
       ;(resolveDID as jest.Mock).mockResolvedValue(mockResolution)
 
       const result = await service.resolveDid(mockAgentContext as AgentContext, did)
@@ -151,19 +157,18 @@ describe('HederaLedgerService', () => {
       }
 
       mockedCreateOrGetKey.mockResolvedValue({ keyId, publicJwk })
-
       ;(generateCreateDIDRequest as jest.Mock).mockResolvedValue({
         state: {},
         signingRequest: { serializedPayload: new Uint8Array() },
       })
-
       ;(submitCreateDIDRequest as jest.Mock).mockResolvedValue({ did: 'did:hedera:1234' })
 
+      // biome-ignore lint/suspicious/noExplicitAny: <explanation>
       jest.spyOn(service as any, 'getPublisher').mockResolvedValue({} as Publisher)
 
       mockKms.sign.mockResolvedValue({ signature: new Uint8Array([1, 2, 3]) })
 
-      const result = await service.createDid(mockAgentContext as AgentContext, props as any)
+      const result = await service.createDid(mockAgentContext as AgentContext, props)
       expect(createOrGetKey).toHaveBeenCalledWith(mockKms, keyId)
       expect(generateCreateDIDRequest).toHaveBeenCalled()
       expect(submitCreateDIDRequest).toHaveBeenCalled()
@@ -183,23 +188,25 @@ describe('HederaLedgerService', () => {
       }
 
       mockedCreateOrGetKey.mockResolvedValue({ keyId, publicJwk })
-
       ;(generateCreateDIDRequest as jest.Mock).mockResolvedValue({
         state: {},
         signingRequest: { serializedPayload: new Uint8Array() },
       })
-
       ;(submitCreateDIDRequest as jest.Mock).mockResolvedValue({ did: 'did:hedera:1234' })
 
       const updateDidSpy = jest
         .spyOn(service, 'updateDid')
-        .mockResolvedValue({ did: 'did:hedera:1234', someProp: true } as any)
+        .mockResolvedValue({ did: 'did:hedera:1234' } as unknown as UpdateDIDResult)
 
+      // biome-ignore lint/suspicious/noExplicitAny: <explanation>
       jest.spyOn(service as any, 'getPublisher').mockResolvedValue({} as Publisher)
 
       mockKms.sign.mockResolvedValue({ signature: new Uint8Array([1, 2, 3]) })
 
-      const result = await service.createDid(mockAgentContext as AgentContext, props as any)
+      const result = await service.createDid(
+        mockAgentContext as AgentContext,
+        props as unknown as HederaDidCreateOptions
+      )
       expect(updateDidSpy).toHaveBeenCalled()
       expect(result.rootKey).toBeDefined()
     })
@@ -210,9 +217,9 @@ describe('HederaLedgerService', () => {
     const kmsKeyId = 'key-id'
 
     it('should throws error if didDocumentOperation is missing', async () => {
-      await expect(service.updateDid(mockAgentContext as AgentContext, { did } as any)).rejects.toThrow(
-        'DidDocumentOperation is required'
-      )
+      await expect(
+        service.updateDid(mockAgentContext as AgentContext, { did } as HederaDidUpdateOptions)
+      ).rejects.toThrow('DidDocumentOperation is required')
     })
 
     it('should throws error if rootKey missing', async () => {
@@ -271,6 +278,7 @@ describe('HederaLedgerService', () => {
       for (const [field, action, param, spy] of testCases) {
         jest.clearAllMocks()
 
+        // biome-ignore lint/suspicious/noExplicitAny: <explanation>
         const fn = (service as any).getUpdateMethod(builder, field, action)
 
         const result = fn(param)
@@ -286,6 +294,7 @@ describe('HederaLedgerService', () => {
 
     it('should returns builder unchanged for unknown field', () => {
       const unknownField = 'unknownField'
+      // biome-ignore lint/suspicious/noExplicitAny: <explanation>
       const fn = (service as any).getUpdateMethod(builder, unknownField, 'add')
       const result = fn('any param')
       expect(result).toBe(builder)
@@ -309,7 +318,7 @@ describe('HederaLedgerService', () => {
       const currentDidDoc = { verificationMethod: [{ id: '#abc' }] }
       const mockDidResolution = { didDocument: currentDidDoc }
 
-      const updatesMock = { build: jest.fn().mockReturnValue(didDocument) } as any
+      const updatesMock = { build: jest.fn().mockReturnValue(didDocument) }
 
       mockedParseDID.mockReturnValue({
         network: 'testnet',
@@ -317,17 +326,17 @@ describe('HederaLedgerService', () => {
         publicKey: '',
         topicId: '',
       })
-
       ;(resolveDID as jest.Mock).mockResolvedValue(mockDidResolution)
 
+      // biome-ignore lint/suspicious/noExplicitAny: <explanation>
       jest.spyOn(service as any, 'prepareDidUpdates').mockReturnValue(updatesMock)
 
+      // biome-ignore lint/suspicious/noExplicitAny: <explanation>
       jest.spyOn(service as any, 'getPublisher').mockResolvedValue({} as Publisher)
-
       ;(generateUpdateDIDRequest as jest.Mock).mockResolvedValue({ states: {}, signingRequests: {} })
 
+      // biome-ignore lint/suspicious/noExplicitAny: <explanation>
       jest.spyOn(service as any, 'signRequests').mockResolvedValue(Promise.resolve())
-
       ;(submitUpdateDIDRequest as jest.Mock).mockResolvedValue({ did: did })
 
       await expect(
@@ -339,6 +348,7 @@ describe('HederaLedgerService', () => {
         })
       ).resolves.toHaveProperty('did', did)
 
+      // biome-ignore lint/suspicious/noExplicitAny: <explanation>
       expect((service as any).prepareDidUpdates).toHaveBeenCalled()
       expect(generateUpdateDIDRequest).toHaveBeenCalled()
       expect(submitUpdateDIDRequest).toHaveBeenCalled()
@@ -351,7 +361,7 @@ describe('HederaLedgerService', () => {
 
     it('should throws error if rootKey is missing', async () => {
       await expect(
-        service.deactivateDid(mockAgentContext as AgentContext, { did, secret: { keys: [] } } as any)
+        service.deactivateDid(mockAgentContext as AgentContext, { did, secret: { keys: [] } })
       ).rejects.toThrow('The root key not found in the KMS')
     })
 
@@ -377,25 +387,21 @@ describe('HederaLedgerService', () => {
       const mockState = {}
       const mockSigningRequest = { serializedPayload: new Uint8Array() }
       const signature = new Uint8Array([1, 2, 3])
-
       ;(parseDID as jest.Mock).mockReturnValue({ network: 'testnet' })
 
+      // biome-ignore lint/suspicious/noExplicitAny: <explanation>
       jest.spyOn(service as any, 'getPublisher').mockResolvedValue(mockPublisher)
 
       // @ts-ignore
       mockedGenerateDeactivateDIDRequest.mockResolvedValue({ state: mockState, signingRequest: mockSigningRequest })
 
       mockKms.sign.mockResolvedValue({ signature })
-
       ;(submitDeactivateDIDRequest as jest.Mock).mockResolvedValue({ did })
 
-      const result = await service.deactivateDid(
-        mockAgentContext as AgentContext,
-        {
-          did,
-          secret: { keys },
-        } as any
-      )
+      const result = await service.deactivateDid(mockAgentContext as AgentContext, {
+        did,
+        secret: { keys },
+      })
 
       expect(result).toHaveProperty('did', did)
       expect(mockKms.sign).toHaveBeenCalledWith({
@@ -407,6 +413,7 @@ describe('HederaLedgerService', () => {
   })
 
   describe('Anoncreds SDK methods', () => {
+    // biome-ignore lint/suspicious/noExplicitAny: <explanation>
     let mockSdk: any
 
     beforeEach(() => {
@@ -420,6 +427,7 @@ describe('HederaLedgerService', () => {
         getRevocationStatusList: jest.fn().mockResolvedValue('revStatusList'),
         registerRevocationStatusList: jest.fn().mockResolvedValue('registerRevStatus'),
       }
+      // biome-ignore lint/suspicious/noExplicitAny: <explanation>
       jest.spyOn(service as any, 'getHederaAnonCredsSdk').mockReturnValue(mockSdk)
     })
 

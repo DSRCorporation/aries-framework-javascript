@@ -151,9 +151,11 @@ function getAskarAnonCredsIndyModules(
     hedera: new HederaModule({
       networks: [
         {
-          network: 'testnet',
-          operatorId: process.env.HEDERA_TEST_OPERATOR_ID ?? '',
-          operatorKey: process.env.HEDERA_TEST_OPERATOR_KEY ?? '',
+          network: (process.env.HEDERA_NETWORK as 'testnet' | 'mainnet' | 'previewnet' | 'local-node') ?? 'testnet',
+          operatorId: process.env.HEDERA_OPERATOR_ID ?? '0.0.5489553',
+          operatorKey:
+            process.env.HEDERA_OPERATOR_KEY ??
+            '302e020100300506032b6570042204209f54b75b6238ced43e41b1463999cb40bf2f7dd2c9fd4fd3ef780027c016a138',
         },
       ],
     }),
