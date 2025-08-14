@@ -1,4 +1,5 @@
 import type { AgentContext, DidDocumentKey } from '@credo-ts/core'
+
 import { DidDocumentRole } from '@credo-ts/core'
 import { HederaDidRegistrar } from '@credo-ts/hedera'
 import { HederaDidUpdateOptions } from '../../src/ledger/HederaLedgerService'
