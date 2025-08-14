@@ -142,6 +142,12 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Run tests
+        timeout-minutes: 15
+        env:
+        # HEDERA_OPERATOR_ID: ${{ secrets.HEDERA_OPERATOR_ID }}
+        # HEDERA_OPERATOR_KEY: ${{ secrets.HEDERA_OPERATOR_KEY }}
+        HEDERA_OPERATOR_ID: '0.0.5489553'
+        HEDERA_OPERATOR_KEY: '302e020100300506032b6570042204209f54b75b6238ced43e41b1463999cb40bf2f7dd2c9fd4fd3ef780027c016a138'
         run: pnpm test:e2e --coverage --forceExit
 
       # Upload coverage for e2e
