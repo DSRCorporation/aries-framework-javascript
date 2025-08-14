@@ -12,6 +12,8 @@ import { getMultibasePublicKey } from '../../src/ledger/utils'
 import { getHederaAgent } from './utils'
 
 describe('Hedera DID registrar', () => {
+  jest.setTimeout(100000)
+
   const logger = new ConsoleLogger(LogLevel.error)
   let agent: Agent
 

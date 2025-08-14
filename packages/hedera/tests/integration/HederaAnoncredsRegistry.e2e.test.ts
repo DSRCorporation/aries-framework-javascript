@@ -3,6 +3,8 @@ import { HederaDidCreateOptions } from '../../src/ledger/HederaLedgerService'
 import { getHederaAgent, testCache } from './utils'
 
 describe('Hedera AnonCreds support', () => {
+  jest.setTimeout(100000)
+
   let agent: Agent
   let did: string
 
