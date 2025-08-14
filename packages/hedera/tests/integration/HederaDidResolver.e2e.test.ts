@@ -3,8 +3,6 @@ import { HederaDidCreateOptions } from '../../src/ledger/HederaLedgerService'
 import { getHederaAgent } from './utils'
 
 describe('Hedera DID resolver', () => {
-  jest.setTimeout(100000)
-
   const logger = new ConsoleLogger(LogLevel.error)
 
   let agent: Agent
