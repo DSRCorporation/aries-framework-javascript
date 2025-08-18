@@ -1,10 +1,11 @@
 import { AgentContext, CacheModuleConfig, CredoError } from '@credo-ts/core'
-import { CredoCache, ICredoCache } from '../../src/ledger/cache/CredoCache'
+import { Cache as CoreCredoCache } from '@credo-ts/core'
+import { CredoCache } from '../../src/ledger/cache/CredoCache'
 
 describe('CredoCache', () => {
   let mockAgentContext: AgentContext
   let mockDependencyManagerResolve: jest.Mock
-  let mockCredoCache: jest.Mocked<ICredoCache>
+  let mockCredoCache: jest.Mocked<CoreCredoCache>
 
   beforeEach(() => {
     mockCredoCache = {

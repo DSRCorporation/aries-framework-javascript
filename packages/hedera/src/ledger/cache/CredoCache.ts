@@ -1,6 +1,6 @@
 import { AgentContext, CacheModuleConfig, CredoError } from '@credo-ts/core'
+import { Cache as CoreCredoCache } from '@credo-ts/core'
 import { Cache } from '@hiero-did-sdk/core'
-import { Cache as CoreCredoCache} from '@credo-ts/core'
 
 export class CredoCache implements Cache {
   private readonly credoCache: CoreCredoCache
@@ -25,10 +25,10 @@ export class CredoCache implements Cache {
   }
 
   async clear(): Promise<void> {
-      // nothing
+    // nothing
   }
 
   async cleanupExpired(): Promise<void> {
-      // nothing
+    // nothing
   }
 }
