@@ -129,7 +129,7 @@ describe('HederaLedgerService', () => {
   })
 
   describe('resolveDid', () => {
-    it('should calls resolveDID with proper args and returns result', async () => {
+    it('should call resolveDID with proper args and returns result', async () => {
       const did = 'did:hedera:test'
 
       const mockResolution = { didDocument: { id: did } }
@@ -147,7 +147,7 @@ describe('HederaLedgerService', () => {
   })
 
   describe('createDid', () => {
-    it('should creates DID without didDocument', async () => {
+    it('should create DID without didDocument', async () => {
       const keyId = 'key123'
       const publicJwk: KmsJwkPublicOkp & { crv: 'Ed25519' } = { crv: 'Ed25519', kty: 'OKP', x: 'abc' }
       const props: HederaDidCreateOptions = {
@@ -176,7 +176,7 @@ describe('HederaLedgerService', () => {
       expect(result.rootKey).toBeDefined()
     })
 
-    it('should creates DID with didDocument and calls updateDid', async () => {
+    it('should create DID with didDocument and calls updateDid', async () => {
       const keyId = 'key123'
       const publicJwk: KmsJwkPublicOkp & { crv: 'Ed25519' } = { crv: 'Ed25519', kty: 'OKP', x: 'abc' }
       const didDocument = { controller: 'did:hedera:controller' }
@@ -216,13 +216,13 @@ describe('HederaLedgerService', () => {
     const did = 'did:hedera:1234'
     const kmsKeyId = 'key-id'
 
-    it('should throws error if didDocumentOperation is missing', async () => {
+    it('should throw error if didDocumentOperation is missing', async () => {
       await expect(
         service.updateDid(mockAgentContext as AgentContext, { did } as HederaDidUpdateOptions)
       ).rejects.toThrow('DidDocumentOperation is required')
     })
 
-    it('should throws error if rootKey missing', async () => {
+    it('should throw error if rootKey missing', async () => {
       const keys: DidDocumentKey[] = []
       await expect(
         service.updateDid(mockAgentContext as AgentContext, {
@@ -234,7 +234,7 @@ describe('HederaLedgerService', () => {
       ).rejects.toThrow('The root key not found in the KMS')
     })
 
-    it('should calls correct builder methods for each field and action', () => {
+    it('should call correct builder methods for each field and action', () => {
       const spies = {
         addService: jest.spyOn(builder, 'addService'),
         removeService: jest.spyOn(builder, 'removeService'),
@@ -292,7 +292,7 @@ describe('HederaLedgerService', () => {
       }
     })
 
-    it('should returns builder unchanged for unknown field', () => {
+    it('should return builder unchanged for unknown field', () => {
       const unknownField = 'unknownField'
       // biome-ignore lint/suspicious/noExplicitAny: <explanation>
       const fn = (service as any).getUpdateMethod(builder, unknownField, 'add')
@@ -300,7 +300,7 @@ describe('HederaLedgerService', () => {
       expect(result).toBe(builder)
     })
 
-    it('should performs update flow successfully', async () => {
+    it('should perform update flow successfully', async () => {
       const keys: DidDocumentKey[] = [
         { kmsKeyId, didDocumentRelativeKeyId: DID_ROOT_KEY_ID },
         { kmsKeyId: 'some-key', didDocumentRelativeKeyId: '#abc' },
@@ -359,13 +359,13 @@ describe('HederaLedgerService', () => {
     const did = 'did:hedera:5678'
     const kmsKeyId = 'key-id'
 
-    it('should throws error if rootKey is missing', async () => {
+    it('should throw error if rootKey is missing', async () => {
       await expect(
         service.deactivateDid(mockAgentContext as AgentContext, { did, secret: { keys: [] } })
       ).rejects.toThrow('The root key not found in the KMS')
     })
 
-    it('should throws an error if root key is not found in deactivateDid', async () => {
+    it('should throw an error if root key is not found in deactivateDid', async () => {
       const props = {
         did: 'did:hedera:123',
         secret: {
@@ -381,7 +381,7 @@ describe('HederaLedgerService', () => {
       )
     })
 
-    it('should deactivates DID successfully', async () => {
+    it('should deactivate DID successfully', async () => {
       const keys: DidDocumentKey[] = [{ kmsKeyId, didDocumentRelativeKeyId: DID_ROOT_KEY_ID }]
       const mockPublisher = {}
       const mockState = {}
@@ -428,7 +428,7 @@ describe('HederaLedgerService', () => {
         registerRevocationStatusList: jest.fn().mockResolvedValue('registerRevStatus'),
       }
       // biome-ignore lint/suspicious/noExplicitAny: <explanation>
-      jest.spyOn(service as any, 'getHederaAnonCredsSdk').mockReturnValue(mockSdk)
+      jest.spyOn(service as any, 'getHederaAnoncredsRegistry').mockReturnValue(mockSdk)
     })
 
     it('getSchema', async () => {

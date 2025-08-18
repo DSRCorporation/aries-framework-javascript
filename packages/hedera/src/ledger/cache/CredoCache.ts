@@ -1,14 +1,9 @@
 import { AgentContext, CacheModuleConfig, CredoError } from '@credo-ts/core'
 import { Cache } from '@hiero-did-sdk/core'
-
-export interface ICredoCache {
-  get<CacheValue>(agentContext: AgentContext, key: string): Promise<CacheValue | null>
-  set<CacheValue>(agentContext: AgentContext, key: string, value: CacheValue, expiresInSeconds?: number): Promise<void>
-  remove(agentContext: AgentContext, key: string): Promise<void>
-}
+import { Cache as CoreCredoCache} from '@credo-ts/core'
 
 export class CredoCache implements Cache {
-  private readonly credoCache: ICredoCache
+  private readonly credoCache: CoreCredoCache
 
   constructor(private readonly agentContext: AgentContext) {
     this.credoCache = agentContext.dependencyManager.resolve(CacheModuleConfig).cache
@@ -30,10 +25,10 @@ export class CredoCache implements Cache {
   }
 
   async clear(): Promise<void> {
-    throw new Error('Method not implemented.')
+      // nothing
   }
 
   async cleanupExpired(): Promise<void> {
-    throw new Error('Method not implemented.')
+      // nothing
   }
 }

@@ -27,7 +27,7 @@ describe('createOrGetKey', () => {
     } as unknown as jest.Mocked<KeyManagementApi>
   })
 
-  it('should creates a key if keyId is not provided', async () => {
+  it('should create a key if keyId is not provided', async () => {
     const fakeKeyId = 'key123'
     const fakeJwk: KmsJwkPublicOkp & { kid: string } = { kty: 'OKP', crv: 'Ed25519', x: 'xxx', kid: 'key123' }
     kmsMock.createKey.mockResolvedValue({
@@ -45,7 +45,7 @@ describe('createOrGetKey', () => {
     })
   })
 
-  it('should retrieves an existing key if keyId is provided', async () => {
+  it('should retrieve an existing key if keyId is provided', async () => {
     const keyId = 'key456'
     const publicJwk: KmsJwkPublicOkp & { kid: string } = { kty: 'OKP', crv: 'Ed25519', x: 'xxx', kid: 'key123' }
     kmsMock.getPublicKey.mockResolvedValue(publicJwk)
@@ -63,7 +63,7 @@ describe('createOrGetKey', () => {
     })
   })
 
-  it('should throws an error if key with given keyId is not found', async () => {
+  it('should throw an error if key with given keyId is not found', async () => {
     // @ts-ignore
     kmsMock.getPublicKey.mockResolvedValue(null)
 
@@ -71,7 +71,7 @@ describe('createOrGetKey', () => {
     await expect(createOrGetKey(kmsMock, 'notfound')).rejects.toThrowError("Key with key id 'notfound' not found")
   })
 
-  it('should throws an error if key has unsupported kty or crv', async () => {
+  it('should throw an error if key has unsupported kty or crv', async () => {
     const keyId = 'badkey'
     const badJwk: KmsJwkPublicRsa & { kid: string } = { e: '', kid: 'key-1', n: '', kty: 'RSA' }
 

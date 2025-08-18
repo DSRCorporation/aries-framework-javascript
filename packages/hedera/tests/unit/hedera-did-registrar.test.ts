@@ -170,7 +170,7 @@ describe('HederaDidRegistrar', () => {
 
       const result = await service.update(mockAgentContext as AgentContext, options)
 
-      expect(mockAgentContext.config.logger.error).toHaveBeenCalledWith('Error update DID', expect.any(Error))
+      expect(mockAgentContext.config.logger.error).toHaveBeenCalledWith('Error updating DID', expect.any(Error))
       expect(result.didState.state).toBe('failed')
       if (result.didState.state === 'failed') expect(result.didState.reason).toBe('Unable update DID: Update failed')
     })
@@ -237,7 +237,7 @@ describe('HederaDidRegistrar', () => {
 
       const result = await service.deactivate(mockAgentContext as AgentContext, options)
 
-      expect(mockAgentContext.config.logger.error).toHaveBeenCalledWith('Error deactivate DID', expect.any(Error))
+      expect(mockAgentContext.config.logger.error).toHaveBeenCalledWith('Error deactivating DID', expect.any(Error))
       expect(result.didState.state).toBe('failed')
       if (result.didState.state === 'failed')
         expect(result.didState.reason).toBe('Unable deactivating DID: Deactivate failed')

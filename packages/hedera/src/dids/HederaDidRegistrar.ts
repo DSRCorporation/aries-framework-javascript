@@ -27,10 +27,8 @@ export class HederaDidRegistrar implements DidRegistrar {
       const didRepository = agentContext.dependencyManager.resolve(DidRepository)
       const ledgerService = agentContext.dependencyManager.resolve(HederaLedgerService)
 
-      // Create did
       const { did, didDocument, rootKey } = await ledgerService.createDid(agentContext, options)
 
-      // Save the did to wallet
       const credoDidDocument = new DidDocument({
         ...didDocument,
         service: didDocument.service?.map((s) => new DidDocumentService(s)),
@@ -89,14 +87,12 @@ export class HederaDidRegistrar implements DidRegistrar {
         }
       }
 
-      // Update did
       const keys = this.concatKeys(didRecord.keys, options.secret?.keys)
       const { didDocument: updatedDidDocument } = await ledgerService.updateDid(agentContext, {
         ...options,
         secret: { keys },
       })
 
-      // Save the did to wallet
       didRecord.didDocument = JsonTransformer.fromJSON(updatedDidDocument, DidDocument)
       didRecord.keys = keys
       await didRepository.update(agentContext, didRecord)
@@ -111,7 +107,7 @@ export class HederaDidRegistrar implements DidRegistrar {
         },
       }
     } catch (error) {
-      agentContext.config.logger.error('Error update DID', error)
+      agentContext.config.logger.error('Error updating DID', error)
       return {
         didDocumentMetadata: {},
         didRegistrationMetadata: {},
@@ -147,13 +143,11 @@ export class HederaDidRegistrar implements DidRegistrar {
           },
         }
       }
-      // Deactivate did
       const { didDocument: deactivatedDidDocument } = await ledgerService.deactivateDid(agentContext, {
         ...options,
         secret: { keys: didRecord.keys },
       })
 
-      // Save the did to wallet
       didRecord.didDocument = JsonTransformer.fromJSON(deactivatedDidDocument, DidDocument)
       await didRepository.update(agentContext, didRecord)
 
@@ -167,7 +161,7 @@ export class HederaDidRegistrar implements DidRegistrar {
         },
       }
     } catch (error) {
-      agentContext.config.logger.error('Error deactivate DID', error)
+      agentContext.config.logger.error('Error deactivating DID', error)
       return {
         didDocumentMetadata: {},
         didRegistrationMetadata: {},

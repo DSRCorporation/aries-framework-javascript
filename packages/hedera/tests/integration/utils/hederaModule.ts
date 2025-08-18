@@ -16,7 +16,7 @@ import { TestTailsFileService } from './testTailsFileService'
 export const getHederaModuleConfig = (props: { operatorId?: string; operatorKey?: string }) => {
   const operatorId = props.operatorId ?? process.env.HEDERA_OPERATOR_ID ?? ''
   const operatorKey = props.operatorKey ?? process.env.HEDERA_OPERATOR_KEY ?? ''
-  return {
+  const config: HederaModuleConfigOptions = {
     networks: [
       {
         network: 'testnet',
@@ -24,7 +24,8 @@ export const getHederaModuleConfig = (props: { operatorId?: string; operatorKey?
         operatorKey,
       },
     ],
-  } satisfies HederaModuleConfigOptions
+  }
+  return config
 }
 
 export const getHederaAgent = (props: {
