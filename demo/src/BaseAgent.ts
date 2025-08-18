@@ -1,7 +1,3 @@
-import type { InitConfig } from '@credo-ts/core'
-import type { DidCommModuleConfigOptions } from '@credo-ts/didcomm'
-import type { IndyVdrPoolConfig } from '@credo-ts/indy-vdr'
-
 import {
   AnonCredsCredentialFormatService,
   AnonCredsModule,
@@ -19,7 +15,9 @@ import {
   CheqdModule,
   CheqdModuleConfig,
 } from '@credo-ts/cheqd'
+import type { InitConfig } from '@credo-ts/core'
 import { Agent, DidsModule } from '@credo-ts/core'
+import type { DidCommModuleConfigOptions } from '@credo-ts/didcomm'
 import {
   AutoAcceptCredential,
   AutoAcceptProof,
@@ -31,8 +29,10 @@ import {
   V2ProofProtocol,
   getDefaultDidcommModules,
 } from '@credo-ts/didcomm'
+import type { IndyVdrPoolConfig } from '@credo-ts/indy-vdr'
 import { IndyVdrAnonCredsRegistry, IndyVdrIndyDidResolver, IndyVdrModule } from '@credo-ts/indy-vdr'
 import { HttpInboundTransport, agentDependencies } from '@credo-ts/node'
+import { HederaNetwork } from '@hiero-did-sdk/client'
 import { anoncreds } from '@hyperledger/anoncreds-nodejs'
 import { indyVdr } from '@hyperledger/indy-vdr-nodejs'
 import { askar } from '@openwallet-foundation/askar-nodejs'
@@ -151,7 +151,7 @@ function getAskarAnonCredsIndyModules(
     hedera: new HederaModule({
       networks: [
         {
-          network: (process.env.HEDERA_NETWORK as 'testnet' | 'mainnet' | 'previewnet' | 'local-node') ?? 'testnet',
+          network: (process.env.HEDERA_NETWORK as HederaNetwork) ?? 'testnet',
           operatorId: process.env.HEDERA_OPERATOR_ID ?? '0.0.5489553',
           operatorKey:
             process.env.HEDERA_OPERATOR_KEY ??

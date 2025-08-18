@@ -158,7 +158,7 @@ export class HederaLedgerService {
     }
 
     // Check root key presents
-    const rootKey = (secret?.keys ?? []).find((k) => k.didDocumentRelativeKeyId === DID_ROOT_KEY_ID)
+    const rootKey = secret?.keys?.find((k) => k.didDocumentRelativeKeyId === DID_ROOT_KEY_ID)
     if (!rootKey?.kmsKeyId) {
       throw new Error('The root key not found in the KMS')
     }
@@ -222,7 +222,7 @@ export class HederaLedgerService {
 
     const kms = agentContext.dependencyManager.resolve(Kms.KeyManagementApi)
 
-    const rootKey = (secret?.keys ?? []).find((k) => k.didDocumentRelativeKeyId === DID_ROOT_KEY_ID)
+    const rootKey = secret?.keys?.find((k) => k.didDocumentRelativeKeyId === DID_ROOT_KEY_ID)
     if (!rootKey?.kmsKeyId) {
       throw new Error('The root key not found in the KMS')
     }
@@ -265,12 +265,12 @@ export class HederaLedgerService {
   /* Anoncreds*/
 
   async getSchema(agentContext: AgentContext, schemaId: string): Promise<GetSchemaReturn> {
-    const sdk = this.getHederaAnonCredsSdk(agentContext)
+    const sdk = this.getHederaAnoncredsRegistry(agentContext)
     return await sdk.getSchema(schemaId)
   }
 
   async registerSchema(agentContext: AgentContext, options: RegisterSchemaOptions): Promise<RegisterSchemaReturn> {
-    const sdk = this.getHederaAnonCredsSdk(agentContext)
+    const sdk = this.getHederaAnoncredsRegistry(agentContext)
     return await sdk.registerSchema(options)
   }
 
@@ -278,7 +278,7 @@ export class HederaLedgerService {
     agentContext: AgentContext,
     credentialDefinitionId: string
   ): Promise<GetCredentialDefinitionReturn> {
-    const sdk = this.getHederaAnonCredsSdk(agentContext)
+    const sdk = this.getHederaAnoncredsRegistry(agentContext)
     return await sdk.getCredentialDefinition(credentialDefinitionId)
   }
 
@@ -286,7 +286,7 @@ export class HederaLedgerService {
     agentContext: AgentContext,
     options: RegisterCredentialDefinitionOptions
   ): Promise<RegisterCredentialDefinitionReturn> {
-    const sdk = this.getHederaAnonCredsSdk(agentContext)
+    const sdk = this.getHederaAnoncredsRegistry(agentContext)
     return await sdk.registerCredentialDefinition({
       ...options,
       options: {
@@ -299,7 +299,7 @@ export class HederaLedgerService {
     agentContext: AgentContext,
     revocationRegistryDefinitionId: string
   ): Promise<GetRevocationRegistryDefinitionReturn> {
-    const sdk = this.getHederaAnonCredsSdk(agentContext)
+    const sdk = this.getHederaAnoncredsRegistry(agentContext)
     return await sdk.getRevocationRegistryDefinition(revocationRegistryDefinitionId)
   }
 
@@ -307,7 +307,7 @@ export class HederaLedgerService {
     agentContext: AgentContext,
     options: RegisterRevocationRegistryDefinitionOptions
   ): Promise<RegisterRevocationRegistryDefinitionReturn> {
-    const sdk = this.getHederaAnonCredsSdk(agentContext)
+    const sdk = this.getHederaAnoncredsRegistry(agentContext)
     return await sdk.registerRevocationRegistryDefinition(options)
   }
 
@@ -316,7 +316,7 @@ export class HederaLedgerService {
     revocationRegistryId: string,
     timestamp: number
   ): Promise<GetRevocationStatusListReturn> {
-    const sdk = this.getHederaAnonCredsSdk(agentContext)
+    const sdk = this.getHederaAnoncredsRegistry(agentContext)
     return await sdk.getRevocationStatusList(revocationRegistryId, timestamp)
   }
 
@@ -324,7 +324,7 @@ export class HederaLedgerService {
     agentContext: AgentContext,
     options: RegisterRevocationStatusListOptions
   ): Promise<RegisterRevocationStatusListReturn> {
-    const sdk = this.getHederaAnonCredsSdk(agentContext)
+    const sdk = this.getHederaAnoncredsRegistry(agentContext)
     return await sdk.registerRevocationStatusList(options)
   }
 
@@ -341,7 +341,7 @@ export class HederaLedgerService {
     return new KmsPublisher(agentContext, client, key)
   }
 
-  private getHederaAnonCredsSdk(agentContext: AgentContext): HederaAnoncredsRegistry {
+  private getHederaAnoncredsRegistry(agentContext: AgentContext): HederaAnoncredsRegistry {
     const cache = this.config.options.cache ?? new CredoCache(agentContext)
     return new HederaAnoncredsRegistry({ ...this.config.options, cache })
   }

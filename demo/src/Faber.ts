@@ -17,8 +17,6 @@ export enum RegistryOptions {
   hedera = 'did:hedera',
 }
 
-type Extensible = Record<string, string>
-
 export class Faber extends BaseAgent {
   public outOfBandId?: string
   public credentialDefinition?: RegisterCredentialDefinitionReturnStateFinished
@@ -42,13 +40,13 @@ export class Faber extends BaseAgent {
     // indy did is based on private key (seed)
     const unqualifiedIndyDid = '2jEvRuKmfBJTRa7QowDpNN'
 
-    const rootKeyIds: Extensible = {
+    const rootKeyIds: Record<string, string> = {
       [RegistryOptions.indy]: '#verkey',
       [RegistryOptions.cheqd]: '#key-1',
       [RegistryOptions.hedera]: '#did-root-key',
     }
 
-    const Dids: Extensible = {
+    const Dids: Record<string, string> = {
       [RegistryOptions.indy]: `did:indy:${indyNetworkConfig.indyNamespace}:${unqualifiedIndyDid}`,
       [RegistryOptions.cheqd]: 'did:cheqd:testnet:d37eba59-513d-42d3-8f9f-d1df0548b675',
       [RegistryOptions.hedera]: 'did:hedera:testnet:44eesExqdsUvLZ35FpnBPErqRGRnYbzzyG3wgCCYxkmq_0.0.6231121',

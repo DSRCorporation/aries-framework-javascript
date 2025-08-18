@@ -1,6 +1,6 @@
 {
   "name": "credo-demo",
-  "version": "1.0.1",
+  "version": "1.0.0",
   "private": true,
   "repository": {
     "type": "git",
@@ -13,18 +13,19 @@
     "faber": "ts-node src/FaberInquirer.ts"
   },
   "dependencies": {
-    "@hyperledger/indy-vdr-nodejs": "catalog:",
+    "@hiero-did-sdk/client": "0.1.0",
     "@hyperledger/anoncreds-nodejs": "catalog:",
+    "@hyperledger/indy-vdr-nodejs": "catalog:",
     "@openwallet-foundation/askar-nodejs": "catalog:",
     "inquirer": "^8.2.5"
   },
   "devDependencies": {
     "@credo-ts/anoncreds": "workspace:*",
     "@credo-ts/askar": "workspace:*",
+    "@credo-ts/cheqd": "workspace:*",
     "@credo-ts/core": "workspace:*",
     "@credo-ts/didcomm": "workspace:*",
     "@credo-ts/indy-vdr": "workspace:*",
-    "@credo-ts/cheqd": "workspace:*",
     "@credo-ts/node": "workspace:*",
     "@types/figlet": "^1.5.4",
     "@types/inquirer": "^8.2.6",

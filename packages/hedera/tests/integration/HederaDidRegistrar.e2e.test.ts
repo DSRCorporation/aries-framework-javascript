@@ -12,7 +12,7 @@ import { getMultibasePublicKey } from '../../src/ledger/utils'
 import { getHederaAgent } from './utils'
 
 describe('Hedera DID registrar', () => {
-  const logger = new ConsoleLogger(LogLevel.error)
+  const logger = new ConsoleLogger(LogLevel.fatal)
   let agent: Agent
 
   const validDid = 'did:hedera:testnet:44eesExqdsUvLZ35FpnBPErqRGRnYbzzyG3wgCCYxkmq_0.0.6226170'

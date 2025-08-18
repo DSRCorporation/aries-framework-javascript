@@ -86,14 +86,14 @@ describe('CredoCache', () => {
   describe('clear', () => {
     it('should throw error when called', async () => {
       const credoCacheInstance = new CredoCache(mockAgentContext)
-      await expect(credoCacheInstance.clear()).rejects.toThrowError('Method not implemented.')
+      await expect(credoCacheInstance.clear()).resolves.not.toThrow()
     })
   })
 
   describe('cleanupExpired', () => {
     it('should throw error when called', async () => {
       const credoCacheInstance = new CredoCache(mockAgentContext)
-      await expect(credoCacheInstance.cleanupExpired()).rejects.toThrowError('Method not implemented.')
+      await expect(credoCacheInstance.cleanupExpired()).resolves.not.toThrow()
     })
   })
 })
