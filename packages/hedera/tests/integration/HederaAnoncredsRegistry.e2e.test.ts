@@ -4,7 +4,7 @@ import { getHederaAgent, testCache } from './utils'
 
 describe('Hedera AnonCreds support', () => {
   let agent: Agent
-  let did: string
+  let issuerId: string
 
   const logger = new ConsoleLogger(LogLevel.fatal)
   const cache = new testCache()
@@ -18,14 +18,14 @@ describe('Hedera AnonCreds support', () => {
     })
     await agent.initialize()
 
-    // Making the test did
+    // Making the test issuerId
     const didRegistrarResult = await agent.dids.create<HederaDidCreateOptions>({
       method: 'hedera',
     })
     if (!didRegistrarResult.didState?.didDocument?.id) throw new Error('DidRegistrarError')
 
-    did = didRegistrarResult.didState.didDocument.id
-    logger.debug('DID', [did])
+    issuerId = didRegistrarResult.didState.didDocument.id
+    logger.debug('issuerId', [issuerId])
   })
 
   beforeEach(() => {
@@ -48,7 +48,7 @@ describe('Hedera AnonCreds support', () => {
         schema: {
           name: utils.uuid(),
           version: '1',
-          issuerId: did,
+          issuerId: issuerId,
           attrNames: ['field1'],
         },
         options: {},
@@ -62,7 +62,7 @@ describe('Hedera AnonCreds support', () => {
       const credDefResult = await agent.modules.anoncreds.registerCredentialDefinition({
         credentialDefinition: {
           tag: 'default',
-          issuerId: did,
+          issuerId: issuerId,
           schemaId: schemaId,
         },
         options: {
@@ -78,7 +78,7 @@ describe('Hedera AnonCreds support', () => {
       // Register revocation registry definition
       const revRegDefRegResult = await agent.modules.anoncreds.registerRevocationRegistryDefinition({
         revocationRegistryDefinition: {
-          issuerId: did,
+          issuerId: issuerId,
           credentialDefinitionId,
           maximumCredentialNumber: 10,
           tag: 'default',
@@ -98,7 +98,7 @@ describe('Hedera AnonCreds support', () => {
       const registerRevocationStatusListResponse = await agent.modules.anoncreds.registerRevocationStatusList({
         options: {},
         revocationStatusList: {
-          issuerId: did,
+          issuerId: issuerId,
           revocationRegistryDefinitionId,
         },
       })
@@ -114,7 +114,7 @@ describe('Hedera AnonCreds support', () => {
       logger.debug('revocationStatusListResponse', [revocationStatusListResponse])
 
       expect(revocationStatusListResponse?.revocationStatusList?.revRegDefId).toEqual(revocationRegistryDefinitionId)
-      expect(revocationStatusListResponse?.revocationStatusList?.issuerId).toEqual(did)
+      expect(revocationStatusListResponse?.revocationStatusList?.issuerId).toEqual(issuerId)
       expect(revocationStatusListResponse?.revocationStatusList?.revocationList).toEqual([0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
 
       // Update revocation status list - Revoke indexes
@@ -140,7 +140,7 @@ describe('Hedera AnonCreds support', () => {
       expect(revokeRevocationStatusListResponse?.revocationStatusList?.revRegDefId).toEqual(
         revocationRegistryDefinitionId
       )
-      expect(revokeRevocationStatusListResponse?.revocationStatusList?.issuerId).toEqual(did)
+      expect(revokeRevocationStatusListResponse?.revocationStatusList?.issuerId).toEqual(issuerId)
       expect(revokeRevocationStatusListResponse?.revocationStatusList?.revocationList).toEqual([
         0, 1, 0, 1, 0, 1, 0, 0, 0, 1,
       ])
@@ -168,7 +168,7 @@ describe('Hedera AnonCreds support', () => {
       expect(issueRevocationStatusListResponse?.revocationStatusList?.revRegDefId).toEqual(
         revocationRegistryDefinitionId
       )
-      expect(issueRevocationStatusListResponse?.revocationStatusList?.issuerId).toEqual(did)
+      expect(issueRevocationStatusListResponse?.revocationStatusList?.issuerId).toEqual(issuerId)
       expect(issueRevocationStatusListResponse?.revocationStatusList?.revocationList).toEqual([
         0, 1, 0, 0, 1, 0, 0, 0, 0, 1,
       ])

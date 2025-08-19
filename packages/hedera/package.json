@@ -25,16 +25,16 @@
     "style:fix": "biome check --write --unsafe"
   },
   "dependencies": {
-    "@hashgraph/sdk": "^2.66.0",
     "@credo-ts/anoncreds": "workspace:*",
     "@credo-ts/core": "workspace:*",
-    "@hiero-did-sdk/anoncreds": "0.1.0",
-    "@hiero-did-sdk/client": "0.1.0",
-    "@hiero-did-sdk/core": "0.1.0",
-    "@hiero-did-sdk/hcs": "0.1.0",
-    "@hiero-did-sdk/publisher-internal": "0.1.0",
-    "@hiero-did-sdk/registrar": "0.1.0",
-    "@hiero-did-sdk/resolver": "0.1.0"
+    "@hashgraph/sdk": "^2.66.0",
+    "@hiero-did-sdk/anoncreds": "^0.1.1",
+    "@hiero-did-sdk/client": "^0.1.1",
+    "@hiero-did-sdk/core": "^0.1.1",
+    "@hiero-did-sdk/hcs": "^0.1.1",
+    "@hiero-did-sdk/publisher-internal": "^0.1.1",
+    "@hiero-did-sdk/registrar": "^0.1.1",
+    "@hiero-did-sdk/resolver": "^0.1.1"
   },
   "devDependencies": {
     "@credo-ts/node": "workspace:*",

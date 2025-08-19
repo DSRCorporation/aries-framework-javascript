@@ -4,11 +4,11 @@ import {
   RegisterRevocationStatusListOptions,
   RegisterSchemaOptions,
 } from '@credo-ts/anoncreds'
-import { type DidDocument } from '@credo-ts/core'
+import { type DidDocument, DidRecord, DidRepository } from '@credo-ts/core'
 import { AgentContext, DependencyManager } from '@credo-ts/core'
 import { DidDocumentKey, Kms } from '@credo-ts/core'
 import { KmsJwkPublicOkp } from '@credo-ts/core/src/modules/kms'
-import { Client } from '@hashgraph/sdk'
+import { Client, PrivateKey } from '@hashgraph/sdk'
 import {
   HederaDidCreateOptions,
   HederaDidUpdateOptions,
@@ -67,12 +67,16 @@ import { DID_ROOT_KEY_ID, Publisher, parseDID } from '@hiero-did-sdk/core'
 
 jest.mock('../../src/ledger/utils')
 
+import { AskarKeyManagementService } from '@credo-ts/askar'
+import { KeyEntryObject } from '@openwallet-foundation/askar-nodejs'
 import { createOrGetKey } from '../../src/ledger/utils'
 
 describe('HederaLedgerService', () => {
   let service: HederaLedgerService
   let mockAgentContext: Partial<AgentContext>
   let mockKms: jest.Mocked<Kms.KeyManagementApi>
+  let mockDidRepository: jest.Mocked<DidRepository>
+  let mockKeyManagementService: jest.Mocked<AskarKeyManagementService>
   let mockedCreateOrGetKey: jest.MockedFunction<typeof createOrGetKey>
   let mockedParseDID: jest.MockedFunction<typeof parseDID>
   let mockedGenerateDeactivateDIDRequest: jest.MockedFunction<typeof generateDeactivateDIDRequest>
@@ -89,13 +93,39 @@ describe('HederaLedgerService', () => {
 
     builder = new DIDUpdateBuilder()
 
+    mockDidRepository = {
+      findCreatedDid: jest.fn().mockReturnValue({
+        keys: [
+          {
+            didDocumentRelativeKeyId: DID_ROOT_KEY_ID,
+            kmsKeyId: 'kmsKeyId',
+          },
+        ],
+      } as unknown as DidRecord),
+    } as unknown as jest.Mocked<DidRepository>
+
+    mockKeyManagementService = {
+      getKeyAsserted: jest
+        .fn()
+        .mockReturnValue({ key: { secretBytes: PrivateKey.generateED25519().toBytes() } } as unknown as KeyEntryObject),
+    } as unknown as jest.Mocked<AskarKeyManagementService>
+
     mockKms = {
       sign: jest.fn(),
+      getKms: jest.fn().mockReturnValue(mockKeyManagementService),
     } as unknown as jest.Mocked<Kms.KeyManagementApi>
 
     mockAgentContext = {
       dependencyManager: {
-        resolve: jest.fn().mockReturnValue(mockKms),
+        resolve: jest.fn((cls) => {
+          if (cls === Kms.KeyManagementApi) {
+            return mockKms
+          }
+          if (cls === DidRepository) {
+            return mockDidRepository
+          }
+          throw new Error(`No instance found for ${cls}`)
+        }),
       } as unknown as DependencyManager,
     }
 
@@ -412,7 +442,7 @@ describe('HederaLedgerService', () => {
     })
   })
 
-  describe('Anoncreds SDK methods', () => {
+  describe('anoncreds SDK methods', () => {
     // biome-ignore lint/suspicious/noExplicitAny: <explanation>
     let mockSdk: any
 
@@ -448,7 +478,7 @@ describe('HederaLedgerService', () => {
         options: {},
       }
       const result = await service.registerSchema(mockAgentContext as AgentContext, options)
-      expect(mockSdk.registerSchema).toHaveBeenCalledWith(options)
+      expect(mockSdk.registerSchema).toHaveBeenCalledWith({ ...options, issuerKeyDer: expect.anything() })
       expect(result).toBe('registerSchema')
     })
 
@@ -460,7 +490,9 @@ describe('HederaLedgerService', () => {
 
     it('registerCredentialDefinition', async () => {
       const options: RegisterCredentialDefinitionOptions = {
-        options: { supportRevocation: true },
+        options: {
+          supportRevocation: true,
+        },
         credentialDefinition: {
           issuerId: '',
           schemaId: '',
@@ -475,7 +507,10 @@ describe('HederaLedgerService', () => {
       await service.registerCredentialDefinition(mockAgentContext as AgentContext, options)
       expect(mockSdk.registerCredentialDefinition).toHaveBeenCalledWith({
         ...options,
-        options: { supportRevocation: true },
+        issuerKeyDer: expect.anything(),
+        options: {
+          supportRevocation: true,
+        },
       })
     })
 
@@ -506,7 +541,10 @@ describe('HederaLedgerService', () => {
         options: {},
       }
       const result = await service.registerRevocationRegistryDefinition(mockAgentContext as AgentContext, options)
-      expect(mockSdk.registerRevocationRegistryDefinition).toHaveBeenCalledWith(options)
+      expect(mockSdk.registerRevocationRegistryDefinition).toHaveBeenCalledWith({
+        ...options,
+        issuerKeyDer: expect.anything(),
+      })
       expect(result).toBe('registerRevRegDef')
     })
 
@@ -529,6 +567,51 @@ describe('HederaLedgerService', () => {
       const result = await service.registerRevocationStatusList(mockAgentContext as AgentContext, options)
       expect(mockSdk.registerRevocationStatusList).toHaveBeenCalledWith(options)
       expect(result).toBe('registerRevStatus')
+    })
+  })
+
+  describe('getIssuerPrivateKey', () => {
+    it('should return PrivateKey from secretBytes when rootKey exists', async () => {
+      const secretBytes = PrivateKey.generate().toBytes()
+      const didRecord = {
+        keys: [{ didDocumentRelativeKeyId: DID_ROOT_KEY_ID, kmsKeyId: 'kms-key-id' }],
+      }
+      const keyInfo = { key: { secretBytes } }
+
+      mockDidRepository.findCreatedDid.mockResolvedValue(didRecord as unknown as DidRecord)
+      // @ts-ignore
+      mockKeyManagementService.getKeyAsserted.mockResolvedValue(keyInfo)
+
+      // biome-ignore lint/suspicious/noExplicitAny: <explanation>
+      const result = await (service as any).getIssuerPrivateKey(mockAgentContext, 'issuer-id')
+
+      expect(mockDidRepository.findCreatedDid).toHaveBeenCalledWith(mockAgentContext, 'issuer-id')
+      // @ts-ignore
+      expect(mockKms.getKms).toHaveBeenCalledWith(mockAgentContext)
+      // @ts-ignore
+      expect(mockKeyManagementService.getKeyAsserted).toHaveBeenCalledWith(mockAgentContext, 'kms-key-id')
+      expect(result).toEqual(PrivateKey.fromBytesED25519(secretBytes))
+    })
+
+    it('should throw error if no rootKey found', async () => {
+      const didRecord = {
+        keys: [],
+      }
+      mockDidRepository.findCreatedDid.mockResolvedValue(didRecord as unknown as DidRecord)
+
+      // biome-ignore lint/suspicious/noExplicitAny: <explanation>
+      await expect((service as any).getIssuerPrivateKey(mockAgentContext, 'issuer-id')).rejects.toThrow(
+        'The root key not found in the KMS'
+      )
+    })
+
+    it('should throw error if didRecord is null or undefined', async () => {
+      mockDidRepository.findCreatedDid.mockResolvedValue(null)
+
+      // biome-ignore lint/suspicious/noExplicitAny: <explanation>
+      await expect((service as any).getIssuerPrivateKey(mockAgentContext, 'issuer-id')).rejects.toThrow(
+        'The root key not found in the KMS'
+      )
     })
   })
 })
