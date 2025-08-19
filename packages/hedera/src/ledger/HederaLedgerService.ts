@@ -18,12 +18,13 @@ import {
   DidDeactivateOptions,
   type DidDocument,
   DidDocumentKey,
+  DidRepository,
   DidUpdateOptions,
   Kms,
   injectable,
 } from '@credo-ts/core'
 import { KeyManagementApi } from '@credo-ts/core/src/modules/kms'
-import { Client } from '@hashgraph/sdk'
+import { Client, PrivateKey } from '@hashgraph/sdk'
 import { HederaAnoncredsRegistry } from '@hiero-did-sdk/anoncreds'
 import { HederaClientService, HederaNetwork } from '@hiero-did-sdk/client'
 import { DIDResolution, DID_ROOT_KEY_ID, Service, VerificationMethod, parseDID } from '@hiero-did-sdk/core'
@@ -265,30 +266,33 @@ export class HederaLedgerService {
   /* Anoncreds*/
 
   async getSchema(agentContext: AgentContext, schemaId: string): Promise<GetSchemaReturn> {
-    const sdk = this.getHederaAnoncredsRegistry(agentContext)
-    return await sdk.getSchema(schemaId)
+    const registry = this.getHederaAnoncredsRegistry(agentContext)
+    return await registry.getSchema(schemaId)
   }
 
   async registerSchema(agentContext: AgentContext, options: RegisterSchemaOptions): Promise<RegisterSchemaReturn> {
-    const sdk = this.getHederaAnoncredsRegistry(agentContext)
-    return await sdk.registerSchema(options)
+    const registry = this.getHederaAnoncredsRegistry(agentContext)
+    const issuerPrivateKey = await this.getIssuerPrivateKey(agentContext, options.schema.issuerId)
+    return await registry.registerSchema({ ...options, issuerKeyDer: issuerPrivateKey.toStringDer() })
   }
 
   async getCredentialDefinition(
     agentContext: AgentContext,
     credentialDefinitionId: string
   ): Promise<GetCredentialDefinitionReturn> {
-    const sdk = this.getHederaAnoncredsRegistry(agentContext)
-    return await sdk.getCredentialDefinition(credentialDefinitionId)
+    const registry = this.getHederaAnoncredsRegistry(agentContext)
+    return await registry.getCredentialDefinition(credentialDefinitionId)
   }
 
   async registerCredentialDefinition(
     agentContext: AgentContext,
     options: RegisterCredentialDefinitionOptions
   ): Promise<RegisterCredentialDefinitionReturn> {
-    const sdk = this.getHederaAnoncredsRegistry(agentContext)
-    return await sdk.registerCredentialDefinition({
+    const registry = this.getHederaAnoncredsRegistry(agentContext)
+    const issuerPrivateKey = await this.getIssuerPrivateKey(agentContext, options.credentialDefinition.issuerId)
+    return await registry.registerCredentialDefinition({
       ...options,
+      issuerKeyDer: issuerPrivateKey.toStringDer(),
       options: {
         supportRevocation: options.options?.supportRevocation === true,
       },
@@ -299,16 +303,20 @@ export class HederaLedgerService {
     agentContext: AgentContext,
     revocationRegistryDefinitionId: string
   ): Promise<GetRevocationRegistryDefinitionReturn> {
-    const sdk = this.getHederaAnoncredsRegistry(agentContext)
-    return await sdk.getRevocationRegistryDefinition(revocationRegistryDefinitionId)
+    const registry = this.getHederaAnoncredsRegistry(agentContext)
+    return await registry.getRevocationRegistryDefinition(revocationRegistryDefinitionId)
   }
 
   async registerRevocationRegistryDefinition(
     agentContext: AgentContext,
     options: RegisterRevocationRegistryDefinitionOptions
   ): Promise<RegisterRevocationRegistryDefinitionReturn> {
-    const sdk = this.getHederaAnoncredsRegistry(agentContext)
-    return await sdk.registerRevocationRegistryDefinition(options)
+    const registry = this.getHederaAnoncredsRegistry(agentContext)
+    const issuerPrivateKey = await this.getIssuerPrivateKey(agentContext, options.revocationRegistryDefinition.issuerId)
+    return await registry.registerRevocationRegistryDefinition({
+      ...options,
+      issuerKeyDer: issuerPrivateKey.toStringDer(),
+    })
   }
 
   async getRevocationStatusList(
@@ -316,16 +324,20 @@ export class HederaLedgerService {
     revocationRegistryId: string,
     timestamp: number
   ): Promise<GetRevocationStatusListReturn> {
-    const sdk = this.getHederaAnoncredsRegistry(agentContext)
-    return await sdk.getRevocationStatusList(revocationRegistryId, timestamp)
+    const registry = this.getHederaAnoncredsRegistry(agentContext)
+    return await registry.getRevocationStatusList(revocationRegistryId, timestamp)
   }
 
   async registerRevocationStatusList(
     agentContext: AgentContext,
     options: RegisterRevocationStatusListOptions
   ): Promise<RegisterRevocationStatusListReturn> {
-    const sdk = this.getHederaAnoncredsRegistry(agentContext)
-    return await sdk.registerRevocationStatusList(options)
+    const registry = this.getHederaAnoncredsRegistry(agentContext)
+    const issuerPrivateKey = await this.getIssuerPrivateKey(agentContext, options.revocationStatusList.issuerId)
+    return await registry.registerRevocationStatusList({
+        ...options,
+        issuerKeyDer: issuerPrivateKey.toStringDer(),
+    })
   }
 
   // Private methods
@@ -510,5 +522,23 @@ export class HederaLedgerService {
     }
 
     return fieldMethods[action]
+  }
+
+  private async getIssuerPrivateKey(agentContext: AgentContext, issuerId: string): Promise<PrivateKey> {
+    const didRepository = agentContext.dependencyManager.resolve(DidRepository)
+    const kms = agentContext.dependencyManager.resolve(Kms.KeyManagementApi)
+
+    const didRecord = await didRepository.findCreatedDid(agentContext, issuerId)
+    const rootKey = didRecord?.keys?.find((k) => k.didDocumentRelativeKeyId === DID_ROOT_KEY_ID)
+    if (!rootKey?.kmsKeyId) {
+      throw new Error('The root key not found in the KMS')
+    }
+
+    // @ts-ignore
+    const keyManagementService = kms.getKms(agentContext) as AskarKeyManagementService
+    // @ts-ignore
+    const keyInfo = await keyManagementService.getKeyAsserted(agentContext, rootKey.kmsKeyId)
+
+    return PrivateKey.fromBytesED25519(keyInfo.key.secretBytes)
   }
 }
