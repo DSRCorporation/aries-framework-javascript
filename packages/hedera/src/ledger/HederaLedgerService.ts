@@ -335,8 +335,8 @@ export class HederaLedgerService {
     const registry = this.getHederaAnoncredsRegistry(agentContext)
     const issuerPrivateKey = await this.getIssuerPrivateKey(agentContext, options.revocationStatusList.issuerId)
     return await registry.registerRevocationStatusList({
-        ...options,
-        issuerKeyDer: issuerPrivateKey.toStringDer(),
+      ...options,
+      issuerKeyDer: issuerPrivateKey.toStringDer(),
     })
   }
 
