@@ -565,7 +565,10 @@ describe('HederaLedgerService', () => {
         },
       }
       const result = await service.registerRevocationStatusList(mockAgentContext as AgentContext, options)
-      expect(mockSdk.registerRevocationStatusList).toHaveBeenCalledWith(options)
+      expect(mockSdk.registerRevocationStatusList).toHaveBeenCalledWith({
+          ...options,
+          issuerKeyDer: expect.anything(),
+      })
       expect(result).toBe('registerRevStatus')
     })
   })
