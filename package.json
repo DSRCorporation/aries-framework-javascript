@@ -55,5 +55,10 @@
   },
   "engines": {
     "node": ">=20"
+  },
+  "pnpm": {
+    "patchedDependencies": {
+      "@2060.io/ffi-napi@4.0.9": "patches/@2060.io__ffi-napi@4.0.9.patch"
+    }
   }
 }

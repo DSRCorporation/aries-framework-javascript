@@ -25,6 +25,7 @@
     "@credo-ts/cheqd": "workspace:*",
     "@credo-ts/core": "workspace:*",
     "@credo-ts/didcomm": "workspace:*",
+    "@credo-ts/hedera": "workspace:*",
     "@credo-ts/indy-vdr": "workspace:*",
     "@credo-ts/node": "workspace:*",
     "@types/figlet": "^1.5.4",
