@@ -45,7 +45,6 @@ import { HederaModuleConfig } from '../HederaModuleConfig'
 import { CredoCache } from './cache/CredoCache'
 import { KmsPublisher } from './publisher/KmsPublisher'
 import { createOrGetKey, getMultibasePublicKey } from './utils'
-import { AskarKeyManagementService } from '@credo-ts/askar'
 
 export interface HederaDidCreateOptions extends DidCreateOptions {
   method: 'hedera'
@@ -529,10 +528,7 @@ export class HederaLedgerService {
     }
 
     // @ts-ignore
-    const keyManagementService = kms.getKms(
-      agentContext,
-      AskarKeyManagementService.backend
-    ) as AskarKeyManagementService
+    const keyManagementService = kms.getKms(agentContext, 'askar')
     // @ts-ignore
     const keyInfo = await keyManagementService.getKeyAsserted(agentContext, rootKey.kmsKeyId)
 

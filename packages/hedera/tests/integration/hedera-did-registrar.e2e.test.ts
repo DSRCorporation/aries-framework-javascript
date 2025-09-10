@@ -11,39 +11,34 @@ import { HederaDidCreateOptions, HederaDidUpdateOptions } from '../../src/ledger
 import { getMultibasePublicKey } from '../../src/ledger/utils'
 import { getHederaAgent } from './utils'
 
+const validDid = 'did:hedera:testnet:44eesExqdsUvLZ35FpnBPErqRGRnYbzzyG3wgCCYxkmq_0.0.6226170'
+
+const validService = new DidDocumentService({
+  id: '#service-1',
+  type: 'CustomType',
+  serviceEndpoint: ['https://rand.io'],
+})
+
+function getValidVerificationMethod(publicKeyMultibase?: string) {
+  return new VerificationMethod({
+    id: '#key-1',
+    type: 'Ed25519VerificationKey2020',
+    controller: validDid,
+    publicKeyMultibase: publicKeyMultibase ?? 'z44eesExqdsUvLZ35FpnBPErqRGRnYbzzyG3wgCCYxkmq',
+  })
+}
+
+function getValidDidDocument(publicKeyMultibase?: string) {
+  return new DidDocument({
+    id: validDid,
+    verificationMethod: [getValidVerificationMethod(publicKeyMultibase)],
+    service: [validService],
+  })
+}
+
 describe('Hedera DID registrar', () => {
   const logger = new ConsoleLogger(LogLevel.error)
   let agent: Agent
-
-  const validDid = 'did:hedera:testnet:44eesExqdsUvLZ35FpnBPErqRGRnYbzzyG3wgCCYxkmq_0.0.6226170'
-
-  function validVerificationMethod(publicKeyMultibase?: string) {
-    return new VerificationMethod({
-      id: '#key-1',
-      type: 'Ed25519VerificationKey2020',
-      controller: validDid,
-      publicKeyMultibase: publicKeyMultibase ?? 'z44eesExqdsUvLZ35FpnBPErqRGRnYbzzyG3wgCCYxkmq',
-    })
-  }
-
-  function validService() {
-    return new DidDocumentService({
-      id: '#service-1',
-      type: 'CustomType',
-      serviceEndpoint: ['https://rand.io'],
-    })
-  }
-
-  function validDidDoc(publicKeyMultibase?: string) {
-    const service = [validService()]
-    const verificationMethod = [validVerificationMethod(publicKeyMultibase)]
-
-    return new DidDocument({
-      id: validDid,
-      verificationMethod,
-      service,
-    })
-  }
 
   beforeAll(async () => {
     agent = getHederaAgent({
@@ -95,13 +90,13 @@ describe('Hedera DID registrar', () => {
 
     const didResult = await agent.dids.create<HederaDidCreateOptions>({
       method: 'hedera',
-      didDocument: validDidDoc(multibasePublicKey),
+      didDocument: getValidDidDocument(multibasePublicKey),
       options: { network: 'testnet' },
       secret: { keys },
     })
     expect(didResult.didState.state).toEqual('finished')
 
-    const verificationMethod = validVerificationMethod(multibasePublicKey)
+    const verificationMethod = getValidVerificationMethod(multibasePublicKey)
     expect(didResult.didState.didDocument?.verificationMethod).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
@@ -119,13 +114,12 @@ describe('Hedera DID registrar', () => {
       ])
     )
 
-    const service = validService()
     expect(didResult.didState.didDocument?.service).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
-          id: expect.stringContaining(service.id),
-          type: service.type,
-          serviceEndpoint: service.serviceEndpoint,
+          id: expect.stringContaining(validService.id),
+          type: validService.type,
+          serviceEndpoint: validService.serviceEndpoint,
         }),
       ])
     )
@@ -142,7 +136,7 @@ describe('Hedera DID registrar', () => {
 
     const did = didResult.didState.did ?? ''
     const didDocument = didResult.didState.didDocument as DidDocument
-    didDocument.service = [validService()]
+    didDocument.service = [validService]
 
     const addUpdateResult = await agent.dids.update<HederaDidUpdateOptions>({
       did,
@@ -158,13 +152,12 @@ describe('Hedera DID registrar', () => {
     })
     expect(resolvedDocument.didDocument?.id).toEqual(did)
 
-    const service = validService()
     expect(resolvedDocument.didDocument?.service).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
-          id: expect.stringContaining(service.id),
-          type: service.type,
-          serviceEndpoint: service.serviceEndpoint,
+          id: expect.stringContaining(validService.id),
+          type: validService.type,
+          serviceEndpoint: validService.serviceEndpoint,
         }),
       ])
     )
@@ -212,8 +205,8 @@ describe('Hedera DID registrar', () => {
     const did = didResult.didState.did ?? ''
     const didDocument = didResult.didState.didDocument as DidDocument
 
-    const validVerification = validVerificationMethod(multibasePublicKey)
-    didDocument.verificationMethod = [validVerification]
+    const validVerificationMethod = getValidVerificationMethod(multibasePublicKey)
+    didDocument.verificationMethod = [validVerificationMethod]
 
     const addUpdateResult = await agent.dids.update<HederaDidUpdateOptions>({
       did,
@@ -234,10 +227,10 @@ describe('Hedera DID registrar', () => {
     expect(addResolvedDocument.didDocument?.verificationMethod).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
-          id: expect.stringContaining(validVerification.id),
-          type: validVerification.type,
-          controller: validVerification.controller,
-          publicKeyMultibase: validVerification.publicKeyMultibase,
+          id: expect.stringContaining(validVerificationMethod.id),
+          type: validVerificationMethod.type,
+          controller: validVerificationMethod.controller,
+          publicKeyMultibase: validVerificationMethod.publicKeyMultibase,
         }),
       ])
     )
@@ -279,8 +272,8 @@ describe('Hedera DID registrar', () => {
     const did = didResult.didState.did ?? ''
     const didDocument = didResult.didState.didDocument as DidDocument
 
-    const validVerification = validVerificationMethod(multibasePublicKey)
-    didDocument.verificationMethod = [validVerification]
+    const validVerificationMethod = getValidVerificationMethod(multibasePublicKey)
+    didDocument.verificationMethod = [validVerificationMethod]
 
     const expectedFailureReason =
       'Unable update DID: Key #key-1 is present in updated DID Document, but missing from DID record keys and DID update arguments'
@@ -294,7 +287,7 @@ describe('Hedera DID registrar', () => {
     if (updateResult.didState.state === 'failed') expect(updateResult.didState.reason).toEqual(expectedFailureReason)
 
     didDocument.verificationMethod = undefined
-    didDocument.assertionMethod = [validVerification]
+    didDocument.assertionMethod = [validVerificationMethod]
 
     updateResult = await agent.dids.update<HederaDidUpdateOptions>({
       did,
@@ -305,7 +298,7 @@ describe('Hedera DID registrar', () => {
     if (updateResult.didState.state === 'failed') expect(updateResult.didState.reason).toEqual(expectedFailureReason)
 
     didDocument.assertionMethod = undefined
-    didDocument.authentication = [validVerification]
+    didDocument.authentication = [validVerificationMethod]
 
     updateResult = await agent.dids.update<HederaDidUpdateOptions>({
       did,
@@ -316,7 +309,7 @@ describe('Hedera DID registrar', () => {
     if (updateResult.didState.state === 'failed') expect(updateResult.didState.reason).toEqual(expectedFailureReason)
 
     didDocument.authentication = undefined
-    didDocument.capabilityDelegation = [validVerification]
+    didDocument.capabilityDelegation = [validVerificationMethod]
 
     updateResult = await agent.dids.update<HederaDidUpdateOptions>({
       did,
@@ -327,7 +320,7 @@ describe('Hedera DID registrar', () => {
     if (updateResult.didState.state === 'failed') expect(updateResult.didState.reason).toEqual(expectedFailureReason)
 
     didDocument.capabilityDelegation = undefined
-    didDocument.capabilityInvocation = [validVerification]
+    didDocument.capabilityInvocation = [validVerificationMethod]
 
     updateResult = await agent.dids.update<HederaDidUpdateOptions>({
       did,
@@ -338,7 +331,7 @@ describe('Hedera DID registrar', () => {
     if (updateResult.didState.state === 'failed') expect(updateResult.didState.reason).toEqual(expectedFailureReason)
 
     didDocument.capabilityInvocation = undefined
-    didDocument.keyAgreement = [validVerification]
+    didDocument.keyAgreement = [validVerificationMethod]
 
     updateResult = await agent.dids.update<HederaDidUpdateOptions>({
       did,

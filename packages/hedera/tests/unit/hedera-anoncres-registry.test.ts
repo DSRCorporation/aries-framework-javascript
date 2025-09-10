@@ -14,8 +14,8 @@ import {
 } from '@credo-ts/anoncreds'
 import { AgentContext } from '@credo-ts/core'
 import { HederaAnonCredsRegistry } from '@credo-ts/hedera'
-import { HederaLedgerService } from '../../src/ledger/HederaLedgerService'
 import { mockFunction } from '../../../core/tests/helpers'
+import { HederaLedgerService } from '../../src/ledger/HederaLedgerService'
 
 const mockLedgerService = {
   registerSchema: jest.fn(),

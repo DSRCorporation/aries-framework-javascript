@@ -7,7 +7,7 @@ describe('Hedera AnonCreds support', () => {
   let issuerId: string
 
   const logger = new ConsoleLogger(LogLevel.fatal)
-  const cache = new InMemoryLruCache( { limit: 10 })
+  const cache = new InMemoryLruCache({ limit: 10 })
 
   beforeAll(async () => {
     agent = getHederaAgent({

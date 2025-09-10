@@ -38,16 +38,16 @@ jest.mock('@hiero-did-sdk/registrar', () => ({
 }))
 
 import {
+  CreateDIDRequest,
   DIDUpdateBuilder,
+  DeactivateDIDRequest,
+  UpdateDIDRequest,
   generateCreateDIDRequest,
+  generateDeactivateDIDRequest,
   generateUpdateDIDRequest,
   submitCreateDIDRequest,
   submitDeactivateDIDRequest,
   submitUpdateDIDRequest,
-  CreateDIDRequest,
-  UpdateDIDRequest,
-  generateDeactivateDIDRequest,
-  DeactivateDIDRequest,
 } from '@hiero-did-sdk/registrar'
 
 jest.mock('@hiero-did-sdk/resolver', () => ({
@@ -60,12 +60,12 @@ import { resolveDID } from '@hiero-did-sdk/resolver'
 jest.mock('../../src/ledger/utils')
 
 import { AskarKeyManagementService } from '@credo-ts/askar'
-import { KeyEntryObject } from '@openwallet-foundation/askar-nodejs'
-import { createOrGetKey } from '../../src/ledger/utils'
-import { mockFunction } from '../../../core/tests/helpers'
-import { did, didDocument } from './fixtures/did-document'
-import { HederaAnonCredsRegistry } from '../../src/anoncreds/HederaAnonCredsRegistry'
 import { DID_ROOT_KEY_ID } from '@hiero-did-sdk/core'
+import { KeyEntryObject } from '@openwallet-foundation/askar-nodejs'
+import { mockFunction } from '../../../core/tests/helpers'
+import { HederaAnonCredsRegistry } from '../../src/anoncreds/HederaAnonCredsRegistry'
+import { createOrGetKey } from '../../src/ledger/utils'
+import { did, didDocument } from './fixtures/did-document'
 
 const mockKeyId = 'mock-key-id'
 
@@ -536,7 +536,7 @@ describe('HederaLedgerService', () => {
 
       expect(mockDidRepository.findCreatedDid).toHaveBeenCalledWith(mockAgentContext, 'issuer-id')
       // @ts-ignore
-      expect(mockKms.getKms).toHaveBeenCalledWith(mockAgentContext, AskarKeyManagementService.backend)
+      expect(mockKms.getKms).toHaveBeenCalledWith(mockAgentContext, 'askar')
       // @ts-ignore
       expect(mockKeyManagementService.getKeyAsserted).toHaveBeenCalledWith(mockAgentContext, 'kms-key-id')
       expect(result).toEqual(PrivateKey.fromBytesED25519(secretBytes))

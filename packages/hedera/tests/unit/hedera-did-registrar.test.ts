@@ -2,8 +2,8 @@ import { AgentContext, DidDocumentKey, DidRecord, DidRepository } from '@credo-t
 
 import { DidDocumentRole } from '@credo-ts/core'
 import { HederaDidRegistrar } from '@credo-ts/hedera'
-import { HederaDidUpdateOptions, HederaLedgerService } from '../../src/ledger/HederaLedgerService'
 import { mockFunction } from '../../../core/tests/helpers'
+import { HederaDidUpdateOptions, HederaLedgerService } from '../../src/ledger/HederaLedgerService'
 import { did, didDocument, didResolutionMetadata } from './fixtures/did-document'
 
 const mockDidRepository = {

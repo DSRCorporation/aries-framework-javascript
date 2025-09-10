@@ -1,8 +1,8 @@
 import { AgentContext, DidDocument, JsonTransformer } from '@credo-ts/core'
 import { HederaDidResolver } from '@credo-ts/hedera'
-import { HederaLedgerService } from '../../src/ledger/HederaLedgerService'
 import { mockFunction } from '../../../core/tests/helpers'
-import { did, parsedDid, didDocument, didResolutionMetadata } from './fixtures/did-document'
+import { HederaLedgerService } from '../../src/ledger/HederaLedgerService'
+import { did, didDocument, didResolutionMetadata, parsedDid } from './fixtures/did-document'
 
 const mockLedgerService = {
   resolveDid: jest.fn(),

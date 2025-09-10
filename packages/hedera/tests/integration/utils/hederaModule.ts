@@ -1,6 +1,6 @@
 import { AnonCredsModule } from '@credo-ts/anoncreds'
 import { AskarModule } from '@credo-ts/askar'
-import { Agent, Cache, CacheModule, DidsModule, Logger, utils, ModulesMap } from '@credo-ts/core'
+import { Agent, Cache, CacheModule, DidsModule, Logger, ModulesMap, utils } from '@credo-ts/core'
 import {
   HederaAnonCredsRegistry,
   HederaDidRegistrar,
