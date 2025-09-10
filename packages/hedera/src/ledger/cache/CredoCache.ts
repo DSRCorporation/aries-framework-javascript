@@ -8,7 +8,7 @@ export class CredoCache implements Cache {
   constructor(private readonly agentContext: AgentContext) {
     this.credoCache = agentContext.dependencyManager.resolve(CacheModuleConfig).cache
     if (!this.credoCache) {
-      throw new CredoError('Error initializing cache')
+      throw new CredoError('Failed to initialize cache: Credo cache instance is not found in dependency manager')
     }
   }
 
@@ -25,10 +25,10 @@ export class CredoCache implements Cache {
   }
 
   async clear(): Promise<void> {
-    // nothing
+    // no-op
   }
 
   async cleanupExpired(): Promise<void> {
-    // nothing
+    // no-op
   }
 }

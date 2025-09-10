@@ -1,16 +1,15 @@
-import { Agent, ConsoleLogger, LogLevel, utils } from '@credo-ts/core'
+import { Agent, ConsoleLogger, InMemoryLruCache, LogLevel, utils } from '@credo-ts/core'
 import { HederaDidCreateOptions } from '../../src/ledger/HederaLedgerService'
-import { getHederaAgent, testCache } from './utils'
+import { getHederaAgent } from './utils'
 
 describe('Hedera AnonCreds support', () => {
   let agent: Agent
   let issuerId: string
 
   const logger = new ConsoleLogger(LogLevel.fatal)
-  const cache = new testCache()
+  const cache = new InMemoryLruCache( { limit: 10 })
 
   beforeAll(async () => {
-    // Initialize the agent
     agent = getHederaAgent({
       label: 'alice',
       logger,
@@ -18,7 +17,6 @@ describe('Hedera AnonCreds support', () => {
     })
     await agent.initialize()
 
-    // Making the test issuerId
     const didRegistrarResult = await agent.dids.create<HederaDidCreateOptions>({
       method: 'hedera',
     })
@@ -42,8 +40,7 @@ describe('Hedera AnonCreds support', () => {
   })
 
   describe('Hedera Anoncreds Registry', () => {
-    it('should executes the full workflow (register and resolve schema, credential definition, revocation registry definition, revocation status list)', async () => {
-      // Create the schema
+    it('should execute the full workflow (register and resolve schema, credential definition, revocation registry definition, revocation status list)', async () => {
       const schemaResult = await agent.modules.anoncreds.registerSchema({
         schema: {
           name: utils.uuid(),
@@ -58,7 +55,6 @@ describe('Hedera AnonCreds support', () => {
       const schemaId = schemaResult?.schemaState?.schemaId
       expect(schemaId).toBeDefined()
 
-      // Register credential definition for the schema
       const credDefResult = await agent.modules.anoncreds.registerCredentialDefinition({
         credentialDefinition: {
           tag: 'default',
@@ -75,7 +71,6 @@ describe('Hedera AnonCreds support', () => {
 
       const credentialDefinitionId = credDefResult.credentialDefinitionState.credentialDefinitionId ?? ''
 
-      // Register revocation registry definition
       const revRegDefRegResult = await agent.modules.anoncreds.registerRevocationRegistryDefinition({
         revocationRegistryDefinition: {
           issuerId: issuerId,
@@ -94,7 +89,6 @@ describe('Hedera AnonCreds support', () => {
         await agent.modules.anoncreds.getRevocationRegistryDefinition(revocationRegistryDefinitionId)
       expect(resolvedRevRegDef.revocationRegistryDefinitionId).toEqual(revocationRegistryDefinitionId)
 
-      // Register the init revocation status list
       const registerRevocationStatusListResponse = await agent.modules.anoncreds.registerRevocationStatusList({
         options: {},
         revocationStatusList: {
@@ -106,7 +100,6 @@ describe('Hedera AnonCreds support', () => {
       const revocationStatusList = registerRevocationStatusListResponse?.revocationStatusListState.revocationStatusList
       expect(revocationStatusList).toBeDefined()
 
-      // Resolve the revocation status list
       const revocationStatusListResponse = await agent.modules.anoncreds.getRevocationStatusList(
         revocationRegistryDefinitionId,
         Date.now() / 1000
@@ -131,7 +124,6 @@ describe('Hedera AnonCreds support', () => {
         revokeUpdateRevocationStatusListResponse?.revocationStatusListState.revocationStatusList
       expect(revokeRevocationStatusList).toBeDefined()
 
-      // Resolve the revocation status list
       const revokeRevocationStatusListResponse = await agent.modules.anoncreds.getRevocationStatusList(
         revocationRegistryDefinitionId,
         Date.now() / 1000
@@ -159,7 +151,6 @@ describe('Hedera AnonCreds support', () => {
         issueUpdateRevocationStatusListResponse?.revocationStatusListState.revocationStatusList
       expect(issueRevocationStatusList).toBeDefined()
 
-      // Resolve the revocation status list
       const issueRevocationStatusListResponse = await agent.modules.anoncreds.getRevocationStatusList(
         revocationRegistryDefinitionId,
         Date.now() / 1000

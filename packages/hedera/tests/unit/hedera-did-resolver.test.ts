@@ -1,70 +1,56 @@
-import { DidDocument, JsonTransformer } from '@credo-ts/core'
+import { AgentContext, DidDocument, JsonTransformer } from '@credo-ts/core'
 import { HederaDidResolver } from '@credo-ts/hedera'
 import { HederaLedgerService } from '../../src/ledger/HederaLedgerService'
+import { mockFunction } from '../../../core/tests/helpers'
+import { did, parsedDid, didDocument, didResolutionMetadata } from './fixtures/did-document'
 
-describe('HederaDidResolver', () => {
-  let resolver: HederaDidResolver
-  // biome-ignore lint/suspicious/noExplicitAny:
-  let mockAgentContext: any
-  // biome-ignore lint/suspicious/noExplicitAny:
-  let mockLedgerService: any
+const mockLedgerService = {
+  resolveDid: jest.fn(),
+} as unknown as HederaLedgerService
 
-  beforeEach(() => {
-    const mockLogger = {
+const mockAgentContext = {
+  config: {
+    logger: {
       trace: jest.fn(),
       debug: jest.fn(),
-    }
+    },
+  },
+  dependencyManager: {
+    resolve: jest.fn().mockImplementation((cls) => {
+      if (cls === HederaLedgerService) return mockLedgerService
+    }),
+  },
+} as unknown as AgentContext
 
-    mockLedgerService = {
-      resolveDid: jest.fn(),
-    }
+const resolver = new HederaDidResolver()
 
-    mockAgentContext = {
-      config: { logger: mockLogger },
-      dependencyManager: {
-        resolve: jest.fn().mockReturnValue(mockLedgerService),
-      },
-    }
-
-    resolver = new HederaDidResolver()
-  })
-
+describe('HederaDidResolver', () => {
   it('should successfully resolve DID', async () => {
-    const did = 'did:hedera:123'
-    const fakeDidDocument = { id: did }
-    const resolveDidResult = {
-      didDocument: { id: did },
-      didDocumentMetadata: { meta: 'meta' },
-      didResolutionMetadata: { resMeta: 'resMeta' },
+    const resolutionResult = {
+      didDocument,
+      didDocumentMetadata: {},
+      didResolutionMetadata,
     }
 
-    mockLedgerService.resolveDid.mockResolvedValue(resolveDidResult)
+    mockFunction(mockLedgerService.resolveDid).mockResolvedValue(resolutionResult)
 
-    jest.spyOn(JsonTransformer, 'fromJSON').mockReturnValue(fakeDidDocument as unknown as DidDocument)
+    jest.spyOn(JsonTransformer, 'fromJSON').mockReturnValue(didDocument)
 
-    // biome-ignore lint/suspicious/noExplicitAny:
-    const result = await resolver.resolve(mockAgentContext, did, {} as any, {} as any)
+    const result = await resolver.resolve(mockAgentContext, did, parsedDid, {})
 
     expect(mockAgentContext.config.logger.trace).toHaveBeenCalledWith('Try to resolve a did document from ledger')
     expect(mockAgentContext.dependencyManager.resolve).toHaveBeenCalledWith(HederaLedgerService)
     expect(mockLedgerService.resolveDid).toHaveBeenCalledWith(mockAgentContext, did)
-    expect(JsonTransformer.fromJSON).toHaveBeenCalledWith(resolveDidResult.didDocument, DidDocument)
-
-    expect(result).toEqual({
-      didDocument: fakeDidDocument,
-      didDocumentMetadata: resolveDidResult.didDocumentMetadata,
-      didResolutionMetadata: resolveDidResult.didResolutionMetadata,
-    })
+    expect(JsonTransformer.fromJSON).toHaveBeenCalledWith(resolutionResult.didDocument, DidDocument)
+    expect(result).toEqual(resolutionResult)
   })
 
   it('should handle error and return notFound', async () => {
-    const did = 'did:hedera:bad'
     const error = new Error('Some error')
 
-    mockLedgerService.resolveDid.mockRejectedValue(error)
+    mockFunction(mockLedgerService.resolveDid).mockRejectedValue(error)
 
-    // biome-ignore lint/suspicious/noExplicitAny:
-    const result = await resolver.resolve(mockAgentContext, did, {} as any, {} as any)
+    const result = await resolver.resolve(mockAgentContext, did, parsedDid, {})
 
     expect(mockAgentContext.config.logger.trace).toHaveBeenCalledWith('Try to resolve a did document from ledger')
     expect(mockAgentContext.config.logger.debug).toHaveBeenCalledWith('Error resolving the did', {

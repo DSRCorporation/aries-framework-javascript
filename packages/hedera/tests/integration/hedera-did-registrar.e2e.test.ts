@@ -12,7 +12,7 @@ import { getMultibasePublicKey } from '../../src/ledger/utils'
 import { getHederaAgent } from './utils'
 
 describe('Hedera DID registrar', () => {
-  const logger = new ConsoleLogger(LogLevel.fatal)
+  const logger = new ConsoleLogger(LogLevel.error)
   let agent: Agent
 
   const validDid = 'did:hedera:testnet:44eesExqdsUvLZ35FpnBPErqRGRnYbzzyG3wgCCYxkmq_0.0.6226170'
@@ -282,16 +282,16 @@ describe('Hedera DID registrar', () => {
     const validVerification = validVerificationMethod(multibasePublicKey)
     didDocument.verificationMethod = [validVerification]
 
+    const expectedFailureReason =
+      'Unable update DID: Key #key-1 is present in updated DID Document, but missing from DID record keys and DID update arguments'
+
     let updateResult = await agent.dids.update<HederaDidUpdateOptions>({
       did,
       didDocument,
       didDocumentOperation: 'addToDidDocument',
     })
     expect(updateResult.didState.state).toEqual('failed')
-    if (updateResult.didState.state === 'failed')
-      expect(updateResult.didState.reason).toEqual(
-        'Unable update DID: Key #key-1 from verificationMethod not found in keys'
-      )
+    if (updateResult.didState.state === 'failed') expect(updateResult.didState.reason).toEqual(expectedFailureReason)
 
     didDocument.verificationMethod = undefined
     didDocument.assertionMethod = [validVerification]
@@ -302,10 +302,7 @@ describe('Hedera DID registrar', () => {
       didDocumentOperation: 'addToDidDocument',
     })
     expect(updateResult.didState.state).toEqual('failed')
-    if (updateResult.didState.state === 'failed')
-      expect(updateResult.didState.reason).toEqual(
-        'Unable update DID: Key #key-1 from assertionMethod not found in keys'
-      )
+    if (updateResult.didState.state === 'failed') expect(updateResult.didState.reason).toEqual(expectedFailureReason)
 
     didDocument.assertionMethod = undefined
     didDocument.authentication = [validVerification]
@@ -316,10 +313,7 @@ describe('Hedera DID registrar', () => {
       didDocumentOperation: 'addToDidDocument',
     })
     expect(updateResult.didState.state).toEqual('failed')
-    if (updateResult.didState.state === 'failed')
-      expect(updateResult.didState.reason).toEqual(
-        'Unable update DID: Key #key-1 from authentication not found in keys'
-      )
+    if (updateResult.didState.state === 'failed') expect(updateResult.didState.reason).toEqual(expectedFailureReason)
 
     didDocument.authentication = undefined
     didDocument.capabilityDelegation = [validVerification]
@@ -330,10 +324,7 @@ describe('Hedera DID registrar', () => {
       didDocumentOperation: 'addToDidDocument',
     })
     expect(updateResult.didState.state).toEqual('failed')
-    if (updateResult.didState.state === 'failed')
-      expect(updateResult.didState.reason).toEqual(
-        'Unable update DID: Key #key-1 from capabilityDelegation not found in keys'
-      )
+    if (updateResult.didState.state === 'failed') expect(updateResult.didState.reason).toEqual(expectedFailureReason)
 
     didDocument.capabilityDelegation = undefined
     didDocument.capabilityInvocation = [validVerification]
@@ -344,10 +335,7 @@ describe('Hedera DID registrar', () => {
       didDocumentOperation: 'addToDidDocument',
     })
     expect(updateResult.didState.state).toEqual('failed')
-    if (updateResult.didState.state === 'failed')
-      expect(updateResult.didState.reason).toEqual(
-        'Unable update DID: Key #key-1 from capabilityInvocation not found in keys'
-      )
+    if (updateResult.didState.state === 'failed') expect(updateResult.didState.reason).toEqual(expectedFailureReason)
 
     didDocument.capabilityInvocation = undefined
     didDocument.keyAgreement = [validVerification]
@@ -358,8 +346,7 @@ describe('Hedera DID registrar', () => {
       didDocumentOperation: 'addToDidDocument',
     })
     expect(updateResult.didState.state).toEqual('failed')
-    if (updateResult.didState.state === 'failed')
-      expect(updateResult.didState.reason).toEqual('Unable update DID: Key #key-1 from keyAgreement not found in keys')
+    if (updateResult.didState.state === 'failed') expect(updateResult.didState.reason).toEqual(expectedFailureReason)
   })
 
   it('should create and deactivate a did:hedera did', async () => {

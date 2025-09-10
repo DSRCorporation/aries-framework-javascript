@@ -1,6 +1,6 @@
 import { AnonCredsModule } from '@credo-ts/anoncreds'
 import { AskarModule } from '@credo-ts/askar'
-import { Agent, Cache, CacheModule, DidsModule, Logger, utils } from '@credo-ts/core'
+import { Agent, Cache, CacheModule, DidsModule, Logger, utils, ModulesMap } from '@credo-ts/core'
 import {
   HederaAnonCredsRegistry,
   HederaDidRegistrar,
@@ -11,7 +11,7 @@ import {
 import { agentDependencies } from '@credo-ts/node'
 import { anoncreds } from '@hyperledger/anoncreds-nodejs'
 import { askar } from '@openwallet-foundation/askar-nodejs'
-import { TestTailsFileService } from './testTailsFileService'
+import { InMemoryTailsFileService } from '../../../../anoncreds/tests/InMemoryTailsFileService'
 
 export const getHederaModuleConfig = (props: { operatorId?: string; operatorKey?: string }) => {
   const operatorId = props.operatorId ?? process.env.HEDERA_OPERATOR_ID ?? ''
@@ -39,15 +39,12 @@ export const getHederaAgent = (props: {
   const logger = props.logger
   const cache = props.cache
 
-  let modules = {}
-
-  modules = {
-    ...modules,
+  let modules: ModulesMap = {
     askar: new AskarModule({ askar, store: { id: label, key: label } }),
     anoncreds: new AnonCredsModule({
       anoncreds,
       registries: [new HederaAnonCredsRegistry()],
-      tailsFileService: new TestTailsFileService(),
+      tailsFileService: new InMemoryTailsFileService(),
     }),
     dids: new DidsModule({
       resolvers: [new HederaDidResolver()],

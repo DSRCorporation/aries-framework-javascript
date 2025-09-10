@@ -1,74 +1,65 @@
-import type { AgentContext, DidDocumentKey } from '@credo-ts/core'
+import { AgentContext, DidDocumentKey, DidRecord, DidRepository } from '@credo-ts/core'
 
 import { DidDocumentRole } from '@credo-ts/core'
 import { HederaDidRegistrar } from '@credo-ts/hedera'
-import { HederaDidUpdateOptions } from '../../src/ledger/HederaLedgerService'
+import { HederaDidUpdateOptions, HederaLedgerService } from '../../src/ledger/HederaLedgerService'
+import { mockFunction } from '../../../core/tests/helpers'
+import { did, didDocument, didResolutionMetadata } from './fixtures/did-document'
 
-describe('HederaDidRegistrar', () => {
-  let service: HederaDidRegistrar
-  // biome-ignore lint/suspicious/noExplicitAny: <explanation>
-  let mockAgentContext: any
-  // biome-ignore lint/suspicious/noExplicitAny: <explanation>
-  let mockDidRepository: any
-  // biome-ignore lint/suspicious/noExplicitAny: <explanation>
-  let mockLedgerService: any
+const mockDidRepository = {
+  save: jest.fn(),
+  findCreatedDid: jest.fn(),
+  update: jest.fn(),
+} as unknown as DidRepository
 
-  beforeEach(() => {
-    const mockLogger = {
+const mockLedgerService = {
+  createDid: jest.fn(),
+  resolveDid: jest.fn(),
+  updateDid: jest.fn(),
+  deactivateDid: jest.fn(),
+} as unknown as HederaLedgerService
+
+const mockAgentContext = {
+  dependencyManager: {
+    resolve: jest.fn().mockImplementation((cls) => {
+      if (cls === DidRepository) return mockDidRepository
+      if (cls === HederaLedgerService) return mockLedgerService
+    }),
+  },
+  config: {
+    logger: {
       debug: jest.fn(),
       error: jest.fn(),
-    }
+    },
+  },
+} as unknown as AgentContext
 
-    mockDidRepository = {
-      save: jest.fn(),
-      findCreatedDid: jest.fn(),
-      update: jest.fn(),
-    }
-
-    mockLedgerService = {
-      createDid: jest.fn(),
-      resolveDid: jest.fn(),
-      updateDid: jest.fn(),
-      deactivateDid: jest.fn(),
-    }
-
-    mockAgentContext = {
-      dependencyManager: {
-        // biome-ignore lint/suspicious/noExplicitAny: <explanation>
-        resolve: jest.fn().mockImplementation((obj: any) => {
-          if (obj.name === 'DidRepository') return mockDidRepository
-          if (obj.name === 'HederaLedgerService') return mockLedgerService
-        }),
-      },
-      config: {
-        logger: mockLogger,
-      },
-    }
-
-    service = new HederaDidRegistrar()
-  })
+describe('HederaDidRegistrar', () => {
+  const registrar: HederaDidRegistrar = new HederaDidRegistrar()
 
   describe('create', () => {
     it('should create DID, save it, and return finished state on success', async () => {
-      const did = 'did:hedera:123'
-      const didDocument = {
-        service: [{ id: 'service1' }, { id: 'service2' }],
-      }
       const rootKey = { kmsKeyId: 'key1', didDocumentRelativeKeyId: 'rootKeyId' }
 
-      mockLedgerService.createDid.mockResolvedValue({ did, didDocument, rootKey })
+      mockFunction(mockLedgerService.createDid).mockResolvedValue({
+        did,
+        didDocument,
+        rootKey,
+      })
 
-      const result = await service.create(mockAgentContext as AgentContext, {
+      const result = await registrar.create(mockAgentContext, {
         method: 'hedera',
         options: {},
       })
 
       expect(mockDidRepository.save).toHaveBeenCalled()
-      const savedRecord = mockDidRepository.save.mock.calls[0][1]
+      const savedRecord = mockFunction(mockDidRepository.save).mock.calls[0][1]
       expect(savedRecord.did).toBe(did)
       expect(savedRecord.role).toBe(DidDocumentRole.Created)
       expect(savedRecord.didDocument).toBeInstanceOf(Object)
-      expect(savedRecord.didDocument.service[0]).toBeInstanceOf(Object)
+      expect(savedRecord.didDocument?.service).toBeDefined()
+      // biome-ignore lint/style/noNonNullAssertion: <explanation>
+      expect(savedRecord.didDocument?.service![0]).toBeInstanceOf(Object)
 
       expect(result.didState.state).toBe('finished')
       expect(result.didState.did).toBe(did)
@@ -76,9 +67,9 @@ describe('HederaDidRegistrar', () => {
     })
 
     it('should handle error and return failed state', async () => {
-      mockLedgerService.createDid.mockRejectedValue(new Error('Create failed'))
+      mockFunction(mockLedgerService.createDid).mockRejectedValue(new Error('Create failed'))
 
-      const result = await service.create(mockAgentContext as AgentContext, {
+      const result = await registrar.create(mockAgentContext, {
         method: 'hedera',
         options: {},
       })
@@ -92,24 +83,27 @@ describe('HederaDidRegistrar', () => {
   })
 
   describe('update', () => {
-    const did = 'did:hedera:123'
-
     it('should update DID and save record successfully', async () => {
-      const didDocument = { id: did }
-      const updatedDidDocument = { id: did, updated: true }
+      const updatedDidDocument = {
+        ...didDocument,
+        service: [
+          ...didDocument.service,
+          { id: 'added-service', type: 'MockService', serviceEndpoint: 'https://example.com/added-service/' },
+        ],
+      }
 
       const foundDidRecord = {
         didDocument,
         keys: [{ didDocumentRelativeKeyId: 'key1' }],
-      }
-      mockLedgerService.resolveDid.mockResolvedValue({
+      } as unknown as DidRecord
+
+      mockFunction(mockLedgerService.resolveDid).mockResolvedValue({
         didDocument,
         didDocumentMetadata: { deactivated: false },
-        didResolutionMetadata: {},
+        didResolutionMetadata,
       })
-      mockDidRepository.findCreatedDid.mockResolvedValue(foundDidRecord)
-      mockLedgerService.updateDid.mockResolvedValue({ didDocument: updatedDidDocument })
-      mockDidRepository.update.mockResolvedValue(undefined)
+      mockFunction(mockDidRepository.findCreatedDid).mockResolvedValue(foundDidRecord)
+      mockFunction(mockLedgerService.updateDid).mockResolvedValue({ did, didDocument: updatedDidDocument })
 
       const options: HederaDidUpdateOptions = {
         did,
@@ -125,7 +119,7 @@ describe('HederaDidRegistrar', () => {
         didDocument: {},
       }
 
-      const result = await service.update(mockAgentContext as AgentContext, options)
+      const result = await registrar.update(mockAgentContext, options)
 
       expect(mockLedgerService.resolveDid).toHaveBeenCalledWith(mockAgentContext, did)
       expect(mockDidRepository.findCreatedDid).toHaveBeenCalledWith(mockAgentContext, did)
@@ -145,30 +139,30 @@ describe('HederaDidRegistrar', () => {
     })
 
     it('should return failed state if DID not found or deactivated', async () => {
-      mockLedgerService.resolveDid.mockResolvedValue({ didDocument: null, didDocumentMetadata: { deactivated: true } })
-      mockDidRepository.findCreatedDid.mockResolvedValue(null)
+      mockFunction(mockLedgerService.resolveDid).mockResolvedValue({
+        didDocument,
+        didResolutionMetadata,
+        didDocumentMetadata: { deactivated: true },
+      })
+      mockFunction(mockDidRepository.findCreatedDid).mockResolvedValue(null)
 
-      const options: HederaDidUpdateOptions = {
+      const result = await registrar.update(mockAgentContext, {
         did,
         didDocument: {},
-      }
-
-      const result = await service.update(mockAgentContext as AgentContext, options)
+      })
 
       expect(result.didState.state).toBe('failed')
       if (result.didState.state === 'failed') expect(result.didState.reason).toBe('Did not found')
     })
 
     it('should handle error and return failed state', async () => {
-      mockLedgerService.resolveDid.mockRejectedValue(new Error('Update failed'))
+      mockFunction(mockLedgerService.resolveDid).mockRejectedValue(new Error('Update failed'))
 
-      const options: HederaDidUpdateOptions = {
+      const result = await registrar.update(mockAgentContext, {
         did,
         didDocumentOperation: 'setDidDocument',
         didDocument: {},
-      }
-
-      const result = await service.update(mockAgentContext as AgentContext, options)
+      })
 
       expect(mockAgentContext.config.logger.error).toHaveBeenCalledWith('Error updating DID', expect.any(Error))
       expect(result.didState.state).toBe('failed')
@@ -177,27 +171,29 @@ describe('HederaDidRegistrar', () => {
   })
 
   describe('deactivate', () => {
-    const did = 'did:hedera:123'
-
     it('should deactivate DID and save updated record successfully', async () => {
-      const didDocument = { id: did }
-      const deactivatedDidDocument = { id: did, deactivated: true }
+      const deactivatedDidDocument = { ...didDocument, deactivated: true }
 
       const foundDidRecord = {
         didDocument,
         keys: [{ didDocumentRelativeKeyId: 'key1' }],
-      }
+      } as unknown as DidRecord
 
-      mockLedgerService.resolveDid.mockResolvedValue({ didDocument, didDocumentMetadata: {} })
-      mockDidRepository.findCreatedDid.mockResolvedValue(foundDidRecord)
-      mockLedgerService.deactivateDid.mockResolvedValue({ didDocument: deactivatedDidDocument })
-      mockDidRepository.update.mockResolvedValue(undefined)
-
-      const options = {
+      mockFunction(mockLedgerService.resolveDid).mockResolvedValue({
+        didDocument,
+        didResolutionMetadata,
+        didDocumentMetadata: {},
+      })
+      mockFunction(mockDidRepository.findCreatedDid).mockResolvedValue(foundDidRecord)
+      mockFunction(mockLedgerService.deactivateDid).mockResolvedValue({
         did,
-      }
+        didDocument: deactivatedDidDocument,
+      })
+      mockFunction(mockDidRepository.update).mockResolvedValue(undefined)
 
-      const result = await service.deactivate(mockAgentContext as AgentContext, options)
+      const result = await registrar.deactivate(mockAgentContext, {
+        did,
+      })
 
       expect(mockLedgerService.resolveDid).toHaveBeenCalledWith(mockAgentContext, did)
       expect(mockDidRepository.findCreatedDid).toHaveBeenCalledWith(mockAgentContext, did)
@@ -214,28 +210,27 @@ describe('HederaDidRegistrar', () => {
       expect(result.didState.didDocument).toBeInstanceOf(Object)
     })
 
-    it('should return failed state if DID not found or deactivated', async () => {
-      mockLedgerService.resolveDid.mockResolvedValue({ didDocument: null, didDocumentMetadata: { deactivated: true } })
-      mockDidRepository.findCreatedDid.mockResolvedValue(null)
+    it('should return failed state if DID is deactivated', async () => {
+      mockFunction(mockLedgerService.resolveDid).mockResolvedValueOnce({
+        didDocument,
+        didResolutionMetadata,
+        didDocumentMetadata: { deactivated: true },
+      })
+      mockFunction(mockDidRepository.findCreatedDid).mockResolvedValue(null)
 
-      const options = {
+      const result = await registrar.deactivate(mockAgentContext, {
         did,
-      }
-
-      const result = await service.deactivate(mockAgentContext as AgentContext, options)
+      })
 
       expect(result.didState.state).toBe('failed')
-      if (result.didState.state === 'failed') expect(result.didState.reason).toBe('Did not found')
+      // @ts-ignore
+      expect(result.didState.reason).toBe('Did not found')
     })
 
     it('should handle error and return failed state', async () => {
-      mockLedgerService.resolveDid.mockRejectedValue(new Error('Deactivate failed'))
+      mockFunction(mockLedgerService.resolveDid).mockRejectedValue(new Error('Deactivate failed'))
 
-      const options = {
-        did,
-      }
-
-      const result = await service.deactivate(mockAgentContext as AgentContext, options)
+      const result = await registrar.deactivate(mockAgentContext, { did })
 
       expect(mockAgentContext.config.logger.error).toHaveBeenCalledWith('Error deactivating DID', expect.any(Error))
       expect(result.didState.state).toBe('failed')
@@ -247,11 +242,10 @@ describe('HederaDidRegistrar', () => {
   describe('concatKeys (private method)', () => {
     it('should concatenate keys without duplicates based on relativeKeyId', () => {
       const keys1 = [{ didDocumentRelativeKeyId: 'key1' }, { didDocumentRelativeKeyId: 'key2' }] as DidDocumentKey[]
-
       const keys2 = [{ didDocumentRelativeKeyId: 'key2' }, { didDocumentRelativeKeyId: 'key3' }] as DidDocumentKey[]
 
       // biome-ignore lint/suspicious/noExplicitAny: <explanation>
-      const result = (service as any).concatKeys(keys1, keys2)
+      const result = (registrar as any).concatKeys(keys1, keys2)
 
       expect(result).toHaveLength(3)
       expect(result).toEqual(
@@ -265,7 +259,7 @@ describe('HederaDidRegistrar', () => {
 
     it('should handle undefined arguments and return empty array', () => {
       // biome-ignore lint/suspicious/noExplicitAny: <explanation>
-      const result = (service as any).concatKeys(undefined, undefined)
+      const result = (registrar as any).concatKeys(undefined, undefined)
       expect(result).toEqual([])
     })
   })

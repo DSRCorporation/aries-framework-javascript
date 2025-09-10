@@ -173,8 +173,8 @@ importers:
   demo:
     dependencies:
       '@hiero-did-sdk/client':
-        specifier: 0.1.0
-        version: 0.1.0(bn.js@5.2.1)
+        specifier: 0.1.2
+        version: 0.1.2(bn.js@5.2.1)(react-native@0.79.4(@babel/core@7.27.7)(@react-native-community/cli@10.2.7(@babel/core@7.27.7))(react@18.3.1))
       '@hyperledger/anoncreds-nodejs':
         specifier: 'catalog:'
         version: 0.3.1
@@ -2565,10 +2565,6 @@ packages:
 
   '@hiero-did-sdk/cache@0.1.2':
     resolution: {integrity: sha512-stj/s2dZ6nPcbg+dXcQ1HiGR4nd/eHtZu3kxQ4PlXQ7HcwnMFMO+DZE1hdh8vwPVD/JCtUzy2BrPdJXQwIzhwA==}
-    engines: {node: '>=20'}
-
-  '@hiero-did-sdk/client@0.1.0':
-    resolution: {integrity: sha512-8EBsjVxxEZEdQKePenBCo1HXKRK/70p/XRgFPzWIplUE+2jbmfy7NGqx8tzihK0NlXpA17ojp4Pu5wZJONolmA==}
     engines: {node: '>=20'}
 
   '@hiero-did-sdk/client@0.1.2':
@@ -6137,7 +6133,6 @@ packages:
 
   metro-react-native-babel-preset@0.73.10:
     resolution: {integrity: sha512-1/dnH4EHwFb2RKEKx34vVDpUS3urt2WEeR8FYim+ogqALg4sTpG7yeQPxWpbgKATezt4rNfqAANpIyH19MS4BQ==}
-    deprecated: Use @react-native/babel-preset instead
     peerDependencies:
       '@babel/core': '*'
 
@@ -10522,14 +10517,6 @@ snapshots:
   '@hiero-did-sdk/cache@0.1.2(bn.js@5.2.1)(react-native@0.79.4(@babel/core@7.27.7)(@react-native-community/cli@10.2.7(@babel/core@7.27.7))(react@18.3.1))':
     dependencies:
       '@hiero-did-sdk/core': 0.1.2(bn.js@5.2.1)(react-native@0.79.4(@babel/core@7.27.7)(@react-native-community/cli@10.2.7(@babel/core@7.27.7))(react@18.3.1))
-    transitivePeerDependencies:
-      - bn.js
-      - expo-crypto
-      - react-native
-
-  '@hiero-did-sdk/client@0.1.0(bn.js@5.2.1)':
-    dependencies:
-      '@hashgraph/sdk': 2.70.0(bn.js@5.2.1)(react-native@0.79.4(@babel/core@7.27.7)(@react-native-community/cli@10.2.7(@babel/core@7.27.7))(react@18.3.1))
     transitivePeerDependencies:
       - bn.js
       - expo-crypto

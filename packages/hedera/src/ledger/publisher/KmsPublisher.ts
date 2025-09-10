@@ -8,8 +8,8 @@ import { createOrGetKey } from '../utils'
 export class KmsPublisher extends ClientPublisher {
   private readonly kms: KeyManagementApi
 
-  private keyId!: string
-  private submitPublicKey!: PublicKey
+  private keyId: string
+  private submitPublicKey: PublicKey
 
   constructor(
     agentContext: AgentContext,
@@ -28,7 +28,9 @@ export class KmsPublisher extends ClientPublisher {
 
   async setKeyId(keyId: string) {
     this.keyId = keyId
+
     const { publicJwk } = await createOrGetKey(this.kms, keyId)
+
     this.submitPublicKey = KeysUtility.fromBytes(
       Uint8Array.from(TypedArrayEncoder.fromBase64(publicJwk.x))
     ).toPublicKey()
@@ -39,10 +41,6 @@ export class KmsPublisher extends ClientPublisher {
   }
 
   async publish(transaction: Transaction): Promise<TransactionReceipt> {
-    if (!this.submitPublicKey) {
-      throw new Error('Need to setup the KeyId')
-    }
-
     const frozenTransaction = transaction.freezeWith(this.client)
 
     await frozenTransaction.signWith(this.submitPublicKey, async (message) => {
@@ -52,7 +50,6 @@ export class KmsPublisher extends ClientPublisher {
 
     const response = await transaction.execute(this.client)
 
-    const receipt: TransactionReceipt = await response.getReceipt(this.client)
-    return receipt
+    return response.getReceipt(this.client)
   }
 }

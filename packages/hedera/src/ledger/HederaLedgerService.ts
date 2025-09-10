@@ -45,6 +45,7 @@ import { HederaModuleConfig } from '../HederaModuleConfig'
 import { CredoCache } from './cache/CredoCache'
 import { KmsPublisher } from './publisher/KmsPublisher'
 import { createOrGetKey, getMultibasePublicKey } from './utils'
+import { AskarKeyManagementService } from '@credo-ts/askar'
 
 export interface HederaDidCreateOptions extends DidCreateOptions {
   method: 'hedera'
@@ -80,8 +81,6 @@ export class HederaLedgerService {
   public constructor(private readonly config: HederaModuleConfig) {
     this.clientService = new HederaClientService(config.options)
   }
-
-  /* Dids */
 
   public async resolveDid(agentContext: AgentContext, did: string): Promise<DIDResolution> {
     const topicReader = this.getHederaHcsTopicReader(agentContext)
@@ -158,14 +157,12 @@ export class HederaLedgerService {
       throw new Error('DidDocumentOperation is required')
     }
 
-    // Check root key presents
-    const rootKey = secret?.keys?.find((k) => k.didDocumentRelativeKeyId === DID_ROOT_KEY_ID)
+    const rootKey = secret?.keys?.find((key) => key.didDocumentRelativeKeyId === DID_ROOT_KEY_ID)
     if (!rootKey?.kmsKeyId) {
       throw new Error('The root key not found in the KMS')
     }
 
-    // Check all required keys presents
-    this.checkRequiredDidDocumentKeys(didDocument, secret?.keys ?? [])
+    this.validateDidUpdateKeys(didDocument, secret?.keys ?? [])
 
     const { network: networkName } = parseDID(did)
     return this.clientService.withClient({ networkName }, async (client: Client) => {
@@ -223,7 +220,7 @@ export class HederaLedgerService {
 
     const kms = agentContext.dependencyManager.resolve(Kms.KeyManagementApi)
 
-    const rootKey = secret?.keys?.find((k) => k.didDocumentRelativeKeyId === DID_ROOT_KEY_ID)
+    const rootKey = secret?.keys?.find((key) => key.didDocumentRelativeKeyId === DID_ROOT_KEY_ID)
     if (!rootKey?.kmsKeyId) {
       throw new Error('The root key not found in the KMS')
     }
@@ -263,55 +260,53 @@ export class HederaLedgerService {
     })
   }
 
-  /* Anoncreds*/
-
-  async getSchema(agentContext: AgentContext, schemaId: string): Promise<GetSchemaReturn> {
-    const registry = this.getHederaAnoncredsRegistry(agentContext)
-    return await registry.getSchema(schemaId)
+  getSchema(agentContext: AgentContext, schemaId: string): Promise<GetSchemaReturn> {
+    const registry = this.getHederaAnonCredsRegistry(agentContext)
+    return registry.getSchema(schemaId)
   }
 
   async registerSchema(agentContext: AgentContext, options: RegisterSchemaOptions): Promise<RegisterSchemaReturn> {
-    const registry = this.getHederaAnoncredsRegistry(agentContext)
+    const registry = this.getHederaAnonCredsRegistry(agentContext)
     const issuerPrivateKey = await this.getIssuerPrivateKey(agentContext, options.schema.issuerId)
-    return await registry.registerSchema({ ...options, issuerKeyDer: issuerPrivateKey.toStringDer() })
+    return registry.registerSchema({ ...options, issuerKeyDer: issuerPrivateKey.toStringDer() })
   }
 
-  async getCredentialDefinition(
+  getCredentialDefinition(
     agentContext: AgentContext,
     credentialDefinitionId: string
   ): Promise<GetCredentialDefinitionReturn> {
-    const registry = this.getHederaAnoncredsRegistry(agentContext)
-    return await registry.getCredentialDefinition(credentialDefinitionId)
+    const registry = this.getHederaAnonCredsRegistry(agentContext)
+    return registry.getCredentialDefinition(credentialDefinitionId)
   }
 
   async registerCredentialDefinition(
     agentContext: AgentContext,
     options: RegisterCredentialDefinitionOptions
   ): Promise<RegisterCredentialDefinitionReturn> {
-    const registry = this.getHederaAnoncredsRegistry(agentContext)
+    const registry = this.getHederaAnonCredsRegistry(agentContext)
     const issuerPrivateKey = await this.getIssuerPrivateKey(agentContext, options.credentialDefinition.issuerId)
     return await registry.registerCredentialDefinition({
       ...options,
       issuerKeyDer: issuerPrivateKey.toStringDer(),
       options: {
-        supportRevocation: options.options?.supportRevocation === true,
+        supportRevocation: !!options.options?.supportRevocation,
       },
     })
   }
 
-  async getRevocationRegistryDefinition(
+  getRevocationRegistryDefinition(
     agentContext: AgentContext,
     revocationRegistryDefinitionId: string
   ): Promise<GetRevocationRegistryDefinitionReturn> {
-    const registry = this.getHederaAnoncredsRegistry(agentContext)
-    return await registry.getRevocationRegistryDefinition(revocationRegistryDefinitionId)
+    const registry = this.getHederaAnonCredsRegistry(agentContext)
+    return registry.getRevocationRegistryDefinition(revocationRegistryDefinitionId)
   }
 
   async registerRevocationRegistryDefinition(
     agentContext: AgentContext,
     options: RegisterRevocationRegistryDefinitionOptions
   ): Promise<RegisterRevocationRegistryDefinitionReturn> {
-    const registry = this.getHederaAnoncredsRegistry(agentContext)
+    const registry = this.getHederaAnonCredsRegistry(agentContext)
     const issuerPrivateKey = await this.getIssuerPrivateKey(agentContext, options.revocationRegistryDefinition.issuerId)
     return await registry.registerRevocationRegistryDefinition({
       ...options,
@@ -319,28 +314,26 @@ export class HederaLedgerService {
     })
   }
 
-  async getRevocationStatusList(
+  getRevocationStatusList(
     agentContext: AgentContext,
     revocationRegistryId: string,
     timestamp: number
   ): Promise<GetRevocationStatusListReturn> {
-    const registry = this.getHederaAnoncredsRegistry(agentContext)
-    return await registry.getRevocationStatusList(revocationRegistryId, timestamp)
+    const registry = this.getHederaAnonCredsRegistry(agentContext)
+    return registry.getRevocationStatusList(revocationRegistryId, timestamp)
   }
 
   async registerRevocationStatusList(
     agentContext: AgentContext,
     options: RegisterRevocationStatusListOptions
   ): Promise<RegisterRevocationStatusListReturn> {
-    const registry = this.getHederaAnoncredsRegistry(agentContext)
+    const registry = this.getHederaAnonCredsRegistry(agentContext)
     const issuerPrivateKey = await this.getIssuerPrivateKey(agentContext, options.revocationStatusList.issuerId)
     return await registry.registerRevocationStatusList({
       ...options,
       issuerKeyDer: issuerPrivateKey.toStringDer(),
     })
   }
-
-  // Private methods
 
   private getHederaHcsTopicReader(agentContext: AgentContext): TopicReaderHederaHcs {
     const cache = this.config.options.cache ?? new CredoCache(agentContext)
@@ -353,84 +346,81 @@ export class HederaLedgerService {
     return new KmsPublisher(agentContext, client, key)
   }
 
-  private getHederaAnoncredsRegistry(agentContext: AgentContext): HederaAnoncredsRegistry {
+  private getHederaAnonCredsRegistry(agentContext: AgentContext): HederaAnoncredsRegistry {
     const cache = this.config.options.cache ?? new CredoCache(agentContext)
     return new HederaAnoncredsRegistry({ ...this.config.options, cache })
   }
 
-  private isDidRootKeyId(id: string): boolean {
-    return id.endsWith(DID_ROOT_KEY_ID)
-  }
-
-  private getId(item: { id: string } | string): string {
+  private getDidDocumentEntryId(item: { id: string } | string): string {
     const id = typeof item === 'string' ? item : item.id
     return id.includes('#') ? `#${id.split('#').pop()}` : id
   }
 
-  // biome-ignore lint/suspicious/noExplicitAny: <explanation>
-  private getDiff(currentArray?: any[], newArray?: any[]) {
-    const currentList = currentArray || []
-    const newList = newArray || []
+  private getDidDocumentPropertyDiff(
+    originalEntries: Array<string | { id: string }> = [],
+    updatedEntries: Array<string | { id: string }> = []
+  ) {
+    const originalIds = new Set(originalEntries.map((item) => this.getDidDocumentEntryId(item)))
+    const updatedIds = new Set(updatedEntries.map((item) => this.getDidDocumentEntryId(item)))
 
-    const currentIds = new Set(currentList.map((item) => this.getId(item)))
-    const newIds = new Set(newList.map((item) => this.getId(item)))
+    const unchangedEntries = updatedEntries.filter((item) => originalIds.has(this.getDidDocumentEntryId(item)))
+    const newEntries = updatedEntries.filter((item) => !originalIds.has(this.getDidDocumentEntryId(item)))
+    const removedEntries = originalEntries.filter((item) => !updatedIds.has(this.getDidDocumentEntryId(item)))
 
-    const existingItems = newList.filter((item) => currentIds.has(this.getId(item))).map((item) => item.id)
-    const newItems = newList.filter((item) => !currentIds.has(this.getId(item)))
-    const missingItems = currentList.filter((item) => !newIds.has(this.getId(item)))
-
-    return { existingItems, newItems, missingItems }
+    return { unchangedEntries, newEntries, removedEntries }
   }
 
   private async signRequests(
-    // biome-ignore lint/suspicious/noExplicitAny: <explanation>
-    signingRequests: Record<string, any>,
+    signingRequests: Record<string, { serializedPayload: Uint8Array }>,
     kms: KeyManagementApi,
     keyId: string
   ): Promise<Record<string, Uint8Array>> {
     const result: Record<string, Uint8Array> = {}
 
     for (const [key, request] of Object.entries(signingRequests)) {
-      const signResult = await kms.sign({
+      const { signature } = await kms.sign({
         keyId,
         data: request.serializedPayload,
         algorithm: 'EdDSA',
       })
-      result[key] = signResult.signature
+      result[key] = signature
     }
 
     return result
   }
 
-  private checkRequiredDidDocumentKeys(didDocument: DidDocument | Partial<DidDocument>, keys: DidDocumentKey[]) {
-    const fields = [
+  private validateDidUpdateKeys(didDocument: DidDocument | Partial<DidDocument>, keys: DidDocumentKey[]) {
+    const verificationRelationships = [
       'verificationMethod',
       'assertionMethod',
       'authentication',
       'capabilityDelegation',
       'capabilityInvocation',
       'keyAgreement',
-    ]
-    for (const field of fields) {
-      // biome-ignore lint/suspicious/noExplicitAny: <explanation>
-      const fieldValue = (didDocument as any)[field]
-      if (fieldValue) {
-        const fieldValues = Array.isArray(fieldValue) ? fieldValue : [fieldValue]
+    ] as const
 
-        for (const value of fieldValues) {
-          const id = this.getId(value)
-          if (!keys.some((key) => key.didDocumentRelativeKeyId === id)) {
-            throw new Error(`Key ${id} from ${field} not found in keys`)
-          }
+    for (const relationship of verificationRelationships) {
+      const entries = didDocument[relationship]
+      if (!entries) continue
+
+      for (const entry of entries) {
+        const id = this.getDidDocumentEntryId(entry)
+        if (!keys.some((key) => key.didDocumentRelativeKeyId === id)) {
+          throw new Error(
+            `Key ${id} is present in updated DID Document, but missing from DID record keys and DID update arguments`
+          )
         }
       }
     }
   }
 
-  // biome-ignore lint/suspicious/noExplicitAny: <explanation>
-  private prepareDidUpdates(currentDoc: any, newDoc: any, operation: string): DIDUpdateBuilder {
+  private prepareDidUpdates(
+    originalDocument: DidDocument | Partial<DidDocument>,
+    newDocument: DidDocument | Partial<DidDocument>,
+    operation: string
+  ): DIDUpdateBuilder {
     const builder = new DIDUpdateBuilder()
-    const fields = [
+    const properties = [
       'service',
       'verificationMethod',
       'assertionMethod',
@@ -438,37 +428,43 @@ export class HederaLedgerService {
       'capabilityDelegation',
       'capabilityInvocation',
       'keyAgreement',
-    ]
+    ] as const
 
-    for (const field of fields) {
-      const { existingItems, newItems, missingItems } = this.getDiff(currentDoc[field], newDoc[field])
+    for (const property of properties) {
+      const { unchangedEntries, newEntries, removedEntries } = this.getDidDocumentPropertyDiff(
+        originalDocument[property],
+        newDocument[property]
+      )
 
       if (operation === 'setDidDocument') {
-        for (const item of missingItems) {
-          if (!this.isDidRootKeyId(typeof item === 'string' ? item : item.id)) {
-            this.getUpdateMethod(builder, field, 'remove')(this.getId(item))
-          }
+        for (const entry of removedEntries) {
+          const entryId = this.getDidDocumentEntryId(entry)
+          if (entryId === DID_ROOT_KEY_ID) continue
+          const builderMethod = this.getUpdateMethod(builder, property, 'remove')
+          builderMethod(entryId)
         }
-        for (const item of newItems) {
-          if (!this.isDidRootKeyId(typeof item === 'string' ? item : item.id)) {
-            this.getUpdateMethod(builder, field, 'add')(item)
-          }
+
+        for (const entry of newEntries) {
+          if (this.getDidDocumentEntryId(entry) === DID_ROOT_KEY_ID) continue
+          const builderMethod = this.getUpdateMethod(builder, property, 'add')
+          builderMethod(entry)
         }
       }
 
       if (operation === 'addToDidDocument') {
-        for (const item of newItems) {
-          if (!this.isDidRootKeyId(typeof item === 'string' ? item : item.id)) {
-            this.getUpdateMethod(builder, field, 'add')(item)
-          }
+        for (const entry of newEntries) {
+          if (this.getDidDocumentEntryId(entry) === DID_ROOT_KEY_ID) continue
+          const builderMethod = this.getUpdateMethod(builder, property, 'add')
+          builderMethod(entry)
         }
       }
 
       if (operation === 'removeFromDidDocument') {
-        for (const item of existingItems) {
-          if (!this.isDidRootKeyId(typeof item === 'string' ? item : item.id)) {
-            this.getUpdateMethod(builder, field, 'remove')(item)
-          }
+        for (const entry of unchangedEntries) {
+          const entryId = this.getDidDocumentEntryId(entry)
+          if (entryId === DID_ROOT_KEY_ID) continue
+          const builderMethod = this.getUpdateMethod(builder, property, 'remove')
+          builderMethod(entryId)
         }
       }
     }
@@ -478,14 +474,12 @@ export class HederaLedgerService {
 
   private getUpdateMethod(
     builder: DIDUpdateBuilder,
-    field: string,
+    property: string,
     action: 'add' | 'remove'
     // biome-ignore lint/suspicious/noExplicitAny: <explanation>
   ): (item: any) => DIDUpdateBuilder {
     // biome-ignore lint/suspicious/noExplicitAny: <explanation>
-    type MethodDelegate = (item: any) => DIDUpdateBuilder
-
-    const methodMap: Record<string, Record<'add' | 'remove', MethodDelegate>> = {
+    const methodMap: Record<string, Record<'add' | 'remove', (item: any) => DIDUpdateBuilder>> = {
       service: {
         add: (item: Service) => builder.addService(item),
         remove: (id: string) => builder.removeService(id),
@@ -516,12 +510,12 @@ export class HederaLedgerService {
       },
     }
 
-    const fieldMethods = methodMap[field]
-    if (!fieldMethods) {
+    const propertyMethods = methodMap[property]
+    if (!propertyMethods) {
       return () => builder
     }
 
-    return fieldMethods[action]
+    return propertyMethods[action]
   }
 
   private async getIssuerPrivateKey(agentContext: AgentContext, issuerId: string): Promise<PrivateKey> {
@@ -529,13 +523,16 @@ export class HederaLedgerService {
     const kms = agentContext.dependencyManager.resolve(Kms.KeyManagementApi)
 
     const didRecord = await didRepository.findCreatedDid(agentContext, issuerId)
-    const rootKey = didRecord?.keys?.find((k) => k.didDocumentRelativeKeyId === DID_ROOT_KEY_ID)
+    const rootKey = didRecord?.keys?.find((key) => key.didDocumentRelativeKeyId === DID_ROOT_KEY_ID)
     if (!rootKey?.kmsKeyId) {
       throw new Error('The root key not found in the KMS')
     }
 
     // @ts-ignore
-    const keyManagementService = kms.getKms(agentContext) as AskarKeyManagementService
+    const keyManagementService = kms.getKms(
+      agentContext,
+      AskarKeyManagementService.backend
+    ) as AskarKeyManagementService
     // @ts-ignore
     const keyInfo = await keyManagementService.getKeyAsserted(agentContext, rootKey.kmsKeyId)
 

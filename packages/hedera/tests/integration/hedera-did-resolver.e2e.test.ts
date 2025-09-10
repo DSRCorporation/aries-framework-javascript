@@ -3,7 +3,7 @@ import { HederaDidCreateOptions } from '../../src/ledger/HederaLedgerService'
 import { getHederaAgent } from './utils'
 
 describe('Hedera DID resolver', () => {
-  const logger = new ConsoleLogger(LogLevel.fatal)
+  const logger = new ConsoleLogger(LogLevel.error)
 
   let agent: Agent
   let did: string
@@ -28,7 +28,7 @@ describe('Hedera DID resolver', () => {
     await agent.shutdown()
   })
 
-  it('should resolve a did:hedera did from local testnet', async () => {
+  it('should resolve a did:hedera did from testnet', async () => {
     const resolveResult = await agent.dids.resolve(did)
 
     expect(JsonTransformer.toJSON(resolveResult)).toMatchObject({

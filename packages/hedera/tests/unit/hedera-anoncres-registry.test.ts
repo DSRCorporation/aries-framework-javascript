@@ -11,55 +11,46 @@ import {
   RegisterRevocationStatusListReturn,
   RegisterSchemaOptions,
   RegisterSchemaReturn,
-  RegisterSchemaReturnStateFinished,
 } from '@credo-ts/anoncreds'
 import { AgentContext } from '@credo-ts/core'
 import { HederaAnonCredsRegistry } from '@credo-ts/hedera'
 import { HederaLedgerService } from '../../src/ledger/HederaLedgerService'
+import { mockFunction } from '../../../core/tests/helpers'
 
-const createMockAgentContext = () =>
-  ({
-    dependencyManager: {
-      resolve: jest.fn(),
+const mockLedgerService = {
+  registerSchema: jest.fn(),
+  getSchema: jest.fn(),
+  registerCredentialDefinition: jest.fn(),
+  getCredentialDefinition: jest.fn(),
+  registerRevocationRegistryDefinition: jest.fn(),
+  getRevocationRegistryDefinition: jest.fn(),
+  registerRevocationStatusList: jest.fn(),
+  getRevocationStatusList: jest.fn(),
+} as unknown as HederaLedgerService
+
+const mockAgentContext = {
+  dependencyManager: {
+    resolve: jest.fn().mockImplementation((cls) => {
+      if (cls === HederaLedgerService) return mockLedgerService
+    }),
+  },
+  config: {
+    logger: {
+      trace: jest.fn(),
+      debug: jest.fn(),
+      error: jest.fn(),
     },
-    config: {
-      logger: {
-        trace: jest.fn(),
-        debug: jest.fn(),
-        error: jest.fn(),
-      },
-    },
-  }) as unknown as AgentContext
+  },
+} as unknown as AgentContext
 
 describe('HederaAnonCredsRegistry', () => {
-  let service: HederaAnonCredsRegistry
-  let mockAgentContext: AgentContext
-  // biome-ignore lint/suspicious/noExplicitAny: <explanation>
-  let mockLedgerService: any
-
-  beforeEach(() => {
-    mockAgentContext = createMockAgentContext()
-    mockLedgerService = {
-      registerSchema: jest.fn(),
-      getSchema: jest.fn(),
-      registerCredentialDefinition: jest.fn(),
-      getCredentialDefinition: jest.fn(),
-      registerRevocationRegistryDefinition: jest.fn(),
-      getRevocationRegistryDefinition: jest.fn(),
-      registerRevocationStatusList: jest.fn(),
-      getRevocationStatusList: jest.fn(),
-    }
-    // @ts-ignore
-    mockAgentContext.dependencyManager.resolve.mockReturnValue(mockLedgerService)
-
-    service = new HederaAnonCredsRegistry()
-  })
+  const registry: HederaAnonCredsRegistry = new HederaAnonCredsRegistry()
 
   describe('registerSchema', () => {
     const options: RegisterSchemaOptions = {
       schema: {
-        issuerId: 'did:hedera:123',
-        name: 'schemaName',
+        issuerId: 'issuer-did',
+        name: 'schema-name',
         version: '1.0',
         attrNames: [],
       },
@@ -72,11 +63,13 @@ describe('HederaAnonCredsRegistry', () => {
         registrationMetadata: {},
         schemaState: {
           state: 'finished',
-        } as RegisterSchemaReturnStateFinished,
+          schema: options.schema,
+          schemaId: expect.any(String),
+        },
       }
-      mockLedgerService.registerSchema.mockResolvedValue(expected)
+      mockFunction(mockLedgerService.registerSchema).mockResolvedValue(expected)
 
-      const result = await service.registerSchema(mockAgentContext, options)
+      const result = await registry.registerSchema(mockAgentContext, options)
 
       expect(mockAgentContext.config.logger.trace).toHaveBeenCalledWith('Registering schema on Hedera ledger')
       expect(mockAgentContext.dependencyManager.resolve).toHaveBeenCalledWith(
@@ -88,9 +81,9 @@ describe('HederaAnonCredsRegistry', () => {
 
     it('should catch error and return failed state', async () => {
       const error = new Error('fail')
-      mockLedgerService.registerSchema.mockRejectedValue(error)
+      mockFunction(mockLedgerService.registerSchema).mockRejectedValue(error)
 
-      const result = await service.registerSchema(mockAgentContext, options)
+      const result = await registry.registerSchema(mockAgentContext, options)
 
       expect(mockAgentContext.config.logger.debug).toHaveBeenCalledWith(
         `Error registering schema for did '${options.schema.issuerId}'`,
@@ -102,34 +95,34 @@ describe('HederaAnonCredsRegistry', () => {
   })
 
   describe('getSchema', () => {
-    const schemaId = 'schema-id-123'
+    const mockSchemaId = 'mock-schema-id'
 
     it('should call ledgerService.getSchema and return result on success', async () => {
       const expected: GetSchemaReturn = {
-        schemaId: schemaId,
+        schemaId: mockSchemaId,
         resolutionMetadata: {},
         schemaMetadata: {},
       }
-      mockLedgerService.getSchema.mockResolvedValue(expected)
+      mockFunction(mockLedgerService.getSchema).mockResolvedValue(expected)
 
-      const result = await service.getSchema(mockAgentContext, schemaId)
+      const result = await registry.getSchema(mockAgentContext, mockSchemaId)
 
       expect(mockAgentContext.config.logger.trace).toHaveBeenCalledWith(
-        `Resolving schema '${schemaId}' from Hedera ledger`
+        `Resolving schema '${mockSchemaId}' from Hedera ledger`
       )
-      expect(mockLedgerService.getSchema).toHaveBeenCalledWith(mockAgentContext, schemaId)
+      expect(mockLedgerService.getSchema).toHaveBeenCalledWith(mockAgentContext, mockSchemaId)
       expect(result).toEqual(expected)
     })
 
     it('should catch error and return notFound error state', async () => {
       const error = new Error('not found')
-      mockLedgerService.getSchema.mockRejectedValue(error)
+      mockFunction(mockLedgerService.getSchema).mockRejectedValue(error)
 
-      const result = await service.getSchema(mockAgentContext, schemaId)
+      const result = await registry.getSchema(mockAgentContext, mockSchemaId)
 
       expect(mockAgentContext.config.logger.error).toHaveBeenCalledWith(
-        `Error retrieving schema '${schemaId}'`,
-        expect.objectContaining({ error, schemaId })
+        `Error retrieving schema '${mockSchemaId}'`,
+        expect.objectContaining({ error, schemaId: mockSchemaId })
       )
       expect(result.resolutionMetadata.error).toBe('notFound')
       expect(result.resolutionMetadata.message).toContain('not found')
@@ -170,9 +163,9 @@ describe('HederaAnonCredsRegistry', () => {
           credentialDefinitionId: 'did:hedera:issuerId',
         },
       }
-      mockLedgerService.registerCredentialDefinition.mockResolvedValue(expected)
+      mockFunction(mockLedgerService.registerCredentialDefinition).mockResolvedValue(expected)
 
-      const result = await service.registerCredentialDefinition(mockAgentContext, options)
+      const result = await registry.registerCredentialDefinition(mockAgentContext, options)
 
       expect(mockAgentContext.config.logger.trace).toHaveBeenCalledWith(
         'Registering credential definition on Hedera ledger'
@@ -183,9 +176,9 @@ describe('HederaAnonCredsRegistry', () => {
 
     it('should catch error and return failed state', async () => {
       const error = new Error('fail')
-      mockLedgerService.registerCredentialDefinition.mockRejectedValue(error)
+      mockFunction(mockLedgerService.registerCredentialDefinition).mockRejectedValue(error)
 
-      const result = await service.registerCredentialDefinition(mockAgentContext, options)
+      const result = await registry.registerCredentialDefinition(mockAgentContext, options)
 
       expect(mockAgentContext.config.logger.error).toHaveBeenCalledWith(
         `Error registering credential definition for did '${options.credentialDefinition.issuerId}'`,
@@ -198,34 +191,37 @@ describe('HederaAnonCredsRegistry', () => {
   })
 
   describe('getCredentialDefinition', () => {
-    const credentialDefinitionId = 'cred-def-123'
+    const mockCredentialDefinitionId = 'mock-cred-def-id'
 
     it('should call ledgerService.getCredentialDefinition and return result on success', async () => {
       const expected: GetCredentialDefinitionReturn = {
-        credentialDefinitionId,
+        credentialDefinitionId: mockCredentialDefinitionId,
         resolutionMetadata: {},
         credentialDefinitionMetadata: {},
       }
-      mockLedgerService.getCredentialDefinition.mockResolvedValue(expected)
+      mockFunction(mockLedgerService.getCredentialDefinition).mockResolvedValue(expected)
 
-      const result = await service.getCredentialDefinition(mockAgentContext, credentialDefinitionId)
+      const result = await registry.getCredentialDefinition(mockAgentContext, mockCredentialDefinitionId)
 
       expect(mockAgentContext.config.logger.trace).toHaveBeenCalledWith(
-        `Resolving credential definition '${credentialDefinitionId}' from Hedera ledger`
+        `Resolving credential definition '${mockCredentialDefinitionId}' from Hedera ledger`
       )
-      expect(mockLedgerService.getCredentialDefinition).toHaveBeenCalledWith(mockAgentContext, credentialDefinitionId)
+      expect(mockLedgerService.getCredentialDefinition).toHaveBeenCalledWith(
+        mockAgentContext,
+        mockCredentialDefinitionId
+      )
       expect(result).toEqual(expected)
     })
 
     it('should catch error and return notFound error state', async () => {
       const error = new Error('not found')
-      mockLedgerService.getCredentialDefinition.mockRejectedValue(error)
+      mockFunction(mockLedgerService.getCredentialDefinition).mockRejectedValue(error)
 
-      const result = await service.getCredentialDefinition(mockAgentContext, credentialDefinitionId)
+      const result = await registry.getCredentialDefinition(mockAgentContext, mockCredentialDefinitionId)
 
       expect(mockAgentContext.config.logger.error).toHaveBeenCalledWith(
-        `Error retrieving credential definition '${credentialDefinitionId}'`,
-        expect.objectContaining({ error, credentialDefinitionId })
+        `Error retrieving credential definition '${mockCredentialDefinitionId}'`,
+        expect.objectContaining({ error, credentialDefinitionId: mockCredentialDefinitionId })
       )
       expect(result.resolutionMetadata.error).toBe('notFound')
       expect(result.resolutionMetadata.message).toContain('not found')
@@ -278,9 +274,9 @@ describe('HederaAnonCredsRegistry', () => {
           },
         },
       }
-      mockLedgerService.registerRevocationRegistryDefinition.mockResolvedValue(expected)
+      mockFunction(mockLedgerService.registerRevocationRegistryDefinition).mockResolvedValue(expected)
 
-      const result = await service.registerRevocationRegistryDefinition(mockAgentContext, options)
+      const result = await registry.registerRevocationRegistryDefinition(mockAgentContext, options)
 
       expect(mockAgentContext.config.logger.trace).toHaveBeenCalledWith(
         `Registering revocation registry definition for '${options.revocationRegistryDefinition.credDefId}' on Hedera ledger`
@@ -291,9 +287,9 @@ describe('HederaAnonCredsRegistry', () => {
 
     it('should catch error and return failed state', async () => {
       const error = new Error('fail')
-      mockLedgerService.registerRevocationRegistryDefinition.mockRejectedValue(error)
+      mockFunction(mockLedgerService.registerRevocationRegistryDefinition).mockRejectedValue(error)
 
-      const result = await service.registerRevocationRegistryDefinition(mockAgentContext, options)
+      const result = await registry.registerRevocationRegistryDefinition(mockAgentContext, options)
 
       expect(mockAgentContext.config.logger.error).toHaveBeenCalledWith(
         `Error registering revocation registry definition for did '${options.revocationRegistryDefinition.issuerId}'`,
@@ -306,37 +302,43 @@ describe('HederaAnonCredsRegistry', () => {
   })
 
   describe('getRevocationRegistryDefinition', () => {
-    const revocationRegistryDefinitionId = 'revRegDef123'
+    const mockRevocationRegistryDefinitionId = 'mock-rev-reg-def-id'
 
     it('should call ledgerService.getRevocationRegistryDefinition and return result on success', async () => {
       const expected: GetRevocationRegistryDefinitionReturn = {
-        revocationRegistryDefinitionId,
+        revocationRegistryDefinitionId: mockRevocationRegistryDefinitionId,
         resolutionMetadata: {},
         revocationRegistryDefinitionMetadata: {},
       }
-      mockLedgerService.getRevocationRegistryDefinition.mockResolvedValue(expected)
+      mockFunction(mockLedgerService.getRevocationRegistryDefinition).mockResolvedValue(expected)
 
-      const result = await service.getRevocationRegistryDefinition(mockAgentContext, revocationRegistryDefinitionId)
+      const result = await registry.getRevocationRegistryDefinition(
+        mockAgentContext,
+        mockRevocationRegistryDefinitionId
+      )
 
       expect(mockAgentContext.config.logger.trace).toHaveBeenCalledWith(
-        `Resolving revocation registry definition for '${revocationRegistryDefinitionId}' from Hedera ledger`
+        `Resolving revocation registry definition for '${mockRevocationRegistryDefinitionId}' from Hedera ledger`
       )
       expect(mockLedgerService.getRevocationRegistryDefinition).toHaveBeenCalledWith(
         mockAgentContext,
-        revocationRegistryDefinitionId
+        mockRevocationRegistryDefinitionId
       )
       expect(result).toEqual(expected)
     })
 
     it('should catch error and return notFound error state', async () => {
       const error = new Error('not found')
-      mockLedgerService.getRevocationRegistryDefinition.mockRejectedValue(error)
+      mockFunction(mockLedgerService.getRevocationRegistryDefinition).mockRejectedValue(error)
 
-      const result = await service.getRevocationRegistryDefinition(mockAgentContext, revocationRegistryDefinitionId)
+      const result = await registry.getRevocationRegistryDefinition(
+        mockAgentContext,
+        mockRevocationRegistryDefinitionId
+      )
 
       expect(mockAgentContext.config.logger.error).toHaveBeenCalledWith(
-        `Error retrieving revocation registry definition '${revocationRegistryDefinitionId}'`,
-        expect.objectContaining({ error, revocationRegistryDefinitionId })
+        `Error retrieving revocation registry definition '${mockRevocationRegistryDefinitionId}'`,
+        expect.objectContaining({ error, revocationRegistryDefinitionId: mockRevocationRegistryDefinitionId })
       )
       expect(result.resolutionMetadata.error).toBe('notFound')
       expect(result.resolutionMetadata.message).toContain('not found')
@@ -369,9 +371,9 @@ describe('HederaAnonCredsRegistry', () => {
           },
         },
       }
-      mockLedgerService.registerRevocationStatusList.mockResolvedValue(expected)
+      mockFunction(mockLedgerService.registerRevocationStatusList).mockResolvedValue(expected)
 
-      const result = await service.registerRevocationStatusList(mockAgentContext, options)
+      const result = await registry.registerRevocationStatusList(mockAgentContext, options)
 
       expect(mockAgentContext.config.logger.trace).toHaveBeenCalledWith(
         `Registering revocation status list for '${options.revocationStatusList.revRegDefId}' on Hedera ledger`
@@ -382,9 +384,9 @@ describe('HederaAnonCredsRegistry', () => {
 
     it('should catch error and return failed state', async () => {
       const error = new Error('fail')
-      mockLedgerService.registerRevocationStatusList.mockRejectedValue(error)
+      mockFunction(mockLedgerService.registerRevocationStatusList).mockRejectedValue(error)
 
-      const result = await service.registerRevocationStatusList(mockAgentContext, options)
+      const result = await registry.registerRevocationStatusList(mockAgentContext, options)
 
       expect(mockAgentContext.config.logger.error).toHaveBeenCalledWith(
         `Error registering revocation status list for did '${options.revocationStatusList.issuerId}'`,
@@ -397,7 +399,7 @@ describe('HederaAnonCredsRegistry', () => {
   })
 
   describe('getRevocationStatusList', () => {
-    const revocationRegistryId = 'revRegId123'
+    const mockRevocationRegistryId = 'mock-rev-reg-def-id'
     const timestamp = 1234567890
 
     it('should call ledgerService.getRevocationStatusList and return result on success', async () => {
@@ -405,16 +407,16 @@ describe('HederaAnonCredsRegistry', () => {
         resolutionMetadata: {},
         revocationStatusListMetadata: {},
       }
-      mockLedgerService.getRevocationStatusList.mockResolvedValue(expected)
+      mockFunction(mockLedgerService.getRevocationStatusList).mockResolvedValue(expected)
 
-      const result = await service.getRevocationStatusList(mockAgentContext, revocationRegistryId, timestamp)
+      const result = await registry.getRevocationStatusList(mockAgentContext, mockRevocationRegistryId, timestamp)
 
       expect(mockAgentContext.config.logger.trace).toHaveBeenCalledWith(
-        `Resolving revocation status for for '${revocationRegistryId}' from Hedera ledger`
+        `Resolving revocation status for for '${mockRevocationRegistryId}' from Hedera ledger`
       )
       expect(mockLedgerService.getRevocationStatusList).toHaveBeenCalledWith(
         mockAgentContext,
-        revocationRegistryId,
+        mockRevocationRegistryId,
         timestamp * 1000
       )
       expect(result).toEqual(expected)
@@ -422,13 +424,13 @@ describe('HederaAnonCredsRegistry', () => {
 
     it('should catch error and return notFound error state', async () => {
       const error = new Error('not found')
-      mockLedgerService.getRevocationStatusList.mockRejectedValue(error)
+      mockFunction(mockLedgerService.getRevocationStatusList).mockRejectedValue(error)
 
-      const result = await service.getRevocationStatusList(mockAgentContext, revocationRegistryId, timestamp)
+      const result = await registry.getRevocationStatusList(mockAgentContext, mockRevocationRegistryId, timestamp)
 
       expect(mockAgentContext.config.logger.error).toHaveBeenCalledWith(
-        `Error retrieving revocation registry status list '${revocationRegistryId}'`,
-        expect.objectContaining({ error, revocationRegistryId })
+        `Error retrieving revocation registry status list '${mockRevocationRegistryId}'`,
+        expect.objectContaining({ error, revocationRegistryId: mockRevocationRegistryId })
       )
       expect(result.resolutionMetadata.error).toBe('notFound')
       expect(result.resolutionMetadata.message).toContain('not found')

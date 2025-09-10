@@ -9,9 +9,8 @@ describe('getMultibasePublicKey', () => {
       crv: 'Ed25519',
       x: base64X,
     }
-    // Expect base64 'dGVzdGtleQ==' to be decoded into Uint8Array
-    // and then encoded into base58 string starting with 'z'
     const multibaseKey = getMultibasePublicKey(publicJwk as KmsJwkPublicOkp & { crv: 'Ed25519' })
+
     expect(multibaseKey.startsWith('z')).toBe(true)
     expect(typeof multibaseKey).toBe('string')
   })
@@ -36,9 +35,8 @@ describe('createOrGetKey', () => {
     })
 
     const result = await createOrGetKey(kmsMock, undefined)
-    // Check that createKey was called with correct parameters
+
     expect(kmsMock.createKey).toHaveBeenCalledWith({ type: { crv: 'Ed25519', kty: 'OKP' } })
-    // Check the returned result matches the mocked createKey response
     expect(result).toEqual({
       keyId: fakeKeyId,
       publicJwk: fakeJwk,
@@ -51,9 +49,8 @@ describe('createOrGetKey', () => {
     kmsMock.getPublicKey.mockResolvedValue(publicJwk)
 
     const result = await createOrGetKey(kmsMock, keyId)
-    // Check that getPublicKey was called with the given keyId
+
     expect(kmsMock.getPublicKey).toHaveBeenCalledWith({ keyId })
-    // Check the returned keyId and publicJwk match the mocked response
     expect(result).toEqual({
       keyId,
       publicJwk: {
@@ -67,7 +64,7 @@ describe('createOrGetKey', () => {
     // @ts-ignore
     kmsMock.getPublicKey.mockResolvedValue(null)
 
-    // Expect the function to throw an error for missing key
+    // Expect the function to throw an error for a missing key
     await expect(createOrGetKey(kmsMock, 'notfound')).rejects.toThrowError("Key with key id 'notfound' not found")
   })
 
@@ -77,10 +74,8 @@ describe('createOrGetKey', () => {
 
     kmsMock.getPublicKey.mockResolvedValue(badJwk)
 
-    // Mock Kms.getJwkHumanDescription to control error message output
     const spyDesc = jest.spyOn(Kms, 'getJwkHumanDescription').mockReturnValue('unsupported key type')
 
-    // Expect an error indicating unsupported key type or curve
     await expect(createOrGetKey(kmsMock, keyId)).rejects.toThrow(
       `Key with key id '${keyId}' uses unsupported unsupported key type for did:hedera`
     )

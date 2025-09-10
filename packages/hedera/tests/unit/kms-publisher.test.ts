@@ -22,8 +22,6 @@ jest.mock('@credo-ts/core', () => ({
 jest.mock('../../src/ledger/utils', () => ({
   createOrGetKey: jest.fn(),
 }))
-
-import { Transaction } from '@hashgraph/sdk'
 import { createOrGetKey } from '../../src/ledger/utils'
 
 jest.mock('@hiero-did-sdk/publisher-internal', () => {
@@ -122,14 +120,5 @@ describe('KmsPublisher', () => {
     // biome-ignore lint/suspicious/noExplicitAny: <explanation>
     const publisher = new KmsPublisher(agentContext as unknown as AgentContext, mockClient as any, key)
     expect(publisher.publicKey()).toBe(fakePublicKey)
-  })
-
-  it('should throw error in publish if key is not set', async () => {
-    // biome-ignore lint/suspicious/noExplicitAny: <explanation>
-    const publisher = new KmsPublisher(agentContext as unknown as AgentContext, mockClient as any, key)
-    // biome-ignore lint/suspicious/noExplicitAny: <explanation>
-    ;(publisher as any).submitPublicKey = undefined
-
-    await expect(publisher.publish({} as unknown as Transaction)).rejects.toThrow('Need to setup the KeyId')
   })
 })
